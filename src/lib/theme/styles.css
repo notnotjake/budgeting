@@ -10,6 +10,8 @@
 	--tracking-tight-md: -0.013em;
 	--tracking-tight-lg: -0.015em;
 
+	--color-blue-vibrant: color(display-p3 0 0.428 0.943);
+
 	--shadow-inner-xs: inset 0 0 0 1px hsl(0, 0%, 88%);
 	--shadow-card:
 		rgba(0, 0, 0, 0.07) 0px 0.602187px 0.602187px -1.166667px,
