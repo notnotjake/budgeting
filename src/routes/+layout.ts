@@ -1,9 +1,10 @@
 import { metaLoad } from '@opensky/seo'
+import { site } from '$lib/site-config'
 
 export const load = metaLoad.layout({
-	sitename: 'Luxo Starter',
+	sitename: `${site.name} Office`,
 	icon: './favicon.png',
-	title: 'Luxo',
-	titleTemplate: { route: '/', template: 'Luxo - {page}' },
-	description: 'Get your SvelteKit site off to a running start with @opensky/setup'
+	title: `${site.name}`,
+	titleTemplate: { route: '/', template: `${site.name} - {page}` },
+	description: 'Time and material billing for contractors'
 })
