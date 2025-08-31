@@ -13,6 +13,7 @@
 		"db:gen": "drizzle-kit generate",
 		"db:migrate": "drizzle-kit migrate",
 		"db:reset": "bun run db/reset.ts",
+		"db:seed": "bun run db/seed/index.ts",
 		"build": "vite build",
 		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
 		"format": "prettier --write .",
