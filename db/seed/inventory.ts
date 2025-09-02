@@ -1,7 +1,9 @@
 import { sections, items } from '../../src/lib/server/db/schema'
 import type { PostgresJsDatabase } from 'drizzle-orm/postgres-js'
 
-export async function seedInventory(db: PostgresJsDatabase<typeof import('../../src/lib/server/db/schema')>) {
+export async function seedInventory(
+	db: PostgresJsDatabase<typeof import('../../src/lib/server/db/schema')>
+) {
 	// Create sections
 	const [prewireSection] = await db
 		.insert(sections)
