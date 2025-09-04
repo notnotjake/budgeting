@@ -45,6 +45,7 @@
 		"vite": "^7.0.4"
 	},
 	"dependencies": {
+		"@dnd-kit-svelte/core": "^0.0.11",
 		"@fontsource-variable/geist-mono": "^5.2.6",
 		"@fontsource-variable/inter": "^5.2.6",
 		"@fontsource-variable/jetbrains-mono": "^5.2.6",
@@ -54,6 +55,7 @@
 		"@tabler/icons-svelte": "^3.34.1",
 		"bits-ui": "^2.9.4",
 		"drizzle-orm": "^0.40.0",
+		"fluid-dnd": "^2.6.2",
 		"postgres": "^3.4.5",
 		"react": "^19.1.1",
 		"react-dom": "^19.1.1",
