@@ -63,7 +63,7 @@
 							<p class="grow text-[0.9rem] tracking-tight">{item.name}</p>
 							{#if item.quantityType !== 'whole_unit'}
 								<p
-									class="rounded-full bg-neutral-300 px-1.5 text-xs font-medium tracking-tight text-neutral-600"
+									class="rounded-full bg-neutral-600/70 px-1.5 font-mono text-xs font-semibold tracking-tight text-white"
 								>
 									{item.quantityType}
 								</p>

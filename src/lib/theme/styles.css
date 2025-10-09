@@ -11,6 +11,7 @@
 	--tracking-tight-lg: -0.015em;
 
 	--color-blue-vibrant: color(display-p3 0 0.428 0.943);
+	--color-blue-vibrant-light: color(display-p3 0.11 0.467 0.948);
 
 	--shadow-inner-xs: inset 0 0 0 1px hsl(0, 0%, 88%);
 	--shadow-card:
