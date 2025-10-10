@@ -1,56 +1,60 @@
 <script lang="ts">
 	import { onMount } from 'svelte'
 	import { startAuthentication, type AuthenticationResponseJSON } from '@simplewebauthn/browser'
+	import { passkeyRequestChallenge } from '$lib/auth/auth.remote'
 
 	import { createClass } from '@opensky/style'
+	import { scale } from 'svelte/transition'
 	import { Suspense } from '$ui/feedback'
 	import { IconReload, IconAlertTriangleFilled } from '@tabler/icons-svelte'
 	import IconPasskey from './passkey-icon.svelte'
 
 	let { identifier, supressAuto = false }: { identifier: string; supressAuto: boolean } = $props()
 
-	let buttonState: 'idle' | 'pending' | 'error' = $state('idle')
+	type ErrorTypes = 'unknown' | 'cancelled' | 'timeout' | 'network'
+	type State =
+		| { status: 'idle' }
+		| { status: 'pending' }
+		| { status: 'error'; type: ErrorTypes; message: string | null }
 
-	type ErrorTypes = 'generic' | 'cancelled' | 'timeout' | 'network' | null
-	let errorType: ErrorTypes = $state(null)
-	let errorMessage: string | null = $state(null)
-
-	const idle = $derived(buttonState === 'idle')
-	const pending = $derived(buttonState === 'pending')
-	const error = $derived(buttonState === 'error')
-
-	function setError(type: ErrorTypes, message: string | null) {
-		buttonState = 'error'
-		errorType = type
-		errorMessage = message
-	}
-
-	// Clear error fields when not in error state
-	$effect(() => {
-		if (buttonState !== 'error') {
-			errorType = null
-			errorMessage = null
-		}
-	})
-
-	// Helper to get the error type by string
-	function isErrorType(type: ErrorTypes) {
-		return errorType === type
-	}
+	let state = $state<State>({ status: 'idle' })
+	// Derived values for easier access
+	const idle = $derived(state.status === 'idle')
+	const pending = $derived(state.status === 'pending')
+	const error = $derived(state.status === 'error' && state) // return false or the state object (with type and message)
 
 	function handleClick() {
-		if (buttonState === 'idle') {
-			buttonState = 'pending'
-		} else if (buttonState === 'error') {
-			buttonState = 'pending'
-		} else if (buttonState === 'pending') {
-			buttonState = 'idle'
+		if (state.status === 'idle') {
+			handlePasskeyRequestChallenge()
+		} else if (state.status === 'pending') {
+			state = {
+				status: 'error',
+				type: 'unknown',
+				message: 'Something went wrong trying to verify your passkey'
+			}
+		} else {
+			state = { status: 'idle' }
 		}
 	}
 
-	function passkeyGetOptions() {}
-	function passkeyStartAuthentication() {}
-	function passkeyVerify() {}
+	async function handlePasskeyRequestChallenge() {
+		state = { status: 'pending' }
+
+		try {
+			const result = await passkeyRequestChallenge({ identifier: 'test@test.com' })
+
+			if (result?.success && result?.data) {
+				console.log('success', result)
+			} else {
+				state = { status: 'error', type: 'unknown', message: 'Server error occurred' }
+			}
+		} catch (e) {
+			console.error(e)
+			state = { status: 'error', type: 'unknown', message: 'Server error occurred' }
+		}
+	}
+	function handlePasskeySignChallenge() {}
+	function handlePasskeyVerifyAssertion() {}
 </script>
 
 <button
@@ -58,9 +62,10 @@
 	class={createClass(
 		'bg-blue-vibrant-light flex cursor-pointer items-center justify-center gap-2 py-3 font-medium text-white outline-none transition-all',
 		idle ? 'rounded-[1.1rem] px-9' : 'my-2 rounded-[2rem] px-4',
-		pending && '',
-		error && 'border-3 border-rose-500 bg-rose-100 text-rose-500',
-		isErrorType('cancelled') && 'border-3 border-neutral-500 bg-neutral-100 text-neutral-600'
+		error &&
+			error.type !== 'cancelled' &&
+			'ring-3 bg-rose-100 text-rose-500 ring-inset ring-rose-500',
+		error && error.type === 'cancelled' && 'bg-neutral-600 text-neutral-100'
 	)}
 >
 	{#if idle}
@@ -80,24 +85,24 @@
 			backgroundColor="var(--color-sky-200)"
 			primaryColor="var(--color-white)">Trying Passkey</Suspense.Text
 		>
-	{:else if error && isErrorType('cancelled')}
-		<IconReload stroke={2.5} />
-		<p class="whitespace-nowrap px-2 font-medium">Cancelled. Try again</p>
+	{:else if error && error.type === 'cancelled'}
+		<IconReload stroke={2.5} size={19} />
+		<p class="whitespace-nowrap font-medium">Cancelled. Try again</p>
 	{:else}
-		<IconReload stroke={2.5} />
-		<p class="whitespace-nowrap px-2 font-medium">Something went wrong</p>
+		<IconReload stroke={2.5} size={19} />
+		<p class="whitespace-nowrap font-medium">Something went wrong</p>
 	{/if}
 </button>
 
-{#if error && errorMessage}
-	<div class="px-6 pt-8">
-		<div class="flex flex-col items-start justify-start gap-1">
+{#if error && error.message}
+	<div class="px-5 pb-6 pt-3" in:scale={{ start: 0.8, opacity: 0.7, duration: 300 }}>
+		<div class="flex max-w-64 flex-col items-start justify-start gap-1">
 			<div class="flex items-center gap-1">
 				<IconAlertTriangleFilled size={22} class="text-rose-600" />
 				<p class="font-semibold text-rose-600">Details:</p>
 			</div>
-			<p class="font-[450] leading-6 tracking-tight text-neutral-700">
-				{errorMessage?.message}
+			<p class="font-[450] leading-5 tracking-tight text-neutral-700">
+				{error.message}
 			</p>
 		</div>
 	</div>
