@@ -1,5 +1,7 @@
 import { type RequestEvent } from '@sveltejs/kit'
 
+import { AUTH_DURATIONS } from '$lib/server/auth'
+
 const SESSION_COOKIE_NAME = 'session'
 const REDIRECT_COOKIE_NAME = 'redirect'
 
@@ -29,7 +31,7 @@ export function setRedirectUrlCookie(event: RequestEvent) {
 	event.cookies.set(REDIRECT_COOKIE_NAME, event.url.pathname, {
 		httpOnly: true,
 		sameSite: 'lax',
-		maxAge: 60 * 5, // 5 minutes
+		maxAge: AUTH_DURATIONS.redirectCookieMaxAge, // 10 minutes
 		path: '/'
 	})
 }

@@ -10,18 +10,22 @@ import {
 const DAY_IN_MS = 24 * 60 * 60 * 1000
 const MIN_IN_MS = 60 * 1000
 
+export const AUTH_DURATIONS = {
+	authCodeExpiry: 10 * MIN_IN_MS,
+	sessionUnauthenticated: 7 * DAY_IN_MS,
+	sessionAuthenticated: 30 * DAY_IN_MS,
+	sessionRenewalThreshold: 20 * DAY_IN_MS,
+	sessionLastSeenUpdateThreshold: 5 * MIN_IN_MS,
+	sessionRetentionWindow: 30 * DAY_IN_MS,
+	redirectCookieMaxAge: 10 * MIN_IN_MS
+}
+
 const Auth = {
 	routes: {
 		login: '/login',
 		afterLogin: '/app'
 	},
-	expiration: {
-		unauthenticatedSession: 7 * DAY_IN_MS,
-		authenticatedSession: 30 * DAY_IN_MS,
-		renewSession: 20 * DAY_IN_MS,
-		retainSession: 30 * DAY_IN_MS,
-		codeChallenge: 5 * MIN_IN_MS
-	},
+	durations: AUTH_DURATIONS,
 	// Session token cookies
 	setSessionTokenCookie,
 	getSessionTokenCookie,
