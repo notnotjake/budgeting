@@ -1,11 +1,13 @@
-import { timestamp, pgTable, text, uniqueIndex, uuid } from 'drizzle-orm/pg-core'
+import { timestamp, pgTable, text, uniqueIndex } from 'drizzle-orm/pg-core'
 import { type InferSelectModel, type InferInsertModel, sql } from 'drizzle-orm'
+import { randomUUID } from 'crypto'
 
 export const user = pgTable(
-	'user',
+	'auth_user',
 	{
-		id: uuid('id').primaryKey().notNull().defaultRandom(),
-		uuid: uuid().defaultRandom(),
+		id: text('id')
+			.primaryKey()
+			.$defaultFn(() => randomUUID()),
 		name: text('name'),
 		identifier: text('identifier').notNull().unique(),
 		lastSeenAt: timestamp('last_seen_at').notNull(),
@@ -17,7 +19,7 @@ export const user = pgTable(
 	})
 )
 
-export const session = pgTable('user_session', {
+export const session = pgTable('auth_session', {
 	id: text('id').primaryKey(),
 	userId: text('user_id').references(() => user.id, { onDelete: 'cascade' }),
 	ipAddress: text('ip_address'),
@@ -29,7 +31,7 @@ export const session = pgTable('user_session', {
 	invalidatedAt: timestamp('invalidated_at')
 })
 
-export const key = pgTable('user_key', {
+export const key = pgTable('auth_key', {
 	id: text('id').primaryKey(),
 	userId: text('user_id')
 		.notNull()
@@ -40,8 +42,10 @@ export const key = pgTable('user_key', {
 	createdAt: timestamp('created_at').notNull().defaultNow()
 })
 
-export const challenge = pgTable('challenge', {
-	id: uuid('id').primaryKey().notNull().defaultRandom(),
+export const challenge = pgTable('auth_challenge', {
+	id: text('id')
+		.primaryKey()
+		.$defaultFn(() => randomUUID()),
 	identifier: text('identifier').notNull(),
 	sessionId: text('session_id')
 		.references(() => session.id, { onDelete: 'cascade' })
