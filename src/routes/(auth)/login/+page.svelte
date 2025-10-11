@@ -44,15 +44,15 @@
 	>
 		<div
 			class={createClass(
-				'h-18 left-0 top-0 -z-10 hidden w-full rounded-t-[1.7rem] bg-gradient-to-b from-[#DFF3FF] to-[#E8F9FF]/0 transition-colors duration-200 sm:absolute sm:z-auto sm:block',
-				loginRequestResponse ? 'opacity-0' : 'opacity-80'
+				'h-18 left-0 top-0 z-0 hidden w-full rounded-t-[1.7rem] bg-gradient-to-b from-[#DFF3FF] to-[#E8F9FF]/0 transition-colors duration-200 sm:absolute sm:z-auto sm:block',
+				loginRequestResponse ? 'opacity-0' : 'opacity-100'
 			)}
 		></div>
 
 		{#if !loginRequestResponse}
 			<div
 				transition:wipeVertical={{ duration: 400 }}
-				class="w-full flex-col items-center justify-center px-7 pb-6 pt-2 text-center"
+				class="z-10 w-full flex-col items-center justify-center px-7 pb-6 pt-2 text-center"
 			>
 				<h2
 					class="tracking-tight-md animate-fade-in-scale text-[1.33rem] font-[550] leading-loose text-black"
@@ -67,7 +67,7 @@
 			</div>
 		{/if}
 
-		<form class="w-full">
+		<form class="z-10 w-full">
 			<div
 				class={createClass(
 					'group relative flex h-12 w-full items-center overflow-hidden rounded-[1rem] border-2 border-red-500/0 focus-within:border-2 focus-within:border-blue-500',
