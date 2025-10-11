@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { onMount } from 'svelte'
 	import { startAuthentication, type AuthenticationResponseJSON } from '@simplewebauthn/browser'
-	import { passkeyRequestChallenge } from '$lib/auth/auth.remote'
+	import { passkeyRequestChallenge } from '$lib/remotes/auth.remote'
 
 	import { createClass } from '@opensky/style'
 	import { scale } from 'svelte/transition'
