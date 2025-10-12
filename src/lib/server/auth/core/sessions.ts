@@ -78,30 +78,11 @@ export async function authenticateSession({
 	user: User
 }): Promise<Response<{ session: Session; rawSessionToken: string }>> {
 	try {
-		if (!event.locals.session) {
-			return Response.fail('Session not found in request')
-		}
-
-		const sessionId = event.locals.session.id
-
-		if (!sessionId) {
+		if (!event.locals.session?.id) {
 			return Response.fail('Session id not found in request')
 		}
 
-		// Get the current session
-		const [currentSession] = await db
-			.select()
-			.from(table.session)
-			.where(eq(table.session.id, sessionId))
-			.limit(1)
-
-		if (!currentSession) {
-			return Response.fail('Session not found in database')
-		}
-
-		if (currentSession.invalidatedAt !== null) {
-			return Response.fail('Session has been invalidated')
-		}
+		const sessionId = event.locals.session.id
 
 		// Generate new session token and ID
 		const rawSessionToken = generateToken()
@@ -114,7 +95,30 @@ export async function authenticateSession({
 		const expiresAt = new Date(Date.now() + AUTH_DURATIONS.sessionAuthenticated)
 
 		// Insert new session and invalidate old one in a transaction
-		const [newAuthenticatedSession] = await db.transaction(async (tx) => {
+		const newAuthenticatedSession = await db.transaction(async (tx) => {
+			// Get the current session
+			const [currentSession] = await db
+				.select()
+				.from(table.session)
+				.where(eq(table.session.id, sessionId))
+				.limit(1)
+				.for('update') // row lock during transaction
+
+			if (!currentSession) {
+				throw new Error('Session not found in database')
+			}
+
+			if (currentSession.invalidatedAt !== null) {
+				throw new Error('Session has been invalidated')
+			}
+
+			// invalidate old session
+			await tx
+				.update(table.session)
+				.set({ invalidatedAt: new Date() })
+				.where(eq(table.session.id, sessionId))
+
+			// create new authenticated session
 			const [inserted] = await tx
 				.insert(table.session)
 				.values({
@@ -130,12 +134,7 @@ export async function authenticateSession({
 				})
 				.returning()
 
-			await tx
-				.update(table.session)
-				.set({ invalidatedAt: new Date() })
-				.where(eq(table.session.id, sessionId))
-
-			return [inserted]
+			return inserted
 		})
 
 		return Response.succeed({ session: newAuthenticatedSession, rawSessionToken })
