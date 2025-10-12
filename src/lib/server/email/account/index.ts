@@ -1,4 +1,4 @@
-import { sendEmail, type EmailSendResponse } from '../send-email'
+import { sendEmail, type EmailSendResponse } from '../send'
 import { StructuredResponse as Response } from '$utils/structured-response'
 
 import AlertEmailChanged from './templates/alert-email-changed'
@@ -93,47 +93,6 @@ export async function loginExistingUserWithCode({
 	}
 }
 
-export async function loginExistingUserWithLink({
-	email,
-	url,
-	timezone = 'UTC',
-	maxAgeMins = 5
-}: {
-	email: string
-	url: string
-	timezone?: string
-	maxAgeMins?: number
-}): Promise<EmailSendResponse> {
-	const headingText = 'Log in to your account'
-	const descriptiveText = 'Use this link to securely log in'
-	const actionText = 'Sign In'
-	const preview = `Here is your link to securely log in to your account. This link is available for ${maxAgeMins} minutes`
-
-	const result = await sendEmail(
-		{
-			from: 'LightDance <accounts@resend.notnotjake.com>',
-			to: email,
-			subject: 'Login Link',
-			react: VerifyLink({
-				url,
-				timezone,
-				maxAgeMins,
-				headingText,
-				descriptiveText,
-				actionText,
-				preview
-			})
-		},
-		`Login link: ${url}`
-	)
-
-	if (result?.success) {
-		return Response.succeed(result?.data)
-	} else {
-		return Response.fail()
-	}
-}
-
 export async function loginNewUserWithCode({
 	email,
 	code,
@@ -157,47 +116,6 @@ export async function loginNewUserWithCode({
 			react: VerifyCode({ code, timezone, maxAgeMins, headingText, descriptiveText, preview })
 		},
 		`New account code: ${code}`
-	)
-
-	if (result?.success) {
-		return Response.succeed(result?.data)
-	} else {
-		return Response.fail()
-	}
-}
-
-export async function loginNewUserWithLink({
-	email,
-	url,
-	timezone = 'UTC',
-	maxAgeMins = 5
-}: {
-	email: string
-	url: string
-	timezone?: string
-	maxAgeMins?: number
-}): Promise<EmailSendResponse> {
-	const headingText = 'Create your account'
-	const descriptiveText = 'Use this link to activate your account'
-	const actionText = 'Sign In'
-	const preview = `Here is your link to finish creating your account. This link is available for ${maxAgeMins} minutes`
-
-	const result = await sendEmail(
-		{
-			from: 'LightDance <accounts@resend.notnotjake.com>',
-			to: email,
-			subject: 'Verify Email',
-			react: VerifyLink({
-				url,
-				timezone,
-				maxAgeMins,
-				headingText,
-				descriptiveText,
-				actionText,
-				preview
-			})
-		},
-		`New account link: ${url}`
 	)
 
 	if (result?.success) {
@@ -232,49 +150,6 @@ export async function verifyWithCode({
 			react: VerifyCode({ code, timezone, maxAgeMins, headingText, descriptiveText, preview })
 		},
 		`${verificationDescription} code: ${code}`
-	)
-
-	if (result?.success) {
-		return Response.succeed(result?.data)
-	} else {
-		return Response.fail()
-	}
-}
-
-export async function verifyWithLink({
-	email,
-	url,
-	verificationDescription,
-	timezone = 'UTC',
-	maxAgeMins = 5
-}: {
-	email: string
-	url: string
-	verificationDescription: string
-	timezone?: string
-	maxAgeMins?: number
-}): Promise<EmailSendResponse> {
-	const headingText = 'Verification Link'
-	const descriptiveText = `Use this link to ${verificationDescription}`
-	const actionText = 'Authorize'
-	const preview = `Here is your link to ${verificationDescription}. This link is available for ${maxAgeMins} minutes`
-
-	const result = await sendEmail(
-		{
-			from: 'LightDance <accounts@resend.notnotjake.com>',
-			to: email,
-			subject: 'Verification Link',
-			react: VerifyLink({
-				url,
-				timezone,
-				maxAgeMins,
-				headingText,
-				descriptiveText,
-				actionText,
-				preview
-			})
-		},
-		`${verificationDescription} link: ${url}`
 	)
 
 	if (result?.success) {
