@@ -1,4 +1,4 @@
-import { sendEmail } from '../send-email'
+import { sendEmail } from '../send'
 
 import PaymentUpcoming from './templates/payment-upcoming'
 
