@@ -1,7 +1,7 @@
 import { db } from '$lib/server/db'
 import { eq, sql } from 'drizzle-orm'
 import * as table from '$lib/server/auth/schema'
-import type { User, NewUser } from '$lib/server/auth/schema'
+import type { User } from '$lib/server/auth/schema'
 
 import { randomUUID } from 'crypto'
 import { StructuredResponse as Response } from '$utils/structured-response'
@@ -22,12 +22,6 @@ export async function createUser({
 	name: string
 }): Promise<Response<User>> {
 	try {
-		const isExistingUser = await userExists({ identifier })
-
-		if (isExistingUser) {
-			return Response.fail('User already exists')
-		}
-
 		const [result] = await db
 			.insert(table.user)
 			.values({
@@ -42,8 +36,8 @@ export async function createUser({
 
 		return Response.succeed(result)
 	} catch (e) {
-		console.error('Failed to create user', e)
-		return Response.fail('Failed to create user')
+		console.error('Failed to create user. User may already exist', e)
+		return Response.fail('Failed to create user. User may already exist')
 	}
 }
 
