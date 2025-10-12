@@ -6,5 +6,8 @@ export default defineConfig({
 		afterLogout: '/',
 		afterAccountCreated: '/welcome'
 	},
-	codeExpirationTimeMins: 10
+	codeExpirationTimeMins: 10,
+	emails: {
+		verifyEmail: () => {}
+	}
 })

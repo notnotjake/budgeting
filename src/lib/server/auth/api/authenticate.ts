@@ -1,4 +1,8 @@
-export async function startLogin() {}
+export async function startLogin() {
+	// cleanup challenges
+	// create and hash token
+	// create challenge
+}
 
 export async function verifyLoginCode() {}
 
