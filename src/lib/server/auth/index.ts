@@ -12,6 +12,8 @@ const MIN_IN_MS = 60 * 1000
 
 export const AUTH_DURATIONS = {
 	authCodeExpiry: 10 * MIN_IN_MS,
+	challengeExpiry: 10 * MIN_IN_MS,
+	challengeLockAccountExpiry: 2 * DAY_IN_MS,
 	sessionUnauthenticated: 7 * DAY_IN_MS,
 	sessionAuthenticated: 30 * DAY_IN_MS,
 	sessionRenewalThreshold: 20 * DAY_IN_MS,

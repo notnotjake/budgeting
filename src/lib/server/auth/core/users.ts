@@ -34,7 +34,8 @@ export async function createUser({
 			identifier: identifier.toLowerCase(),
 			createdAt: new Date(),
 			lastSeenAt: new Date(),
-			id: randomUUID()
+			id: randomUUID(),
+			locked: false
 		}
 
 		const [result] = await db.insert(table.user).values(newUser).returning()
@@ -180,5 +181,27 @@ export async function userExists(
 	} catch (e) {
 		console.error('Failed to lookup user', e)
 		return Response.fail('Failed to lookup user')
+	}
+}
+
+export async function lockUserAccount({ userId }: { userId: string }): Promise<Response<never>> {
+	try {
+		await db.update(table.user).set({ locked: true }).where(eq(table.user.id, userId))
+
+		return Response.succeed()
+	} catch (e) {
+		console.error('Failed to lock user account', e)
+		return Response.fail('Failed to lock user account')
+	}
+}
+
+export async function unlockUserAccount({ userId }: { userId: string }): Promise<Response<never>> {
+	try {
+		await db.update(table.user).set({ locked: false }).where(eq(table.user.id, userId))
+
+		return Response.succeed()
+	} catch (e) {
+		console.error('Failed to unlock user account', e)
+		return Response.fail('Failed to unlock user account')
 	}
 }
