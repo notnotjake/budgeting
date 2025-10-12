@@ -40,19 +40,20 @@ export async function createSession({
 					: AUTH_DURATIONS.sessionUnauthenticated)
 		)
 
-		const session: Session = {
-			id: sessionId,
-			userId: userId ?? null,
-			ipAddress,
-			userAgent,
-			createdAt: now,
-			lastSeenAt: now,
-			lastAuthAt: now,
-			expiresAt,
-			invalidatedAt: null
-		}
-
-		const [newSession] = await db.insert(table.session).values(session).returning()
+		const [newSession] = await db
+			.insert(table.session)
+			.values({
+				id: sessionId,
+				userId: userId ?? null,
+				ipAddress,
+				userAgent,
+				createdAt: now,
+				lastSeenAt: now,
+				lastAuthAt: now,
+				expiresAt,
+				invalidatedAt: null
+			})
+			.returning()
 
 		return Response.succeed({ session: newSession, rawSessionToken })
 	} catch (e) {
@@ -112,21 +113,22 @@ export async function authenticateSession({
 		const now = new Date()
 		const expiresAt = new Date(Date.now() + AUTH_DURATIONS.sessionAuthenticated)
 
-		const authenticatedSession: Session = {
-			id: authenticatedSessionId,
-			userId: user.id,
-			ipAddress,
-			userAgent,
-			createdAt: now,
-			lastSeenAt: now,
-			lastAuthAt: now,
-			expiresAt,
-			invalidatedAt: null
-		}
-
 		// Insert new session and invalidate old one in a transaction
 		const [newAuthenticatedSession] = await db.transaction(async (tx) => {
-			const [inserted] = await tx.insert(table.session).values(authenticatedSession).returning()
+			const [inserted] = await tx
+				.insert(table.session)
+				.values({
+					id: authenticatedSessionId,
+					userId: user.id,
+					ipAddress,
+					userAgent,
+					createdAt: now,
+					lastSeenAt: now,
+					lastAuthAt: now,
+					expiresAt,
+					invalidatedAt: null
+				})
+				.returning()
 
 			await tx
 				.update(table.session)

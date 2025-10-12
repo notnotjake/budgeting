@@ -43,10 +43,6 @@ export async function createChallenge({
 			})
 			.returning()
 
-		if (!newChallenge) {
-			return Response.fail('Failed trying to create challenge in db')
-		}
-
 		return Response.succeed(newChallenge)
 	} catch (e) {
 		console.error('Failed to create auth challenge', e)

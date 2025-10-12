@@ -5,7 +5,6 @@ import type { User, NewUser } from '$lib/server/auth/schema'
 
 import { randomUUID } from 'crypto'
 import { StructuredResponse as Response } from '$utils/structured-response'
-import { console } from 'inspector'
 
 /**
  * Creates a new user with the provided identifier and name.
@@ -29,20 +28,17 @@ export async function createUser({
 			return Response.fail('User already exists')
 		}
 
-		const newUser: NewUser = {
-			name,
-			identifier: identifier.toLowerCase(),
-			createdAt: new Date(),
-			lastSeenAt: new Date(),
-			id: randomUUID(),
-			locked: false
-		}
-
-		const [result] = await db.insert(table.user).values(newUser).returning()
-
-		if (!result) {
-			return Response.fail('Failed creating user in db')
-		}
+		const [result] = await db
+			.insert(table.user)
+			.values({
+				name,
+				identifier: identifier.toLowerCase(),
+				createdAt: new Date(),
+				lastSeenAt: new Date(),
+				id: randomUUID(),
+				locked: false
+			})
+			.returning()
 
 		return Response.succeed(result)
 	} catch (e) {
@@ -184,20 +180,23 @@ export async function userExists(
 	}
 }
 
-export async function lockUserAccount({ userId }: { userId: string }): Promise<Response<never>> {
+export async function setUserLockStatus({
+	userId,
+	locked
+}: {
+	userId: string
+	locked: boolean
+}): Promise<Response<never>> {
 	try {
-		await db.update(table.user).set({ locked: true }).where(eq(table.user.id, userId))
+		const [result] = await db
+			.update(table.user)
+			.set({ locked })
+			.where(eq(table.user.id, userId))
+			.returning()
 
-		return Response.succeed()
-	} catch (e) {
-		console.error('Failed to lock user account', e)
-		return Response.fail('Failed to lock user account')
-	}
-}
-
-export async function unlockUserAccount({ userId }: { userId: string }): Promise<Response<never>> {
-	try {
-		await db.update(table.user).set({ locked: false }).where(eq(table.user.id, userId))
+		if (!result) {
+			return Response.fail('User not found or failed to lock account')
+		}
 
 		return Response.succeed()
 	} catch (e) {
