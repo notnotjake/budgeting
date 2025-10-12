@@ -8,6 +8,6 @@ export default defineConfig({
 	},
 	codeExpirationTimeMins: 10,
 	emails: {
-		verifyEmail: () => {}
+		verifyEmail: ({ email, token, type }) => {} // allows you to implement each email flow
 	}
 })
