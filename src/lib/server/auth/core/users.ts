@@ -8,7 +8,6 @@ import { StructuredResponse as Response } from '$utils/structured-response'
 
 /**
  * Creates a new user with the provided identifier and name.
- * Checks for existing user before creation and normalizes identifier to lowercase.
  *
  * @param identifier - The unique identifier for the user (typically email)
  * @param name - The display name for the user
@@ -174,6 +173,13 @@ export async function userExists(
 	}
 }
 
+/**
+ * Sets the lock status of a user account.
+ *
+ * @param userId - The ID of the user whose lock status to change
+ * @param locked - True to lock the account, false to unlock it
+ * @returns Response indicating success or failure
+ */
 export async function setUserLockStatus({
 	userId,
 	locked
