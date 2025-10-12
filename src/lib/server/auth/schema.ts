@@ -1,4 +1,4 @@
-import { timestamp, text, pgEnum, boolean, pgTable, uniqueIndex } from 'drizzle-orm/pg-core'
+import { timestamp, text, boolean, pgTable, uniqueIndex } from 'drizzle-orm/pg-core'
 import { type InferSelectModel, type InferInsertModel, sql } from 'drizzle-orm'
 import { randomUUID } from 'crypto'
 
@@ -43,21 +43,15 @@ export const key = pgTable('auth_key', {
 	createdAt: timestamp('created_at').notNull().defaultNow()
 })
 
-export const challengeTypeEnum = pgEnum('challenge_type', [
-	'code',
-	'passkey',
-	'passkey_register',
-	'code_email_change',
-	'lock_account'
-])
-
 export const challenge = pgTable('auth_challenge', {
 	id: text('id')
 		.primaryKey()
 		.$defaultFn(() => randomUUID()),
 	identifier: text('identifier').notNull(),
 	sessionId: text('session_id').references(() => session.id, { onDelete: 'cascade' }),
-	type: challengeTypeEnum('type').notNull(),
+	type: text('type', {
+		enum: ['code', 'passkey', 'passkey_register', 'code_email_change', 'lock_account']
+	}).notNull(),
 	credential: text('credential'),
 	createdAt: timestamp('created_at').notNull().defaultNow(),
 	expiresAt: timestamp('expires_at').notNull()

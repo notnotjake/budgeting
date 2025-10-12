@@ -1,11 +1,11 @@
 {
-  "id": "79a3fa04-244c-43cc-a202-40f0a54a6e9a",
-  "prevId": "933e2578-4ae3-4df2-9237-5a531211bdf4",
+  "id": "cecc477f-a20f-422e-8bf1-7c27d6138c3a",
+  "prevId": "848b3e4f-77f8-4bbf-8853-3c5a4ce7e1ff",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
-    "public.challenge": {
-      "name": "challenge",
+    "public.auth_challenge": {
+      "name": "auth_challenge",
       "schema": "",
       "columns": {
         "id": {
@@ -24,7 +24,7 @@
           "name": "session_id",
           "type": "text",
           "primaryKey": false,
-          "notNull": true
+          "notNull": false
         },
         "type": {
           "name": "type",
@@ -54,10 +54,10 @@
       },
       "indexes": {},
       "foreignKeys": {
-        "challenge_session_id_user_session_id_fk": {
-          "name": "challenge_session_id_user_session_id_fk",
-          "tableFrom": "challenge",
-          "tableTo": "user_session",
+        "auth_challenge_session_id_auth_session_id_fk": {
+          "name": "auth_challenge_session_id_auth_session_id_fk",
+          "tableFrom": "auth_challenge",
+          "tableTo": "auth_session",
           "columnsFrom": [
             "session_id"
           ],
@@ -74,8 +74,8 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.user_key": {
-      "name": "user_key",
+    "public.auth_key": {
+      "name": "auth_key",
       "schema": "",
       "columns": {
         "id": {
@@ -118,10 +118,10 @@
       },
       "indexes": {},
       "foreignKeys": {
-        "user_key_user_id_user_id_fk": {
-          "name": "user_key_user_id_user_id_fk",
-          "tableFrom": "user_key",
-          "tableTo": "user",
+        "auth_key_user_id_auth_user_id_fk": {
+          "name": "auth_key_user_id_auth_user_id_fk",
+          "tableFrom": "auth_key",
+          "tableTo": "auth_user",
           "columnsFrom": [
             "user_id"
           ],
@@ -138,8 +138,8 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.user_session": {
-      "name": "user_session",
+    "public.auth_session": {
+      "name": "auth_session",
       "schema": "",
       "columns": {
         "id": {
@@ -200,10 +200,10 @@
       },
       "indexes": {},
       "foreignKeys": {
-        "user_session_user_id_user_id_fk": {
-          "name": "user_session_user_id_user_id_fk",
-          "tableFrom": "user_session",
-          "tableTo": "user",
+        "auth_session_user_id_auth_user_id_fk": {
+          "name": "auth_session_user_id_auth_user_id_fk",
+          "tableFrom": "auth_session",
+          "tableTo": "auth_user",
           "columnsFrom": [
             "user_id"
           ],
@@ -220,8 +220,8 @@
       "checkConstraints": {},
       "isRLSEnabled": false
     },
-    "public.user": {
-      "name": "user",
+    "public.auth_user": {
+      "name": "auth_user",
       "schema": "",
       "columns": {
         "id": {
@@ -239,6 +239,12 @@
         "identifier": {
           "name": "identifier",
           "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "locked": {
+          "name": "locked",
+          "type": "boolean",
           "primaryKey": false,
           "notNull": true
         },
@@ -276,8 +282,8 @@
       "foreignKeys": {},
       "compositePrimaryKeys": {},
       "uniqueConstraints": {
-        "user_identifier_unique": {
-          "name": "user_identifier_unique",
+        "auth_user_identifier_unique": {
+          "name": "auth_user_identifier_unique",
           "nullsNotDistinct": false,
           "columns": [
             "identifier"
