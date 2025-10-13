@@ -1,10 +1,10 @@
 import { db } from '$lib/server/db'
 import { eq, sql } from 'drizzle-orm'
 import * as table from '$lib/server/auth/schema'
-import type { User } from '$lib/server/auth/schema'
 
-import { randomUUID } from 'crypto'
+import type { User } from '$lib/server/auth/schema'
 import { StructuredResponse as Response } from '$utils/structured-response'
+import { randomUUID } from 'crypto'
 
 /**
  * Creates a new user with the provided identifier and name.

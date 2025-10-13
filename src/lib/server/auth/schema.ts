@@ -8,7 +8,7 @@ export const user = pgTable(
 		id: text('id')
 			.primaryKey()
 			.$defaultFn(() => randomUUID()),
-		name: text('name'),
+		name: text('name').notNull(),
 		identifier: text('identifier').notNull().unique(),
 		locked: boolean('locked').notNull(),
 		lastSeenAt: timestamp('last_seen_at').notNull(),

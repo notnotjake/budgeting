@@ -1,8 +1,8 @@
 import { db } from '$lib/server/db'
 import { eq, lt, gt, and, or, inArray } from 'drizzle-orm'
 import * as table from '$lib/server/auth/schema'
-import type { Challenge, ChallengeType } from '$lib/server/auth/schema'
 
+import type { Challenge, ChallengeType } from '$lib/server/auth/schema'
 import { StructuredResponse as Response } from '$utils/structured-response'
 import { randomUUID } from 'crypto'
 

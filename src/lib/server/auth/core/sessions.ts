@@ -1,9 +1,9 @@
 import { db } from '$lib/server/db'
-import { type RequestEvent } from '@sveltejs/kit'
 import { and, or, eq, lt, gt, isNull, desc } from 'drizzle-orm'
 import * as table from '$lib/server/auth/schema'
-import type { User, Session } from '$lib/server/auth/schema'
 
+import type { RequestEvent } from '@sveltejs/kit'
+import type { User, Session } from '$lib/server/auth/schema'
 import { StructuredResponse as Response } from '$utils/structured-response'
 import { AUTH_DURATIONS } from '$lib/server/auth'
 import { generateToken, hashToken } from './utils'

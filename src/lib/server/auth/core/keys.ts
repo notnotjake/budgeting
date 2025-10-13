@@ -1,11 +1,10 @@
 import { db } from '$lib/server/db'
 import { eq } from 'drizzle-orm'
 import * as table from '$lib/server/auth/schema'
+
 import type { Key, User } from '$lib/server/auth/schema'
-
-import { encodeBase64, decodeBase64 } from '@oslojs/encoding'
-
 import { StructuredResponse as Response } from '$utils/structured-response'
+import { encodeBase64, decodeBase64 } from '@oslojs/encoding'
 
 /**
  * Creates a new passkey for a user.
