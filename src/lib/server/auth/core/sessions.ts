@@ -5,7 +5,7 @@ import * as table from '$lib/server/auth/schema'
 import type { RequestEvent } from '@sveltejs/kit'
 import type { User, Session } from '$lib/server/auth/schema'
 import { StructuredResponse as Response } from '$utils/structured-response'
-import { AUTH_DURATIONS } from '$lib/server/auth'
+import { AUTH_DURATIONS, ERROR_MESSAGE } from '$lib/server/auth'
 import { generateToken, hashToken } from './utils'
 
 /**
@@ -57,8 +57,8 @@ export async function createSession({
 
 		return Response.succeed({ session: newSession, rawSessionToken })
 	} catch (e) {
-		console.error('Failed to create session', e)
-		return Response.fail('Failed to create session')
+		console.error(ERROR_MESSAGE.CORE.SESSION_CREATE_FAILED, e)
+		return Response.fail(ERROR_MESSAGE.CORE.SESSION_CREATE_FAILED)
 	}
 }
 
@@ -79,7 +79,7 @@ export async function authenticateSession({
 }): Promise<Response<{ session: Session; rawSessionToken: string }>> {
 	try {
 		if (!event.locals.session?.id) {
-			return Response.fail('Session id not found in request')
+			return Response.fail(ERROR_MESSAGE.CORE.SESSION_NOT_FOUND)
 		}
 
 		const sessionId = event.locals.session.id
@@ -105,11 +105,11 @@ export async function authenticateSession({
 				.for('update') // row lock during transaction
 
 			if (!currentSession) {
-				throw new Error('Session not found in database')
+				throw new Error(ERROR_MESSAGE.CORE.SESSION_NOT_FOUND)
 			}
 
 			if (currentSession.invalidatedAt !== null) {
-				throw new Error('Session has been invalidated')
+				throw new Error(ERROR_MESSAGE.CORE.SESSION_INVALID)
 			}
 
 			// invalidate old session
@@ -139,8 +139,8 @@ export async function authenticateSession({
 
 		return Response.succeed({ session: newAuthenticatedSession, rawSessionToken })
 	} catch (e) {
-		console.error('Failed to rotate and authenticate session', e)
-		return Response.fail('Failed to authenticate unauthenticated session')
+		console.error(ERROR_MESSAGE.CORE.SESSION_AUTHENTICATE_FAILED, e)
+		return Response.fail(ERROR_MESSAGE.CORE.SESSION_AUTHENTICATE_FAILED)
 	}
 }
 
@@ -205,8 +205,8 @@ export async function validateSessionToken(
 
 		return Response.succeed({ session, user })
 	} catch (e) {
-		console.error('Failed trying to validate session', e)
-		return Response.fail('Failed trying to validate session')
+		console.error(ERROR_MESSAGE.CORE.SESSION_VALIDATE_FAILED, e)
+		return Response.fail(ERROR_MESSAGE.CORE.SESSION_VALIDATE_FAILED)
 	}
 }
 
@@ -227,8 +227,8 @@ export async function listAllUserSessions(userId: string): Promise<Response<Sess
 
 		return Response.succeed(allSessions)
 	} catch (e) {
-		console.error('Failed to retrieve all sessions', e)
-		return Response.fail('Failed to retrieve all sessions')
+		console.error(ERROR_MESSAGE.CORE.SESSION_LIST_FAILED, e)
+		return Response.fail(ERROR_MESSAGE.CORE.SESSION_LIST_FAILED)
 	}
 }
 
@@ -248,8 +248,8 @@ export async function invalidateSession(sessionId: string): Promise<Response<nev
 
 		return Response.succeed()
 	} catch (e) {
-		console.error('Failed to invalidate session', e)
-		return Response.fail('Failed to invalidate session')
+		console.error(ERROR_MESSAGE.CORE.SESSION_INVALIDATE_FAILED, e)
+		return Response.fail(ERROR_MESSAGE.CORE.SESSION_INVALIDATE_FAILED)
 	}
 }
 
@@ -269,8 +269,8 @@ export async function invalidateAllUserSessions(userId: string): Promise<Respons
 
 		return Response.succeed()
 	} catch (e) {
-		console.error('Failed to invalidate all sessions', e)
-		return Response.fail('Failed to invalidate all sessions')
+		console.error(ERROR_MESSAGE.CORE.SESSION_INVALIDATE_ALL_FAILED, e)
+		return Response.fail(ERROR_MESSAGE.CORE.SESSION_INVALIDATE_ALL_FAILED)
 	}
 }
 
@@ -295,7 +295,7 @@ export async function cleanupSessions(): Promise<Response<never>> {
 
 		return Response.succeed()
 	} catch (e) {
-		console.error('Failed to cleanup sessions', e)
-		return Response.fail('Failed to cleanup sessions')
+		console.error(ERROR_MESSAGE.CORE.SESSION_CLEANUP_FAILED, e)
+		return Response.fail(ERROR_MESSAGE.CORE.SESSION_CLEANUP_FAILED)
 	}
 }

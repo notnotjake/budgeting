@@ -4,6 +4,7 @@ import * as table from '$lib/server/auth/schema'
 
 import type { Challenge, ChallengeType } from '$lib/server/auth/schema'
 import { StructuredResponse as Response } from '$utils/structured-response'
+import { ERROR_MESSAGE } from '$lib/server/auth'
 import { randomUUID } from 'crypto'
 
 /**
@@ -45,8 +46,8 @@ export async function createChallenge({
 
 		return Response.succeed(newChallenge)
 	} catch (e) {
-		console.error('Failed to create auth challenge', e)
-		return Response.fail('Failed to create auth challenge')
+		console.error(ERROR_MESSAGE.CORE.CHALLENGE_CREATE_FAILED, e)
+		return Response.fail(ERROR_MESSAGE.CORE.CHALLENGE_CREATE_FAILED)
 	}
 }
 
@@ -94,8 +95,8 @@ export async function getChallenge({
 
 		return Response.succeed(challenge ?? null)
 	} catch (e) {
-		console.error('Failed trying to retrieve challenge', e)
-		return Response.fail('Failed trying to retrieve challenge')
+		console.error(ERROR_MESSAGE.CORE.CHALLENGE_GET_FAILED, e)
+		return Response.fail(ERROR_MESSAGE.CORE.CHALLENGE_GET_FAILED)
 	}
 }
 
@@ -128,8 +129,8 @@ export async function cleanupLoginChallenges({
 
 		return Response.succeed()
 	} catch (e) {
-		console.error('Failed removing challenges after login', e)
-		return Response.fail('Failed removing challenges after login')
+		console.error(ERROR_MESSAGE.CORE.CHALLENGE_CLEANUP_FAILED, e)
+		return Response.fail(ERROR_MESSAGE.CORE.CHALLENGE_CLEANUP_FAILED)
 	}
 }
 
@@ -171,8 +172,8 @@ export async function cleanupDuplicateLoginChallenges({
 
 		return Response.succeed()
 	} catch (e) {
-		console.error('Failed trying to cleanup duplicate login challenges', e)
-		return Response.fail('Failed trying to cleanup duplicate login challenges')
+		console.error(ERROR_MESSAGE.CORE.CHALLENGE_CLEANUP_FAILED, e)
+		return Response.fail(ERROR_MESSAGE.CORE.CHALLENGE_CLEANUP_FAILED)
 	}
 }
 
@@ -188,7 +189,7 @@ export async function cleanupExpiredChallenges(): Promise<Response<never>> {
 
 		return Response.succeed()
 	} catch (e) {
-		console.error('Failed removing expired challenges', e)
-		return Response.fail('Failed removing expired challenges')
+		console.error(ERROR_MESSAGE.CORE.CHALLENGE_CLEANUP_FAILED, e)
+		return Response.fail(ERROR_MESSAGE.CORE.CHALLENGE_CLEANUP_FAILED)
 	}
 }

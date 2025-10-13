@@ -4,6 +4,7 @@ import * as table from '$lib/server/auth/schema'
 
 import type { User } from '$lib/server/auth/schema'
 import { StructuredResponse as Response } from '$utils/structured-response'
+import { ERROR_MESSAGE } from '$lib/server/auth'
 import { randomUUID } from 'crypto'
 
 /**
@@ -36,7 +37,7 @@ export async function createUser({
 		return Response.succeed(result)
 	} catch (e) {
 		console.error('Failed to create user. User may already exist', e)
-		return Response.fail('Failed to create user. User may already exist')
+		return Response.fail(ERROR_MESSAGE.CORE.USER_CREATE_FAILED)
 	}
 }
 
@@ -70,7 +71,7 @@ export async function updateUser({
 		}
 
 		if (Object.keys(updateData).length === 0) {
-			return Response.fail('No fields to update')
+			return Response.fail(ERROR_MESSAGE.CORE.USER_NO_FIELDS_TO_UPDATE)
 		}
 
 		const [updatedUser] = await db
@@ -80,13 +81,13 @@ export async function updateUser({
 			.returning()
 
 		if (!updatedUser) {
-			return Response.fail('Failed to update user data. User may not exist')
+			return Response.fail(ERROR_MESSAGE.CORE.USER_NOT_FOUND)
 		}
 
 		return Response.succeed({ user: updatedUser })
 	} catch (e) {
 		console.error('Failed to update user', e)
-		return Response.fail('Failed to update user')
+		return Response.fail(ERROR_MESSAGE.CORE.USER_UPDATE_FAILED)
 	}
 }
 
@@ -102,13 +103,13 @@ export async function deleteUser({ userId }: { userId: string }): Promise<Respon
 		const result = await db.delete(table.user).where(eq(table.user.id, userId)).returning()
 
 		if (result.length === 0) {
-			return Response.fail('User not found or deletion failed')
+			return Response.fail(ERROR_MESSAGE.CORE.USER_NOT_FOUND)
 		}
 
 		return Response.succeed()
 	} catch (e) {
 		console.error('User deletion failed', e)
-		return Response.fail('User deletion failed')
+		return Response.fail(ERROR_MESSAGE.CORE.USER_DELETE_FAILED)
 	}
 }
 
@@ -145,7 +146,7 @@ export async function getUser({
 		return Response.succeed({ exists: true, user: userFound })
 	} catch (e) {
 		console.error('Failed to lookup user', e)
-		return Response.fail('Failed to lookup user')
+		return Response.fail(ERROR_MESSAGE.CORE.USER_LOOKUP_FAILED)
 	}
 }
 
@@ -163,13 +164,13 @@ export async function userExists(
 		const result = await getUser(params)
 
 		if (!result.success || !result.data) {
-			return Response.fail('Failed to lookup user')
+			return Response.fail(ERROR_MESSAGE.CORE.USER_LOOKUP_FAILED)
 		}
 
 		return Response.succeed(result.data.exists)
 	} catch (e) {
 		console.error('Failed to lookup user', e)
-		return Response.fail('Failed to lookup user')
+		return Response.fail(ERROR_MESSAGE.CORE.USER_LOOKUP_FAILED)
 	}
 }
 
@@ -195,12 +196,12 @@ export async function setUserLockStatus({
 			.returning()
 
 		if (!result) {
-			return Response.fail('User not found or failed to lock account')
+			return Response.fail(ERROR_MESSAGE.CORE.USER_NOT_FOUND)
 		}
 
 		return Response.succeed()
 	} catch (e) {
-		console.error('Failed to unlock user account', e)
-		return Response.fail('Failed to unlock user account')
+		console.error('Failed to update user lock status', e)
+		return Response.fail(ERROR_MESSAGE.CORE.USER_LOCK_FAILED)
 	}
 }

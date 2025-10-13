@@ -4,6 +4,7 @@ import * as table from '$lib/server/auth/schema'
 
 import type { Key, User } from '$lib/server/auth/schema'
 import { StructuredResponse as Response } from '$utils/structured-response'
+import { ERROR_MESSAGE } from '$lib/server/auth'
 import { encodeBase64, decodeBase64 } from '@oslojs/encoding'
 
 /**
@@ -44,8 +45,8 @@ export async function createPasskey({
 
 		return Response.succeed(newKey)
 	} catch (e) {
-		console.error('Failed to create passkey', e)
-		return Response.fail('Failed to create passkey')
+		console.error(ERROR_MESSAGE.CORE.KEY_CREATE_FAILED, e)
+		return Response.fail(ERROR_MESSAGE.CORE.KEY_CREATE_FAILED)
 	}
 }
 
@@ -75,8 +76,8 @@ export async function getPasskeyCredential({
 
 		return Response.succeed(null)
 	} catch (e) {
-		console.error('Failed to get passkey credential', e)
-		return Response.fail('Failed to get passkey credential')
+		console.error(ERROR_MESSAGE.CORE.KEY_GET_FAILED, e)
+		return Response.fail(ERROR_MESSAGE.CORE.KEY_GET_FAILED)
 	}
 }
 
@@ -102,8 +103,8 @@ export async function getPasskeyUser({
 
 		return Response.succeed(result?.auth_user || null)
 	} catch (e) {
-		console.error('Failed to get passkey user', e)
-		return Response.fail('Failed to get passkey user')
+		console.error(ERROR_MESSAGE.CORE.KEY_GET_FAILED, e)
+		return Response.fail(ERROR_MESSAGE.CORE.KEY_GET_FAILED)
 	}
 }
 
@@ -120,8 +121,8 @@ export async function listUserPasskeys({ userId }: { userId: string }): Promise<
 
 		return Response.succeed(keys)
 	} catch (e) {
-		console.error('Failed to list user passkeys', e)
-		return Response.fail('Failed to list user passkeys')
+		console.error(ERROR_MESSAGE.CORE.KEY_LIST_FAILED, e)
+		return Response.fail(ERROR_MESSAGE.CORE.KEY_LIST_FAILED)
 	}
 }
 
@@ -142,8 +143,8 @@ export async function deletePasskey({
 
 		return Response.succeed()
 	} catch (e) {
-		console.error('Failed to delete passkey', e)
-		return Response.fail('Failed to delete passkey')
+		console.error(ERROR_MESSAGE.CORE.KEY_DELETE_FAILED, e)
+		return Response.fail(ERROR_MESSAGE.CORE.KEY_DELETE_FAILED)
 	}
 }
 /**
@@ -169,12 +170,12 @@ export async function updatePasskeyName({
 			.returning()
 
 		if (!result) {
-			return Response.fail('Failed to update passkey name. Passkey not found')
+			return Response.fail(ERROR_MESSAGE.CORE.KEY_NOT_FOUND)
 		}
 
 		return Response.succeed()
 	} catch (e) {
-		console.error('Failed to update passkey name', e)
-		return Response.fail('Failed to update passkey name')
+		console.error(ERROR_MESSAGE.CORE.KEY_UPDATE_FAILED, e)
+		return Response.fail(ERROR_MESSAGE.CORE.KEY_UPDATE_FAILED)
 	}
 }
