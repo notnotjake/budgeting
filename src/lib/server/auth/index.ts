@@ -1,11 +1,7 @@
-import {
-	setSessionTokenCookie,
-	getSessionTokenCookie,
-	deleteSessionTokenCookie,
-	setRedirectUrlCookie,
-	getRedirectUrlCookie,
-	clearRedirectUrlCookie
-} from './core/cookies'
+import { handleAuthentication } from './hooks/authentication'
+import { handleProtected } from './hooks/protected'
+
+import { requireSession, requireAuthenticatedUser, requireRecentAuth } from './api/protect'
 
 const DAY_IN_MS = 24 * 60 * 60 * 1000
 const MIN_IN_MS = 60 * 1000
@@ -19,10 +15,17 @@ export const AUTH_DURATIONS = {
 	sessionRenewalThreshold: 20 * DAY_IN_MS,
 	sessionLastSeenUpdateThreshold: 5 * MIN_IN_MS,
 	sessionRetentionWindow: 30 * DAY_IN_MS,
-	redirectCookieMaxAge: 10 * MIN_IN_MS
+	redirectCookieMaxAge: 10 * MIN_IN_MS,
+	recentAuthWindow: 15 * MIN_IN_MS
 }
 
 export const ERROR_MESSAGE = {
+	// Generic errors
+	UNAUTHORIZED: 'Unauthorized',
+	FORBIDDEN: 'Forbidden',
+	RATE_LIMITED: 'Too many requests',
+	GENERIC: 'Operation failed',
+
 	CORE: {
 		// User errors
 		USER_CREATE_FAILED: 'Failed to create user',
@@ -58,30 +61,33 @@ export const ERROR_MESSAGE = {
 		KEY_LIST_FAILED: 'Failed to list passkeys',
 		KEY_DELETE_FAILED: 'Failed to delete passkey',
 		KEY_UPDATE_FAILED: 'Failed to update passkey',
-		KEY_NOT_FOUND: 'Passkey not found',
+		KEY_NOT_FOUND: 'Passkey not found'
+	},
 
-		// Generic errors
-		UNAUTHORIZED: 'Unauthorized',
-		FORBIDDEN: 'Forbidden',
-		RATE_LIMITED: 'Too many requests',
-		GENERIC: 'Operation failed'
+	API: {
+		// Hooks
+		AUTHENTICATION_HOOK: 'Authentication hook error',
+		PROTECTED_HOOK: 'Protected route hook error'
 	}
 } as const
 
 const Auth = {
 	routes: {
 		login: '/login',
-		afterLogin: '/app'
+		afterLogin: '/app',
+		reauth: '/reauth',
+		protectedGroup: '/(protected)'
 	},
 	durations: AUTH_DURATIONS,
-	// Session token cookies
-	setSessionTokenCookie,
-	getSessionTokenCookie,
-	deleteSessionTokenCookie,
-	// Redirect url cookies
-	setRedirectUrlCookie,
-	getRedirectUrlCookie,
-	clearRedirectUrlCookie
+	hooks: {
+		handleAuthentication,
+		handleProtected
+	},
+	protect: {
+		requireSession,
+		requireAuthenticatedUser,
+		requireRecentAuth
+	}
 }
 
 export default Auth
