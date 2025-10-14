@@ -15,6 +15,13 @@
       "when": 1760288661892,
       "tag": "0001_free_mach_iv",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1760402847037,
+      "tag": "0002_futuristic_prodigy",
+      "breakpoints": true
     }
   ]
 }
