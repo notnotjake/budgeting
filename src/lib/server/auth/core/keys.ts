@@ -1,5 +1,5 @@
 import { db } from '$lib/server/db'
-import { eq } from 'drizzle-orm'
+import { eq, and } from 'drizzle-orm'
 import * as table from '$lib/server/auth/schema'
 
 import type { Key, User } from '$lib/server/auth/schema'
@@ -105,6 +105,32 @@ export async function getPasskeyUser({
 	} catch (e) {
 		console.error(ERROR_MESSAGE.CORE.KEY_GET_FAILED, e)
 		return Response.fail(ERROR_MESSAGE.CORE.KEY_GET_FAILED)
+	}
+}
+
+/**
+ * Checks if a user has any passkeys registered to their account.
+ * More efficient than listing all passkeys when only existence matters.
+ *
+ * @param userId - The ID of the user to check
+ * @returns Response containing true if user has at least one passkey, false otherwise
+ */
+export async function userHasPasskeyAvailable({
+	userId
+}: {
+	userId: string
+}): Promise<Response<boolean>> {
+	try {
+		const result = await db
+			.select()
+			.from(table.key)
+			.where(and(eq(table.key.type, 'passkey'), eq(table.key.userId, userId)))
+			.limit(1)
+
+		return Response.succeed(result.length > 0)
+	} catch (e) {
+		console.error(ERROR_MESSAGE.CORE.KEY_LIST_FAILED, e)
+		return Response.fail(ERROR_MESSAGE.CORE.KEY_LIST_FAILED)
 	}
 }
 

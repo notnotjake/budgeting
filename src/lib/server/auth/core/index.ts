@@ -12,7 +12,8 @@ import {
 	deleteSessionTokenCookie,
 	setRedirectUrlCookie,
 	getRedirectUrlCookie,
-	clearRedirectUrlCookie
+	clearRedirectUrlCookie,
+	consumeRedirectUrlCookie
 } from './cookies'
 
 import {
@@ -31,6 +32,7 @@ import {
 	createPasskey,
 	getPasskeyCredential,
 	getPasskeyUser,
+	userHasPasskeyAvailable,
 	listUserPasskeys,
 	deletePasskey,
 	updatePasskeyName
@@ -59,11 +61,13 @@ const AuthCore = {
 	setRedirectUrlCookie,
 	getRedirectUrlCookie,
 	clearRedirectUrlCookie,
+	consumeRedirectUrlCookie,
 
 	// Sessions
 	createSession,
 	authenticateSession,
 	validateSessionToken,
+	userHasPasskeyAvailable
 	listAllUserSessions,
 	invalidateSession,
 	invalidateAllUserSessions,

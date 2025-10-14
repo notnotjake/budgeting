@@ -56,3 +56,16 @@ export function clearRedirectUrlCookie(event: RequestEvent) {
 		path: '/'
 	})
 }
+
+export function consumeRedirectUrlCookie(event: RequestEvent): string | null {
+	const redirect = event.cookies.get(REDIRECT_COOKIE_NAME) ?? null
+
+	event.cookies.set(REDIRECT_COOKIE_NAME, '', {
+		httpOnly: true,
+		sameSite: 'lax',
+		maxAge: 0,
+		path: '/'
+	})
+
+	return redirect
+}
