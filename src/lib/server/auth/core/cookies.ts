@@ -5,7 +5,15 @@ import { AUTH_DURATIONS } from '$lib/server/auth'
 const SESSION_COOKIE_NAME = 'session'
 const REDIRECT_COOKIE_NAME = 'redirect'
 
-export function setSessionTokenCookie(event: RequestEvent, token: string, expiresAt: Date) {
+export function setSessionTokenCookie({
+	event,
+	token,
+	expiresAt
+}: {
+	event: RequestEvent
+	token: string
+	expiresAt: Date
+}) {
 	event.cookies.set(SESSION_COOKIE_NAME, token, {
 		httpOnly: true,
 		sameSite: 'lax',
