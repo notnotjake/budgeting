@@ -1,12 +1,10 @@
-import { sendEmail, type EmailSendResponse } from '../send'
-import { StructuredResponse as Response } from '$utils/structured-response'
+import { sendEmail } from '../send'
 import type {
 	sendCodeParams,
 	sendEmailDidChangeParams,
 	sendAccountDeletionCompletedParams
 } from '$lib/server/auth/types'
 
-// TODO: fix this type script error complaining about tsx vs jsx (says --jsx was never set)
 import AlertEmailChanged from './templates/alert-email-changed'
 import VerifyCode from './templates/verify-code'
 
@@ -143,7 +141,23 @@ export async function emailDidChangeNotification({
 }
 
 // TODO: create template for account deletion notification
-export async function accountDeletionCompleted({ email }: sendAccountDeletionCompletedParams) {}
+export async function accountDeletionCompleted({ email }: sendAccountDeletionCompletedParams) {
+	const result = await sendEmail(
+		{
+			from: SEND_FROM,
+			to: email,
+			subject: 'Email Changed',
+			react: AlertEmailChanged()
+		},
+		`Email changed. FROM:${email} >> TO:${email}`
+	)
+
+	if (!result?.success) {
+		throw Error()
+	}
+
+	return
+}
 
 export const sendAuthEmail = {
 	loginCodeNewUser,

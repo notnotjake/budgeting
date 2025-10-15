@@ -1,5 +1,5 @@
 import { defineConfig } from './index'
-import { sendAuthEmail } from '$lib/server/email/account'
+import { sendAuthEmail } from '$lib/server/email'
 
 // const DAY_IN_MS = 24 * 60 * 60 * 1000
 // const MIN_IN_MS = 60 * 1000
