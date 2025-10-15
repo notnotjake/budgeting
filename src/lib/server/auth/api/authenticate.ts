@@ -1,15 +1,17 @@
 import type { RequestEvent } from '@sveltejs/kit'
 import { error } from '@sveltejs/kit'
 import AuthCore from '$lib/server/auth/core'
-import Auth from '$lib/server/auth'
+import Auth, { AuthEmails } from '$lib/server/auth'
 import { z } from 'zod'
 
 export async function startLogin({
 	event,
-	identifier
+	identifier,
+	timezone
 }: {
 	event: RequestEvent
 	identifier: string
+	timezone: string
 }) {
 	// Rate limit
 
@@ -60,7 +62,12 @@ export async function startLogin({
 	const sessionId = event.locals.session.id
 
 	// If passkey unavailable (including no existing user) then send login code to email
-	await sendLoginCode({ sessionId, identifier: normalizedIdentifier, existingUser: !!user })
+	await sendLoginCode({
+		sessionId,
+		identifier: normalizedIdentifier,
+		existingUser: !!user,
+		timezone
+	})
 
 	return {
 		codeSent: true,
@@ -72,11 +79,13 @@ export async function startLogin({
 export async function sendLoginCode({
 	sessionId,
 	identifier,
-	existingUser
+	existingUser,
+	timezone
 }: {
 	sessionId: string
 	identifier: string
 	existingUser: boolean
+	timezone: string
 }) {
 	// Cleanup any existing login code challenges
 	const cleanupResult = await AuthCore.cleanupDuplicateLoginChallenges({
@@ -93,7 +102,8 @@ export async function sendLoginCode({
 	const code = AuthCore.generateShortCode()
 	const hashedCode = await AuthCore.hashShortCode(code)
 
-	const expiresAt = new Date(Date.now() + Auth.durations.authCodeExpiry)
+	const expiresAt = new Date(Date.now() + Auth.durations.challengeCodeMaxAge)
+	const maxAgeMins = Math.floor(Auth.durations.challengeCodeMaxAge / (60 * 1000))
 
 	// Save challenge
 	const challenge = await AuthCore.createChallenge({
@@ -109,6 +119,29 @@ export async function sendLoginCode({
 	}
 
 	// Send code to email
+	try {
+		if (existingUser) {
+			await AuthEmails.sendLoginCodeExistingUser({
+				email: identifier,
+				code,
+				timezone,
+				expiresAt,
+				maxAgeMins
+			})
+		} else {
+			await AuthEmails.sendLoginCodeNewUser({
+				email: identifier,
+				code,
+				timezone,
+				expiresAt,
+				maxAgeMins
+			})
+		}
+	} catch (e) {
+		console.error('Failed trying to send login email', e)
+		// TODO: implement retry logic, propogate error
+		throw error(500, 'Failed to send email')
+	}
 
 	// Return success or error
 }

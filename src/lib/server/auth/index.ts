@@ -41,11 +41,15 @@ const DEFAULT_CONFIG: AuthConfig = {
 			console.error('Auth: sendLoginCodeNewUser email not implemented')
 			throw new Error('Email function not implemented')
 		},
-		sendLoginCodeReturningUser: async () => {
+		sendLoginCodeExistingUser: async () => {
 			console.error('Auth: sendLoginCodeReturningUser email not implemented')
 			throw new Error('Email function not implemented')
 		},
-		sendEmailChangeCode: async () => {
+		sendReauthCode: async () => {
+			console.error('Auth: sendReauthCode email not implemented')
+			throw new Error('Email function not implemented')
+		},
+		sendChangeEmailCode: async () => {
 			console.error('Auth: sendEmailChangeCode email not implemented')
 			throw new Error('Email function not implemented')
 		},

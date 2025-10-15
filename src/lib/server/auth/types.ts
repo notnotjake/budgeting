@@ -32,14 +32,21 @@ export type AuthConfig = {
 			expiresAt: Date
 			maxAgeMins: number
 		}) => Promise<void>
-		sendLoginCodeReturningUser: (params: {
+		sendLoginCodeExistingUser: (params: {
 			email: string
 			code: string
 			timezone: string
 			expiresAt: Date
 			maxAgeMins: number
 		}) => Promise<void>
-		sendEmailChangeCode: (params: {
+		sendReauthCode: (params: {
+			email: string
+			code: string
+			timezone: string
+			expiresAt: Date
+			maxAgeMins: number
+		}) => Promise<void>
+		sendChangeEmailCode: (params: {
 			email: string
 			code: string
 			timezone: string
@@ -54,4 +61,23 @@ export type AuthConfig = {
 		}) => Promise<void>
 		sendAccountDeletionCompleted: (params: { email: string }) => Promise<void>
 	}
+}
+
+export type sendCodeParams = {
+	email: string
+	code: string
+	timezone: string
+	expiresAt: Date
+	maxAgeMins: number
+}
+
+export type sendEmailDidChangeParams = {
+	email: string
+	updatedEmail: string
+	lockLink: string
+	maxAgeMins: number
+}
+
+export type sendAccountDeletionCompletedParams = {
+	email: string
 }
