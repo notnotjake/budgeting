@@ -9,6 +9,6 @@ export const load: ServerLoad = async (event) => {
 	// Redirect if already authenticated
 	if (event.locals.user) {
 		const redirectUrl = AuthCore.consumeRedirectUrlCookie(event)
-		redirect(303, redirectUrl ?? Auth.routes.afterLogin)
+		redirect(303, redirectUrl ?? Auth.redirects.afterLogin)
 	}
 }

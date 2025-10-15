@@ -1,5 +1,7 @@
 import type { RequestEvent } from '@sveltejs/kit'
+import { error } from '@sveltejs/kit'
 import AuthCore from '$lib/server/auth/core'
+import Auth from '$lib/server/auth'
 import { z } from 'zod'
 
 export async function startLogin({
@@ -11,21 +13,25 @@ export async function startLogin({
 }) {
 	// Rate limit
 
+	if (!event.locals.session) {
+		throw error(500)
+	}
+
 	// Normalize input
-	const normalizedInput = identifier.toLowerCase().trim()
+	const normalizedIdentifier = identifier.toLowerCase().trim()
 
 	// Validate input
 	const emailSchema = z.string().email()
-	const validInput = emailSchema.safeParse(normalizedInput)
-	if (!validInput) {
-		// TODO: throw error, invalid input
+	const validInput = emailSchema.safeParse(normalizedIdentifier)
+	if (!validInput.success) {
+		throw error(400, 'Invalid email format')
 	}
 
 	// Check if user exists and has passkey
-	const userResult = await AuthCore.getUser({ identifier })
+	const userResult = await AuthCore.getUser({ identifier: normalizedIdentifier })
 
 	if (!userResult.success || !userResult.data) {
-		// TODO: Failed to check user exists
+		throw error(500, 'Failed to get user')
 	}
 
 	const user = userResult.data?.user
@@ -38,7 +44,7 @@ export async function startLogin({
 		})
 
 		if (!passkeyAvailableResult.success || !passkeyAvailableResult.data) {
-			// TODO: Failed to query passkeys
+			throw error(500, 'Failed to check passkeys')
 		}
 
 		passkeyAvailable = passkeyAvailableResult.data ?? false
@@ -51,8 +57,10 @@ export async function startLogin({
 		}
 	}
 
+	const sessionId = event.locals.session.id
+
 	// If passkey unavailable (including no existing user) then send login code to email
-	await sendLoginCode()
+	await sendLoginCode({ sessionId, identifier: normalizedIdentifier, existingUser: !!user })
 
 	return {
 		codeSent: true,
@@ -60,10 +68,50 @@ export async function startLogin({
 	}
 }
 
-// cleanup challenges
-// create and hash token
 // create challenge
-export async function sendLoginCode() {}
+export async function sendLoginCode({
+	sessionId,
+	identifier,
+	existingUser
+}: {
+	sessionId: string
+	identifier: string
+	existingUser: boolean
+}) {
+	// Cleanup any existing login code challenges
+	const cleanupResult = await AuthCore.cleanupDuplicateLoginChallenges({
+		identifier,
+		sessionId,
+		type: 'code'
+	})
+
+	if (!cleanupResult.success) {
+		throw error(500, 'Failed to cleanup challenges')
+	}
+
+	// Generate and hash short code
+	const code = AuthCore.generateShortCode()
+	const hashedCode = await AuthCore.hashShortCode(code)
+
+	const expiresAt = new Date(Date.now() + Auth.durations.authCodeExpiry)
+
+	// Save challenge
+	const challenge = await AuthCore.createChallenge({
+		identifier,
+		sessionId,
+		credential: hashedCode,
+		type: 'code',
+		expiresAt
+	})
+
+	if (!challenge.success) {
+		throw error(500, 'Failed to create login challenge')
+	}
+
+	// Send code to email
+
+	// Return success or error
+}
 
 export async function verifyLoginCode() {}
 

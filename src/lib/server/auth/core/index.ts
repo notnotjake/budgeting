@@ -1,6 +1,7 @@
 import {
 	generateToken,
 	hashToken,
+	generateShortCode,
 	hashShortCode,
 	verifyShortCodesMatch,
 	generateRandomName
@@ -50,6 +51,7 @@ const AuthCore = {
 	// Utils
 	generateToken,
 	hashToken,
+	generateShortCode,
 	hashShortCode,
 	verifyShortCodesMatch,
 	generateRandomName,
@@ -67,7 +69,7 @@ const AuthCore = {
 	createSession,
 	authenticateSession,
 	validateSessionToken,
-	userHasPasskeyAvailable
+	userHasPasskeyAvailable,
 	listAllUserSessions,
 	invalidateSession,
 	invalidateAllUserSessions,

@@ -5,7 +5,7 @@ import * as table from '$lib/server/auth/schema'
 import type { RequestEvent } from '@sveltejs/kit'
 import type { User, Session } from '$lib/server/auth/schema'
 import { StructuredResponse as Response } from '$utils/structured-response'
-import { AUTH_DURATIONS, ERROR_MESSAGE } from '$lib/server/auth'
+import Auth, { ERROR_MESSAGE } from '$lib/server/auth'
 import { generateToken, hashToken } from './utils'
 
 /**
@@ -36,8 +36,8 @@ export async function createSession({
 		const expiresAt = new Date(
 			Date.now() +
 				(isAuthenticated
-					? AUTH_DURATIONS.sessionAuthenticated
-					: AUTH_DURATIONS.sessionUnauthenticated)
+					? Auth.durations.sessionAuthenticatedMaxAge
+					: Auth.durations.sessionUnauthenticatedMaxAge)
 		)
 
 		const [newSession] = await db
@@ -92,7 +92,7 @@ export async function authenticateSession({
 		const userAgent = event.request.headers.get('user-agent') || 'unknown'
 
 		const now = new Date()
-		const expiresAt = new Date(Date.now() + AUTH_DURATIONS.sessionAuthenticated)
+		const expiresAt = new Date(Date.now() + Auth.durations.sessionAuthenticatedMaxAge)
 
 		// Insert new session and invalidate old one in a transaction
 		const newAuthenticatedSession = await db.transaction(async (tx) => {
@@ -182,17 +182,14 @@ export async function validateSessionToken(
 		const updateData: { lastSeenAt?: Date; expiresAt?: Date } = {}
 
 		// Renew session if within 20 days of expiry
-		if (Date.now() >= session.expiresAt.getTime() - AUTH_DURATIONS.sessionRenewalThreshold) {
-			const updatedExpiresAt = new Date(Date.now() + AUTH_DURATIONS.sessionAuthenticated) // 30 days
+		if (Date.now() >= session.expiresAt.getTime() - Auth.durations.sessionRenewalUpdateWindow) {
+			const updatedExpiresAt = new Date(Date.now() + Auth.durations.sessionAuthenticatedMaxAge) // 30 days
 			updateData.expiresAt = updatedExpiresAt
 			session.expiresAt = updatedExpiresAt
 		}
 
 		// Update last seen if more than 5 mins old
-		if (
-			Date.now() >=
-			session.lastSeenAt.getTime() + AUTH_DURATIONS.sessionLastSeenUpdateThreshold
-		) {
+		if (Date.now() >= session.lastSeenAt.getTime() + Auth.durations.sessionLastSeenUpdateWindow) {
 			const updatedLastSeenAt = new Date()
 			updateData.lastSeenAt = updatedLastSeenAt
 			session.lastSeenAt = updatedLastSeenAt
@@ -282,7 +279,7 @@ export async function invalidateAllUserSessions(userId: string): Promise<Respons
  */
 export async function cleanupSessions(): Promise<Response<never>> {
 	try {
-		const retentionWindow = new Date(Date.now() - AUTH_DURATIONS.sessionRetentionWindow) // 30 days
+		const retentionWindow = new Date(Date.now() - Auth.durations.sessionRetentionWindow) // 30 days
 
 		await db
 			.delete(table.session)

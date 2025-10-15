@@ -11,5 +11,3 @@ export async function lockUser() {}
 export async function unlockUser() {}
 
 export async function deletUser() {}
-
-export async function scheduleDeleteUser() {}

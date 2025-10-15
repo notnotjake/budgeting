@@ -1,7 +1,7 @@
 import { type RequestEvent, error, redirect } from '@sveltejs/kit'
 import { type Session, type User } from '$lib/server/auth/schema'
 import AuthCore from '$lib/server/auth/core'
-import Auth, { AUTH_DURATIONS } from '$lib/server/auth'
+import Auth from '$lib/server/auth'
 
 /**
  * Ensures that a session is attached to the event or creates one.
@@ -52,7 +52,7 @@ export async function requireRecentAuth(event: RequestEvent) {
 	// Check session exists and has recent auth
 	const hasRecentAuth =
 		session?.lastAuthAt &&
-		Date.now() < session.lastAuthAt.getTime() + AUTH_DURATIONS.recentAuthWindow
+		Date.now() < session.lastAuthAt.getTime() + Auth.durations.recentAuthWindow
 
 	if (!hasRecentAuth) {
 		AuthCore.setRedirectUrlCookie(event)

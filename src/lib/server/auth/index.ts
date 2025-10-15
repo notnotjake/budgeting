@@ -1,3 +1,6 @@
+import type { AuthConfig } from './types'
+import userConfig from './config'
+
 import { handleAuthentication } from './hooks/authentication'
 import { handleProtected } from './hooks/protected'
 
@@ -6,17 +9,87 @@ import { requireSession, requireAuthenticatedUser, requireRecentAuth } from './a
 const DAY_IN_MS = 24 * 60 * 60 * 1000
 const MIN_IN_MS = 60 * 1000
 
-export const AUTH_DURATIONS = {
-	authCodeExpiry: 10 * MIN_IN_MS,
-	challengeExpiry: 10 * MIN_IN_MS,
-	challengeLockAccountExpiry: 2 * DAY_IN_MS,
-	sessionUnauthenticated: 7 * DAY_IN_MS,
-	sessionAuthenticated: 30 * DAY_IN_MS,
-	sessionRenewalThreshold: 20 * DAY_IN_MS,
-	sessionLastSeenUpdateThreshold: 5 * MIN_IN_MS,
-	sessionRetentionWindow: 30 * DAY_IN_MS,
-	redirectCookieMaxAge: 10 * MIN_IN_MS,
-	recentAuthWindow: 15 * MIN_IN_MS
+// Defining default config values
+const DEFAULT_CONFIG: AuthConfig = {
+	routes: {
+		login: '/login',
+		reauth: '/reauth',
+		lock: '/lock',
+		protectedGroup: '(protected)'
+	},
+	redirects: {
+		afterLogin: '/app',
+		afterLogout: '/',
+		afterAccountCreated: '/app/welcome'
+	},
+	durations: {
+		recentAuthWindow: 10 * MIN_IN_MS,
+		redirectCookieMaxAge: 10 * MIN_IN_MS,
+		// Challenges
+		challengeCodeMaxAge: 5 * MIN_IN_MS,
+		challengePasskeyMaxAge: 3 * MIN_IN_MS,
+		challengeLockAccountMaxAge: 2 * DAY_IN_MS,
+		// Sessions
+		sessionUnauthenticatedMaxAge: 7 * DAY_IN_MS,
+		sessionAuthenticatedMaxAge: 30 * DAY_IN_MS,
+		sessionRenewalUpdateWindow: 20 * DAY_IN_MS,
+		sessionLastSeenUpdateWindow: 5 * MIN_IN_MS,
+		sessionRetentionWindow: 30 * DAY_IN_MS
+	},
+	emails: {
+		sendLoginCodeNewUser: async () => {
+			console.error('Auth: sendLoginCodeNewUser email not implemented')
+			throw new Error('Email function not implemented')
+		},
+		sendLoginCodeReturningUser: async () => {
+			console.error('Auth: sendLoginCodeReturningUser email not implemented')
+			throw new Error('Email function not implemented')
+		},
+		sendEmailChangeCode: async () => {
+			console.error('Auth: sendEmailChangeCode email not implemented')
+			throw new Error('Email function not implemented')
+		},
+		sendEmailDidChangeNotification: async () => {
+			console.error('Auth: sendEmailDidChangeNotification email not implemented')
+			throw new Error('Email function not implemented')
+		},
+		sendAccountDeletionCompleted: async () => {
+			console.error('Auth: sendAccountDeletionCompleted email not implemented')
+			throw new Error('Email function not implemented')
+		}
+	}
+}
+
+const config: AuthConfig = {
+	routes: { ...DEFAULT_CONFIG.routes, ...userConfig.routes },
+	redirects: { ...DEFAULT_CONFIG.redirects, ...userConfig.redirects },
+	durations: { ...DEFAULT_CONFIG.durations, ...userConfig.durations },
+	emails: { ...DEFAULT_CONFIG.emails, ...userConfig.emails }
+}
+
+const Auth = {
+	routes: config.routes,
+	redirects: config.redirects,
+	durations: config.durations,
+	hooks: {
+		handleAuthentication,
+		handleProtected
+	},
+	protect: {
+		requireSession,
+		requireAuthenticatedUser,
+		requireRecentAuth
+	}
+	// TODO: add api
+}
+export default Auth
+
+// Exported separately to discourage usage outside of auth api functions
+export const AuthEmails = config.emails
+
+// Helper function for defineConfig use in .config.ts files
+export function defineConfig(userConfig: Partial<AuthConfig>): Partial<AuthConfig> {
+	return userConfig
 }
 
 export const ERROR_MESSAGE = {
@@ -70,24 +143,3 @@ export const ERROR_MESSAGE = {
 		PROTECTED_HOOK: 'Protected route hook error'
 	}
 } as const
-
-const Auth = {
-	routes: {
-		login: '/login',
-		afterLogin: '/app',
-		reauth: '/reauth',
-		protectedGroup: '/(protected)'
-	},
-	durations: AUTH_DURATIONS,
-	hooks: {
-		handleAuthentication,
-		handleProtected
-	},
-	protect: {
-		requireSession,
-		requireAuthenticatedUser,
-		requireRecentAuth
-	}
-}
-
-export default Auth

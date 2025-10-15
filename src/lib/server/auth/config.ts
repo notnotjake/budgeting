@@ -1,13 +1,14 @@
-// import { defineConfig } from '@opensky/auth'
+import { defineConfig } from './index'
+
+// const DAY_IN_MS = 24 * 60 * 60 * 1000
+// const MIN_IN_MS = 60 * 1000
 
 export default defineConfig({
-	redirects: {
-		afterLogin: '/app',
-		afterLogout: '/',
-		afterAccountCreated: '/welcome'
-	},
-	codeExpirationTimeMins: 10,
 	emails: {
-		verifyEmail: ({ email, token, type }) => {} // allows you to implement each email flow
+		sendLoginCodeNewUser: async () => {},
+		sendLoginCodeReturningUser: async () => {},
+		sendEmailChangeCode: async () => {},
+		sendEmailDidChangeNotification: async () => {},
+		sendAccountDeletionCompleted: async () => {}
 	}
 })
