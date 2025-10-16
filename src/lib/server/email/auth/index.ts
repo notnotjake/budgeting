@@ -5,8 +5,9 @@ import type {
 	sendAccountDeletionCompletedParams
 } from '$lib/server/auth/types'
 
-import AlertEmailChanged from './templates/alert-email-changed'
-import VerifyCode from './templates/verify-code'
+import EmailDidChange from './templates/email-did-change'
+import AuthCode from './templates/auth-code'
+import AccountDeleted from './templates/account-deleted'
 
 const SEND_FROM = 'LightDance <accounts@resend.notnotjake.com>'
 
@@ -26,7 +27,7 @@ export async function loginCodeNewUser({
 			from: SEND_FROM,
 			to: email,
 			subject: 'Verify Email',
-			react: VerifyCode({ code, timezone, maxAgeMins, headingText, descriptiveText, preview })
+			react: AuthCode({ code, timezone, maxAgeMins, headingText, descriptiveText, preview })
 		},
 		`New user code: ${code}`
 	)
@@ -54,7 +55,7 @@ export async function loginCodeExistingUser({
 			from: SEND_FROM,
 			to: email,
 			subject: 'Login Code',
-			react: VerifyCode({ code, timezone, maxAgeMins, headingText, descriptiveText, preview })
+			react: AuthCode({ code, timezone, maxAgeMins, headingText, descriptiveText, preview })
 		},
 		`Login code: ${code}`
 	)
@@ -76,7 +77,7 @@ export async function reauthCode({ email, code, timezone, expiresAt, maxAgeMins 
 			from: SEND_FROM,
 			to: email,
 			subject: 'Authorization Code',
-			react: VerifyCode({ code, timezone, maxAgeMins, headingText, descriptiveText, preview })
+			react: AuthCode({ code, timezone, maxAgeMins, headingText, descriptiveText, preview })
 		},
 		`Authorization code: ${code}`
 	)
@@ -104,7 +105,7 @@ export async function changeEmailCode({
 			from: SEND_FROM,
 			to: email,
 			subject: 'Confirm New Email',
-			react: VerifyCode({ code, timezone, maxAgeMins, headingText, descriptiveText, preview })
+			react: AuthCode({ code, timezone, maxAgeMins, headingText, descriptiveText, preview })
 		},
 		`Confirm email change: ${code}`
 	)
@@ -120,15 +121,14 @@ export async function changeEmailCode({
 export async function emailDidChangeNotification({
 	email,
 	updatedEmail,
-	lockLink,
-	maxAgeMins
+	lockLink
 }: sendEmailDidChangeParams) {
 	const result = await sendEmail(
 		{
 			from: SEND_FROM,
 			to: email,
 			subject: 'Email Changed',
-			react: AlertEmailChanged({ updatedEmail })
+			react: EmailDidChange({ updatedEmail, lockLink })
 		},
 		`Email changed. FROM:${email} >> TO:${email}`
 	)
@@ -147,9 +147,9 @@ export async function accountDeletionCompleted({ email }: sendAccountDeletionCom
 			from: SEND_FROM,
 			to: email,
 			subject: 'Email Changed',
-			react: AlertEmailChanged()
+			react: AccountDeleted({ email })
 		},
-		`Email changed. FROM:${email} >> TO:${email}`
+		`User ${email} deleted`
 	)
 
 	if (!result?.success) {
