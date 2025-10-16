@@ -1,7 +1,6 @@
 <script lang="ts">
 	import type { Snippet, Component } from 'svelte'
-	import { createClass } from '$utils/styles'
-	import { createVariants } from '$utils/styles'
+	import { createClass, createVariants } from '@opensky/style'
 	import { Suspense } from '$ui/feedback'
 
 	let {
