@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { query, form, getRequestEvent } from '$app/server'
+import { query, form, command, getRequestEvent } from '$app/server'
 import Auth from '$lib/server/auth'
 
 export const passkeyRequestChallenge = query(
@@ -50,3 +50,9 @@ export const verifyLoginCode = form(
 		await Auth.verifyLoginCode({ event, code })
 	}
 )
+
+export const logout = form(async () => {
+	const event = getRequestEvent()
+
+	await Auth.logout({ event })
+})

@@ -46,7 +46,7 @@ export async function startLogin({
 			userId: user.id
 		})
 
-		if (!passkeyAvailableResult.success || !passkeyAvailableResult.data) {
+		if (!passkeyAvailableResult.success) {
 			throw error(500, 'Failed to check passkeys')
 		}
 
@@ -193,9 +193,16 @@ export async function verifyLoginCode({ event, code }: { event: RequestEvent; co
 		throw error(400, 'Invalid login code')
 	}
 
-	// Check for existing user
 	const identifier = challenge.identifier
 
+	// Successfully passed challenge. Now we cleanup login challenges
+	const result = await AuthCore.cleanupLoginChallenges({ identifier, sessionId })
+
+	if (!result.success) {
+		throw error(500)
+	}
+
+	// Check for existing user
 	const userResult = await AuthCore.getUser({ identifier })
 
 	if (!userResult.success) {
@@ -253,4 +260,21 @@ export async function verifyReauthCode() {}
 
 export async function verifyReauthPasskey() {}
 
-export async function logout() {}
+export async function logout({ event }: { event: RequestEvent }) {
+	if (!event.locals.session) {
+		throw error(500)
+	}
+
+	// Invalidate the session
+	const tryLogout = await AuthCore.invalidateSession(event.locals.session.id)
+
+	if (!tryLogout.success) {
+		throw error(500)
+	}
+
+	// Remove the session cookie and any redirects
+	AuthCore.clearRedirectUrlCookie(event)
+	AuthCore.deleteSessionTokenCookie(event)
+
+	throw redirect(303, Auth.redirects.afterLogout)
+}
