@@ -51,8 +51,8 @@ export async function createChallenge({
 	}
 }
 
-type GetChallengeBySessionId = { type: ChallengeType; sessionId: string; credential: never }
-type GetChallengeByToken = { type: ChallengeType; credential: string; sessionId: never }
+type GetChallengeBySessionId = { type: ChallengeType; sessionId: string; credential?: undefined }
+type GetChallengeByToken = { type: ChallengeType; credential: string; sessionId?: undefined }
 
 /**
  * Retrieves an active challenge by either session ID or credential token.

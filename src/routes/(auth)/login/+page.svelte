@@ -7,7 +7,7 @@
 	import PinInput from '$ui/input/pin-code.svelte'
 	import PasskeyButton from '$ui/auth/passkey-button.svelte'
 
-	import { startLogin } from '$lib/remotes/auth.remote'
+	import { startLogin, verifyLoginCode } from '$lib/remotes/auth.remote'
 
 	// Set the timezone for the startLogin form
 	const localTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone
@@ -165,7 +165,16 @@
 
 		{#if startLogin.result}
 			{#if startLogin.result.codeSent}
-				<p>Code sent to your email!</p>
+				<form {...verifyLoginCode}>
+					<input
+						{...verifyLoginCode.fields.code.as('text')}
+						autocomplete="one-time-code"
+						inputmode="numeric"
+						maxlength="6"
+					/>
+
+					<button>Submit</button>
+				</form>
 			{/if}
 			{#if startLogin.result.passkeyAvailable}
 				<p>Passkey available</p>

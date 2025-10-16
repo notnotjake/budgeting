@@ -122,12 +122,12 @@ type GetUserById = { id: string; identifier?: never }
  *
  * @param identifier - The user's identifier to search for (mutually exclusive with id)
  * @param id - The user's ID to search for (mutually exclusive with identifier)
- * @returns Response containing whether user exists and the user object if found
+ * @returns Response containing the user if found or null
  */
 export async function getUser({
 	identifier,
 	id
-}: GetUserByIdentifier | GetUserById): Promise<Response<{ exists: boolean; user: User | null }>> {
+}: GetUserByIdentifier | GetUserById): Promise<Response<User | null>> {
 	try {
 		const [userFound] = await db
 			.select()
@@ -140,10 +140,10 @@ export async function getUser({
 			.limit(1)
 
 		if (!userFound) {
-			return Response.succeed({ exists: false, user: null })
+			return Response.succeed(userFound)
 		}
 
-		return Response.succeed({ exists: true, user: userFound })
+		return Response.succeed(userFound)
 	} catch (e) {
 		console.error('Failed to lookup user', e)
 		return Response.fail(ERROR_MESSAGE.CORE.USER_LOOKUP_FAILED)
@@ -167,7 +167,7 @@ export async function userExists(
 			return Response.fail(ERROR_MESSAGE.CORE.USER_LOOKUP_FAILED)
 		}
 
-		return Response.succeed(result.data.exists)
+		return Response.succeed(!!result.data)
 	} catch (e) {
 		console.error('Failed to lookup user', e)
 		return Response.fail(ERROR_MESSAGE.CORE.USER_LOOKUP_FAILED)

@@ -1,5 +1,5 @@
 import type { RequestEvent } from '@sveltejs/kit'
-import { error } from '@sveltejs/kit'
+import { error, redirect } from '@sveltejs/kit'
 import AuthCore from '$lib/server/auth/core'
 import Auth, { AuthEmails } from '$lib/server/auth'
 import { z } from 'zod'
@@ -37,7 +37,7 @@ export async function startLogin({
 		throw error(500, 'Failed to get user')
 	}
 
-	const user = userResult.data?.user
+	const user = userResult.data
 
 	// Check if passkey is available
 	let passkeyAvailable = false
@@ -144,10 +144,106 @@ export async function sendLoginCode({
 		throw error(500, 'Failed to send email')
 	}
 
-	// Return success or error
+	return
 }
 
-export async function verifyLoginCode() {}
+export async function verifyLoginCode({ event, code }: { event: RequestEvent; code: string }) {
+	if (!event.locals.session) {
+		throw error(500)
+	}
+
+	// Rate limit
+
+	// Validate input
+	const codeSchema = z
+		.string()
+		.regex(/^\d+$/, 'Code must contain only numbers')
+		.length(6, 'Code should be 6 digits')
+	const validCode = codeSchema.safeParse(code)
+	if (!validCode.success) {
+		const errorMessage = validCode.error.errors[0].message
+		throw error(400, `Invalid code. ${errorMessage}`)
+	}
+
+	const sessionId = event.locals.session?.id
+
+	// Look for the challenge (associated by session)
+	const challengeResult = await AuthCore.getChallenge({
+		type: 'code',
+		sessionId
+	})
+
+	if (!challengeResult.success) {
+		throw error(500)
+	}
+
+	const challenge = challengeResult.data
+
+	if (!challenge || !challenge.credential) {
+		throw error(400, 'No login challenge found')
+	}
+
+	// Check that the input code matches the saved challenge
+	const challengePass = await AuthCore.verifyShortCodesMatch({
+		savedCode: challenge.credential,
+		inputCode: validCode.data
+	})
+
+	if (!challengePass) {
+		throw error(400, 'Invalid login code')
+	}
+
+	// Check for existing user
+	const identifier = challenge.identifier
+
+	const userResult = await AuthCore.getUser({ identifier })
+
+	if (!userResult.success) {
+		throw error(500)
+	}
+
+	if (userResult.data) {
+		const user = userResult.data
+
+		const authenticationResult = await AuthCore.authenticateSession({ event, user })
+
+		if (!authenticationResult.success || !authenticationResult.data) {
+			throw error(500)
+		}
+
+		AuthCore.setSessionTokenCookie({
+			event,
+			token: authenticationResult.data.rawSessionToken,
+			expiresAt: authenticationResult.data.session.expiresAt
+		})
+
+		throw redirect(303, Auth.redirects.afterLogin)
+	} else {
+		const tempName = AuthCore.generateRandomName()
+
+		const newUser = await AuthCore.createUser({ identifier, name: tempName })
+
+		if (!newUser.success || !newUser.data) {
+			throw error(500)
+		}
+
+		const user = newUser.data
+
+		const authenticationResult = await AuthCore.authenticateSession({ event, user })
+
+		if (!authenticationResult.success || !authenticationResult.data) {
+			throw error(500)
+		}
+
+		AuthCore.setSessionTokenCookie({
+			event,
+			token: authenticationResult.data.rawSessionToken,
+			expiresAt: authenticationResult.data.session.expiresAt
+		})
+
+		throw redirect(303, Auth.redirects.afterAccountCreated)
+	}
+}
 
 export async function verifyLoginPasskey() {}
 

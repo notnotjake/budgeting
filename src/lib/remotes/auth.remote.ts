@@ -36,3 +36,17 @@ export const startLogin = form(
 		}
 	}
 )
+
+export const verifyLoginCode = form(
+	z.object({
+		code: z
+			.string()
+			.regex(/^\d+$/, 'Code must contain only numbers')
+			.length(6, 'Code should be 6 digits')
+	}),
+	async ({ code }: { code: string }) => {
+		const event = getRequestEvent()
+
+		await Auth.verifyLoginCode({ event, code })
+	}
+)
