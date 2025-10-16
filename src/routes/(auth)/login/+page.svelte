@@ -3,11 +3,15 @@
 	import { createClass } from '@opensky/style'
 	import { wipeVertical } from '$ui/transition'
 	import { IconChevronLeft, IconArrowRight } from '@tabler/icons-svelte'
-
-	import PinInput from '$ui/input/pin-code.svelte'
 	import { Suspense } from '$ui/feedback'
-
+	import PinInput from '$ui/input/pin-code.svelte'
 	import PasskeyButton from '$ui/auth/passkey-button.svelte'
+
+	import { startLogin } from '$lib/remotes/auth.remote'
+
+	// Set the timezone for the startLogin form
+	const localTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone
+	startLogin.fields.timezone.set(localTimezone)
 
 	let loginRequestResponse = $state(false)
 
@@ -67,7 +71,19 @@
 			</div>
 		{/if}
 
-		<form class="z-10 w-full">
+		<form
+			{...startLogin.enhance(async ({ form, data, submit }) => {
+				console.log('Client: Form is submitting')
+				console.log(data)
+				try {
+					await submit()
+					console.log('Client: Submit completed')
+				} catch (error) {
+					console.error('Client: Submit failed:', error)
+				}
+			})}
+			class="z-10 w-full"
+		>
 			<div
 				class={createClass(
 					'group relative flex h-12 w-full items-center overflow-hidden rounded-[1rem] border-2 border-red-500/0 focus-within:border-2 focus-within:border-blue-500',
@@ -85,9 +101,10 @@
 					</button>
 				{/if}
 
+				<input {...startLogin.fields.timezone.as('hidden')} aria-hidden value={localTimezone} />
+
 				<input
-					type="email"
-					name="email"
+					{...startLogin.fields.identifier.as('email')}
 					autocomplete="username webauthn"
 					id="email"
 					placeholder="Continue with email"
@@ -118,9 +135,6 @@
 					)}
 				/>
 
-				<!-- Hidden input to capture user's timezone -->
-				<input type="hidden" aria-hidden name="timezone" />
-
 				<!-- Hint -->
 				<!-- <div
 					class={createClass(
@@ -131,7 +145,7 @@
 				></div> -->
 
 				<button
-					onclick={() => (loginRequestResponse = true)}
+					type="submit"
 					class={createClass(
 						'group z-10 flex h-full shrink-0 flex-nowrap items-center justify-end transition-all duration-200',
 						loginRequestResponse ? 'opacity-0' : 'opacity-100'
@@ -148,6 +162,15 @@
 				</button>
 			</div>
 		</form>
+
+		{#if startLogin.result}
+			{#if startLogin.result.codeSent}
+				<p>Code sent to your email!</p>
+			{/if}
+			{#if startLogin.result.passkeyAvailable}
+				<p>Passkey available</p>
+			{/if}
+		{/if}
 
 		{#if loginRequestResponse}
 			<PasskeyButton />

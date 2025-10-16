@@ -140,7 +140,7 @@ export async function getUser({
 			.limit(1)
 
 		if (!userFound) {
-			return Response.fail({ exists: false, user: null })
+			return Response.succeed({ exists: false, user: null })
 		}
 
 		return Response.succeed({ exists: true, user: userFound })

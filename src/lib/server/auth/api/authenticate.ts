@@ -32,7 +32,8 @@ export async function startLogin({
 	// Check if user exists and has passkey
 	const userResult = await AuthCore.getUser({ identifier: normalizedIdentifier })
 
-	if (!userResult.success || !userResult.data) {
+	if (!userResult.success) {
+		console.log('Failed here.', userResult)
 		throw error(500, 'Failed to get user')
 	}
 
