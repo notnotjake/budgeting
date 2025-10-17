@@ -24,7 +24,7 @@ export const startLogin = form(
 	async ({ identifier, timezone }: { identifier: string; timezone: string }) => {
 		const event = getRequestEvent()
 
-		const { codeSent, passkeyAvailable } = await Auth.startLogin({
+		const { codeSent, passkeyAvailable } = await Auth.startAuth({
 			event,
 			identifier,
 			timezone
@@ -47,7 +47,7 @@ export const verifyLoginCode = form(
 	async ({ code }: { code: string }) => {
 		const event = getRequestEvent()
 
-		await Auth.verifyLoginCode({ event, code })
+		await Auth.verifyCode({ event, code })
 	}
 )
 

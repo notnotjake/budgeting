@@ -4,7 +4,7 @@ import * as table from '$lib/server/auth/schema'
 
 import type { Challenge, ChallengeType } from '$lib/server/auth/schema'
 import { StructuredResponse as Response } from '$utils/structured-response'
-import { ERROR_MESSAGE } from '$lib/server/auth'
+import { ERROR_MESSAGE } from './errors'
 import { randomUUID } from 'crypto'
 
 /**

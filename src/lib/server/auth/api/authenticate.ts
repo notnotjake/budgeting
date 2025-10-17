@@ -4,14 +4,18 @@ import AuthCore from '$lib/server/auth/core'
 import Auth, { AuthEmails } from '$lib/server/auth'
 import { z } from 'zod'
 
-export async function startLogin({
+type AuthFlow = 'existinguser' | 'newuser' | 'reauth'
+
+export async function startAuth({
 	event,
 	identifier,
-	timezone
+	timezone,
+	flow
 }: {
 	event: RequestEvent
 	identifier: string
 	timezone: string
+	flow?: AuthFlow
 }) {
 	// Rate limit
 
@@ -33,7 +37,6 @@ export async function startLogin({
 	const userResult = await AuthCore.getUser({ identifier: normalizedIdentifier })
 
 	if (!userResult.success) {
-		console.log('Failed here.', userResult)
 		throw error(500, 'Failed to get user')
 	}
 
@@ -53,6 +56,7 @@ export async function startLogin({
 		passkeyAvailable = passkeyAvailableResult.data ?? false
 	}
 
+	// If passkey is available we don't send code automatically
 	if (passkeyAvailable) {
 		return {
 			codeSent: false,
@@ -63,10 +67,10 @@ export async function startLogin({
 	const sessionId = event.locals.session.id
 
 	// If passkey unavailable (including no existing user) then send login code to email
-	await sendLoginCode({
+	await sendCode({
 		sessionId,
 		identifier: normalizedIdentifier,
-		existingUser: !!user,
+		flow: flow ?? (user ? 'existinguser' : 'newuser'),
 		timezone
 	})
 
@@ -77,15 +81,15 @@ export async function startLogin({
 }
 
 // create challenge
-export async function sendLoginCode({
+export async function sendCode({
 	sessionId,
 	identifier,
-	existingUser,
+	flow,
 	timezone
 }: {
 	sessionId: string
 	identifier: string
-	existingUser: boolean
+	flow: AuthFlow
 	timezone: string
 }) {
 	// Cleanup any existing login code challenges
@@ -103,7 +107,10 @@ export async function sendLoginCode({
 	const code = AuthCore.generateShortCode()
 	const hashedCode = await AuthCore.hashShortCode(code)
 
+	// Create expires at time from auth config
 	const expiresAt = new Date(Date.now() + Auth.durations.challengeCodeMaxAge)
+
+	// Derive time for sharing in email
 	const maxAgeMins = Math.floor(Auth.durations.challengeCodeMaxAge / (60 * 1000))
 
 	// Save challenge
@@ -119,35 +126,32 @@ export async function sendLoginCode({
 		throw error(500, 'Failed to create login challenge')
 	}
 
+	const emailParams = {
+		email: identifier,
+		code,
+		timezone,
+		expiresAt,
+		maxAgeMins
+	}
+
 	// Send code to email
 	try {
-		if (existingUser) {
-			await AuthEmails.sendLoginCodeExistingUser({
-				email: identifier,
-				code,
-				timezone,
-				expiresAt,
-				maxAgeMins
-			})
-		} else {
-			await AuthEmails.sendLoginCodeNewUser({
-				email: identifier,
-				code,
-				timezone,
-				expiresAt,
-				maxAgeMins
-			})
+		if (flow === 'existinguser') {
+			await AuthEmails.sendLoginCodeExistingUser(emailParams)
+		} else if (flow === 'newuser') {
+			await AuthEmails.sendLoginCodeNewUser(emailParams)
+		} else if (flow === 'reauth') {
+			await AuthEmails.sendReauthCode(emailParams)
 		}
 	} catch (e) {
 		console.error('Failed trying to send login email', e)
-		// TODO: implement retry logic, propogate error
 		throw error(500, 'Failed to send email')
 	}
 
 	return
 }
 
-export async function verifyLoginCode({ event, code }: { event: RequestEvent; code: string }) {
+export async function verifyCode({ event, code }: { event: RequestEvent; code: string }) {
 	if (!event.locals.session) {
 		throw error(500)
 	}
@@ -195,7 +199,7 @@ export async function verifyLoginCode({ event, code }: { event: RequestEvent; co
 
 	const identifier = challenge.identifier
 
-	// Successfully passed challenge. Now we cleanup login challenges
+	// Successfully passed challenge. Now we cleanup auth challenges
 	const result = await AuthCore.cleanupLoginChallenges({ identifier, sessionId })
 
 	if (!result.success) {
@@ -224,7 +228,9 @@ export async function verifyLoginCode({ event, code }: { event: RequestEvent; co
 			expiresAt: authenticationResult.data.session.expiresAt
 		})
 
-		throw redirect(303, Auth.redirects.afterLogin)
+		const redirectUrl = AuthCore.consumeRedirectUrlCookie(event)
+
+		throw redirect(303, redirectUrl || Auth.redirects.afterLogin)
 	} else {
 		const tempName = AuthCore.generateRandomName()
 
@@ -252,13 +258,7 @@ export async function verifyLoginCode({ event, code }: { event: RequestEvent; co
 	}
 }
 
-export async function verifyLoginPasskey() {}
-
-export async function startReauth() {}
-
-export async function verifyReauthCode() {}
-
-export async function verifyReauthPasskey() {}
+export async function verifyPasskey() {}
 
 export async function logout({ event }: { event: RequestEvent }) {
 	if (!event.locals.session) {

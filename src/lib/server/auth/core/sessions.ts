@@ -5,7 +5,7 @@ import * as table from '$lib/server/auth/schema'
 import type { RequestEvent } from '@sveltejs/kit'
 import type { User, Session } from '$lib/server/auth/schema'
 import { StructuredResponse as Response } from '$utils/structured-response'
-import Auth, { ERROR_MESSAGE } from '$lib/server/auth'
+import Auth, { ERROR_MESSAGE } from './errors'
 import { generateToken, hashToken } from './utils'
 
 /**
