@@ -1,6 +1,7 @@
 import { z } from 'zod'
 import { query, form, command, getRequestEvent } from '$app/server'
 import Auth from '$lib/server/auth'
+import { error } from '@sveltejs/kit'
 
 export const remotesTest = query(
 	z.object({
@@ -22,6 +23,8 @@ export const startLogin = form(
 		timezone: z.string().optional()
 	}),
 	async (data, invalid) => {
+		throw error(500, 'unexpected error')
+
 		const event = getRequestEvent()
 
 		if (data.identifier === 'test@test.com') {

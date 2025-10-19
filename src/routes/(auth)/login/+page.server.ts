@@ -9,4 +9,9 @@ export const load: ServerLoad = async (event) => {
 	if (event.locals.user) {
 		redirect(303, Auth.redirects.afterLogin)
 	}
+
+	return {
+		title: 'Welcome to Spring',
+		text: 'Log in or sign up to get started'
+	}
 }

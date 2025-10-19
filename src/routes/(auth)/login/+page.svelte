@@ -7,53 +7,39 @@
 	import PinInput from '$ui/input/pin-code.svelte'
 	import PasskeyButton from '$ui/auth/passkey-button.svelte'
 	import { onMount } from 'svelte'
+	import { z } from 'zod'
+
+	let { data } = $props()
 
 	import { startLogin, verifyLoginCode } from '$lib/remotes/auth.remote'
 
-	let localTimezone = $state('test')
-	onMount(() => {
-		localTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone
+	const startLoginSchema = z.object({
+		identifier: z.string().email(),
+		timezone: z.string().optional()
 	})
 
-	// Set the timezone for the startLogin form
-	startLogin.fields.timezone.set(localTimezone)
+	const localTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone
 
 	let loginRequestResponse = $derived(startLogin.result)
 
-	let loginMethodsAvailable = $state({
-		code: null,
-		password: null,
-		passkey: null
-	})
-
-	let title = $state('Welcome to Spring')
+	type FailStates = 'pending' | 'timeout' | 'error' | 'delayed' | null
+	let startLoginState = $state<FailStates>(null)
 
 	let errors = $state(false)
+	let anyIssues = $derived(!!startLogin.fields.allIssues())
+	let emailIssues = $derived(startLogin.fields.identifier.issues())
+
+	let startButtonAvailable = $derived(
+		!startLogin.result &&
+			!anyIssues &&
+			startLogin.fields.value()?.identifier &&
+			startLogin.fields.value()?.identifier.length >= 5
+	)
 
 	let doAttentionAnimation = $state(false)
-
-	let anyIssues = $derived(!!startLogin.fields.allIssues())
-	$inspect(anyIssues)
-
-	let emailIssues = $derived(startLogin.fields.identifier.issues())
-	$inspect(emailIssues)
-
-	let startButtonAvailable = $derived.by(() => {
-		if (startLogin.result) {
-			return false
-		}
-		const fields = startLogin.fields.value()
-		if (!fields?.identifier || fields?.identifier.length < 5) {
-			return false
-		}
-		if (anyIssues) {
-			return false
-		}
-		return true
-	})
 </script>
 
-{#if loginRequestResponse}
+{#if startLogin.result}
 	<div
 		transition:fade={{ duration: 150 }}
 		class="pointer-events-none absolute inset-0 z-0 h-full w-full bg-neutral-400/10"
@@ -82,125 +68,136 @@
 				<h2
 					class="tracking-tight-md animate-fade-in-scale text-[1.33rem] font-[550] leading-loose text-black"
 				>
-					{title}
+					{data?.title}
 				</h2>
 				<p
 					class="animate-fade-in-scale text-[1.05rem] font-[430] leading-4 tracking-[-0.015em] text-neutral-500"
 				>
-					Log in or sign up to get started
+					{data?.text}
 				</p>
 			</div>
 		{/if}
 
-		<form
-			{...startLogin.enhance(async ({ form, data, submit }) => {
-				console.log('Client: Form is submitting')
-				console.log(data)
-				try {
-					await submit()
-					console.log('Client: Submit completed')
-				} catch (error) {
-					console.error('Client: Submit failed:', error)
-				}
-			})}
-			class="z-10 w-full"
-		>
-			<div
-				class={createClass(
-					'group relative flex h-12 w-full items-center overflow-hidden rounded-[1rem] border-2 border-red-500/0 focus-within:border-2 focus-within:border-blue-500',
-					loginRequestResponse ? 'bg-neutral-50' : 'bg-neutral-100'
-				)}
+		<svelte:boundary>
+			<form
+				oninput={() => startLogin.validate()}
+				{...startLogin.preflight(startLoginSchema).enhance(async ({ data, submit }) => {
+					console.log(data)
+					try {
+						await submit()
+					} catch (error) {
+						errors = true
+						startLoginState = 'error'
+						console.error('Client: Submit failed:', error)
+					}
+				})}
+				class="z-10 w-full"
 			>
-				{#if loginRequestResponse}
-					<button
-						onclick={() => {
-							loginRequestResponse = false
-						}}
-						class="absolute inset-0 z-10 flex h-full w-full items-center justify-start"
-					>
-						<IconChevronLeft class="text-neutral-400 group-hover:text-neutral-700" />
-					</button>
-				{/if}
-
-				<input
-					{...startLogin.fields.timezone.as('hidden', localTimezone)}
-					aria-hidden
-					value={localTimezone}
-				/>
-
-				<input
-					{...startLogin.fields.identifier.as('email')}
-					autocomplete="username webauthn"
-					placeholder="Continue with email"
-					aria-label="Enter your email"
-					tabindex={loginRequestResponse ? '-1' : '1'}
-					onclick={() => {
-						if (loginRequestResponse) {
-							resetForm()
-						}
-					}}
-					onchange={() => {
-						if (loginRequestResponse) {
-							resetForm()
-						}
-					}}
-					onfocus={() => {
-						if (loginRequestResponse) {
-							identifierInput.blur()
-						}
-					}}
-					class:attention-animation={doAttentionAnimation}
-					class={createClass(
-						'flex-grow-1 h-full w-full translate-y-0 pl-4 font-[450] text-zinc-900 outline-none transition-all selection:bg-sky-200 selection:text-blue-600 placeholder:font-[450] placeholder:text-neutral-400',
-						loginRequestResponse
-							? 'cursor-pointer bg-none pr-4 text-center text-neutral-500'
-							: 'pr-1'
-					)}
-				/>
-
-				<!-- Hint -->
 				<div
 					class={createClass(
-						'pointer-events-none absolute right-0 top-0 z-0 h-full w-10 bg-gradient-to-l from-[#4496FF] to-[rgba(45,169,255,0.00)] transition-all duration-300',
-						startButtonAvailable ? 'w-15 opacity-20' : 'w-0 opacity-0'
-					)}
-				></div>
-				<!-- {#each startLogin.fields.identifier.issues() as issue} -->
-				<!-- {/each} -->
-
-				<button
-					type="submit"
-					disabled={anyIssues}
-					class={createClass(
-						'group z-10 flex h-full shrink-0 flex-nowrap items-center justify-end transition-all duration-200',
-						startLogin.result ? 'opacity-0' : 'opacity-100',
-						emailIssues ? 'cursor-[w-resize]' : 'cursor-pointer'
+						'group relative flex h-12 w-full items-center overflow-hidden rounded-[1rem] border-2 border-red-500/0 focus-within:border-2 focus-within:border-blue-500',
+						loginRequestResponse ? 'bg-neutral-50' : 'bg-neutral-100'
 					)}
 				>
-					{#if !anyIssues}
-						<IconArrowRight
-							stroke={3}
-							size={26}
-							class={createClass(
-								'animate-fade-in-scale-right mr-1 transition-colors duration-300 ease-in-out group-disabled:text-neutral-500/80',
-								startButtonAvailable ? 'text-blue-vibrant' : 'text-neutral-400'
-							)}
-						/>
-					{:else}
-						<IconAlertCircleFilled stroke={3} size={26} class={createClass('mr-1 text-rose-500')} />
+					{#if loginRequestResponse}
+						<button
+							onclick={() => {
+								loginRequestResponse = false
+							}}
+							class="absolute inset-0 z-10 flex h-full w-full items-center justify-start"
+						>
+							<IconChevronLeft class="text-neutral-400 group-hover:text-neutral-700" />
+						</button>
 					{/if}
-				</button>
-			</div>
-			<div class="mt-2 flex h-8 items-start justify-end">
-				{#if anyIssues}
-					{#each startLogin.fields.allIssues() as issue}
-						<p class="rounded-full bg-rose-100 px-3 py-0.5 text-[0.9rem] font-[450] text-rose-500">
-							{issue.message}
+
+					{#if localTimezone}
+						<input {...startLogin.fields.timezone.as('hidden', localTimezone)} aria-hidden />
+					{/if}
+
+					<input
+						{...startLogin.fields.identifier.as('email')}
+						autocomplete="username webauthn"
+						placeholder="Continue with email"
+						aria-label="Enter your email"
+						tabindex={loginRequestResponse ? '-1' : '1'}
+						onclick={() => {
+							if (loginRequestResponse) {
+								resetForm()
+							}
+						}}
+						onchange={() => {
+							if (loginRequestResponse) {
+								resetForm()
+							}
+						}}
+						onfocus={() => {
+							if (loginRequestResponse) {
+								identifierInput.blur()
+							}
+						}}
+						class:attention-animation={doAttentionAnimation}
+						class={createClass(
+							'flex-grow-1 h-full w-full translate-y-0 pl-4 font-[450] text-zinc-900 outline-none transition-all selection:bg-sky-200 selection:text-blue-600 placeholder:font-[450] placeholder:text-neutral-400',
+							loginRequestResponse
+								? 'cursor-pointer bg-none pr-4 text-center text-neutral-500'
+								: 'pr-1'
+						)}
+					/>
+
+					<!-- Hint -->
+					<div
+						class={createClass(
+							'pointer-events-none absolute right-0 top-0 z-0 h-full w-10 bg-gradient-to-l from-[#4496FF] to-[rgba(45,169,255,0.00)] transition-all duration-300',
+							startButtonAvailable ? 'w-15 opacity-20' : 'w-0 opacity-0'
+						)}
+					></div>
+					<!-- {#each startLogin.fields.identifier.issues() as issue} -->
+					<!-- {/each} -->
+
+					<button
+						type="submit"
+						disabled={anyIssues}
+						class={createClass(
+							'group z-10 flex h-full shrink-0 flex-nowrap items-center justify-end transition-all duration-200',
+							startLogin.result ? 'opacity-0' : 'opacity-100',
+							emailIssues ? 'cursor-[w-resize]' : 'cursor-pointer'
+						)}
+					>
+						{#if !anyIssues}
+							<IconArrowRight
+								stroke={3}
+								size={26}
+								class={createClass(
+									'animate-fade-in-scale-right mr-1 transition-colors duration-300 ease-in-out group-disabled:text-neutral-500/80',
+									startButtonAvailable ? 'text-blue-vibrant' : 'text-neutral-400'
+								)}
+							/>
+						{:else}
+							<IconAlertCircleFilled
+								stroke={3}
+								size={26}
+								class={createClass('mr-1 text-rose-500')}
+							/>
+						{/if}
+					</button>
+				</div>
+				<div class="mt-2 flex h-8 items-start justify-end">
+					{#if errors}
+						<p class="rounded-full px-3 py-0.5 text-[0.9rem] font-[450] text-rose-500">
+							An error occured, try again
 						</p>
-					{/each}
-				{/if}
-			</div>
-		</form>
+					{:else if anyIssues}
+						{#each startLogin.fields.allIssues() as issue}
+							<p
+								class="rounded-full bg-rose-100 px-3 py-0.5 text-[0.9rem] font-[450] text-rose-500"
+							>
+								{issue.message}
+							</p>
+						{/each}
+					{/if}
+				</div>
+			</form>
+		</svelte:boundary>
 
 		{#if startLogin.result}
 			{#if startLogin.result.codeSent}
