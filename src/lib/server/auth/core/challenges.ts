@@ -11,7 +11,7 @@ import { randomUUID } from 'crypto'
  * Creates a new authentication challenge for a user.
  * Challenges are used for email verification codes, passkey authentication, etc.
  *
- * @param identifier - The user's identifier (typically email)
+ * @param identifier - The user's identifier (typically email) (**normalized**)
  * @param sessionId - Optional session ID to associate with the challenge
  * @param credential - The credential/token for the challenge (e.g., verification code)
  * @param type - The type of challenge (code, passkey, etc.)

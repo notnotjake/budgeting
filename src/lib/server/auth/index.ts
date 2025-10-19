@@ -1,10 +1,11 @@
-import type { AuthConfig } from './types'
+import type { AuthConfig, AuthConfigInput } from './types'
 import userConfig from './config'
 
 import { handleAuthentication } from './hooks/authentication'
 import { handleProtected } from './hooks/protected'
 
 import { startAuth, sendCode, verifyCode, verifyPasskey, logout } from './api/authenticate'
+import { startPasskeyRegistration, verifyPasskeyRegistration } from './api/passkey'
 import { requireSession, requireAuthenticatedUser, requireRecentAuth } from './api/protect'
 
 const DAY_IN_MS = 24 * 60 * 60 * 1000
@@ -16,7 +17,7 @@ const DEFAULT_CONFIG: AuthConfig = {
 		login: '/login',
 		reauth: '/reauth',
 		lock: '/lock',
-		protectedGroup: '(protected)'
+		protectedGroup: '/(protected)'
 	},
 	redirects: {
 		afterLogin: '/app',
@@ -90,7 +91,10 @@ const Auth = {
 	sendCode,
 	verifyCode,
 	verifyPasskey,
-	logout
+	logout,
+	// Passkey
+	startPasskeyRegistration,
+	verifyPasskeyRegistration
 }
 export default Auth
 
@@ -98,6 +102,6 @@ export default Auth
 export const AuthEmails = config.emails
 
 // Helper function for defineConfig use in .config.ts files
-export function defineConfig(userConfig: Partial<AuthConfig>): Partial<AuthConfig> {
+export function defineConfig(userConfig: AuthConfigInput): AuthConfigInput {
 	return userConfig
 }

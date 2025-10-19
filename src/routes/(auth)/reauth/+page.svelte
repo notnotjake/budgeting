@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
 	import { logout } from '$lib/remotes/auth.remote'
 	import { Button } from '$ui/input'
 

@@ -1,3 +1,4 @@
+// Full config type with all required properties (after defaults are applied)
 export type AuthConfig = {
 	routes: {
 		login: string
@@ -60,6 +61,72 @@ export type AuthConfig = {
 			maxAgeMins: number
 		}) => Promise<void>
 		sendAccountDeletionCompleted: (params: { email: string }) => Promise<void>
+	}
+}
+
+// Partial config type for user input (all properties optional)
+export type AuthConfigInput = {
+	routes?: {
+		login?: string
+		reauth?: string
+		lock?: string
+		protectedGroup?: string
+	}
+	redirects?: {
+		afterLogin?: string
+		afterLogout?: string
+		afterAccountCreated?: string
+	}
+	durations?: {
+		recentAuthWindow?: number
+		redirectCookieMaxAge?: number
+		// Challenges
+		challengeCodeMaxAge?: number
+		challengePasskeyMaxAge?: number
+		challengeLockAccountMaxAge?: number
+		// Sessions
+		sessionUnauthenticatedMaxAge?: number
+		sessionAuthenticatedMaxAge?: number
+		sessionRenewalUpdateWindow?: number
+		sessionLastSeenUpdateWindow?: number
+		sessionRetentionWindow?: number
+	}
+	emails?: {
+		sendLoginCodeNewUser?: (params: {
+			email: string
+			code: string
+			timezone: string
+			expiresAt: Date
+			maxAgeMins: number
+		}) => Promise<void>
+		sendLoginCodeExistingUser?: (params: {
+			email: string
+			code: string
+			timezone: string
+			expiresAt: Date
+			maxAgeMins: number
+		}) => Promise<void>
+		sendReauthCode?: (params: {
+			email: string
+			code: string
+			timezone: string
+			expiresAt: Date
+			maxAgeMins: number
+		}) => Promise<void>
+		sendChangeEmailCode?: (params: {
+			email: string
+			code: string
+			timezone: string
+			expiresAt: Date
+			maxAgeMins: number
+		}) => Promise<void>
+		sendEmailDidChangeNotification?: (params: {
+			email: string
+			updatedEmail: string
+			lockLink: string
+			maxAgeMins: number
+		}) => Promise<void>
+		sendAccountDeletionCompleted?: (params: { email: string }) => Promise<void>
 	}
 }
 

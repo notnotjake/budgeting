@@ -262,7 +262,10 @@ export async function verifyPasskey() {}
 
 export async function logout({ event }: { event: RequestEvent }) {
 	if (!event.locals.session) {
-		throw error(500)
+		AuthCore.clearRedirectUrlCookie(event)
+		AuthCore.deleteSessionTokenCookie(event)
+
+		throw redirect(303, Auth.redirects.afterLogout)
 	}
 
 	// Invalidate the session

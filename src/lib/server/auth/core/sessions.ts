@@ -5,7 +5,8 @@ import * as table from '$lib/server/auth/schema'
 import type { RequestEvent } from '@sveltejs/kit'
 import type { User, Session } from '$lib/server/auth/schema'
 import { StructuredResponse as Response } from '$utils/structured-response'
-import Auth, { ERROR_MESSAGE } from './errors'
+import Auth from '$lib/server/auth'
+import { ERROR_MESSAGE } from './errors'
 import { generateToken, hashToken } from './utils'
 
 /**
@@ -278,6 +279,7 @@ export async function invalidateAllUserSessions(userId: string): Promise<Respons
  * @returns Response indicating success or failure
  */
 export async function cleanupSessions(): Promise<Response<never>> {
+	console.log('cleaning up old sessions')
 	try {
 		const retentionWindow = new Date(Date.now() - Auth.durations.sessionRetentionWindow) // 30 days
 

@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { onMount } from 'svelte'
 	import { startAuthentication, type AuthenticationResponseJSON } from '@simplewebauthn/browser'
-	import { passkeyRequestChallenge } from '$lib/remotes/auth.remote'
+	import { remotesTest } from '$lib/remotes/auth.remote'
 
 	import { createClass } from '@opensky/style'
 	import { scale } from 'svelte/transition'
@@ -41,7 +41,7 @@
 		state = { status: 'pending' }
 
 		try {
-			const result = await passkeyRequestChallenge({ identifier: 'test@test.com' })
+			const result = await remotesTest({ identifier: 'test@test.com' })
 
 			if (result?.success && result?.data) {
 				console.log('success', result)
