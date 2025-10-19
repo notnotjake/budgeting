@@ -19,15 +19,19 @@ export const remotesTest = query(
 export const startLogin = form(
 	z.object({
 		identifier: z.string().email(),
-		timezone: z.string()
+		timezone: z.string().optional()
 	}),
-	async ({ identifier, timezone }: { identifier: string; timezone: string }) => {
+	async (data, invalid) => {
 		const event = getRequestEvent()
+
+		if (data.identifier === 'test@test.com') {
+			invalid(invalid.identifier('Email blocked'))
+		}
 
 		const { codeSent, passkeyAvailable } = await Auth.startAuth({
 			event,
-			identifier,
-			timezone
+			identifier: data.identifier,
+			timezone: data.timezone
 		})
 
 		return {

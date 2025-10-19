@@ -75,14 +75,14 @@
 	}
 </script>
 
-<div class="flex flex-col items-center p-20">
-	<p class="pb-3 text-lg">Enter one-time code</p>
+<div class="flex flex-col items-center">
+	<p class="pb-1 text-[1.08rem]">Enter one-time code</p>
 
 	<div style:transform="translateX({$translateX}px)">
 		<PinInput.Root
 			bind:value
 			class={createClass(
-				'group flex w-fit cursor-pointer items-center overflow-hidden rounded-[1.3rem] border-2 border-gray-100 bg-gray-100 px-2.5 py-1 focus-within:border-blue-500 has-[:disabled]:opacity-70',
+				'group flex w-fit cursor-pointer items-center overflow-hidden rounded-[1.2rem] border-2 border-gray-100 bg-gray-100 px-2.5 py-0.5 focus-within:border-blue-500 has-[:disabled]:opacity-70',
 				completed && 'border-blue-200/20 bg-blue-200/20 focus-within:border-blue-200/20',
 				success && 'border-green-500 focus-within:border-green-500',
 				error && 'border-rose-500 focus-within:border-rose-500'
@@ -154,7 +154,7 @@
 				class={createClass(
 					`h-2 w-2 rounded-full transition-all duration-200`,
 					cell.hasFakeCaret
-						? 'h-3.5 bg-blue-500'
+						? 'bg-blue-vibrant-light h-3.5'
 						: 'bg-neutral-400 group-hover:bg-neutral-600 group-hover:group-focus-within:bg-neutral-400'
 				)}
 			></div>

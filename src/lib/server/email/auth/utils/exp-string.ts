@@ -1,4 +1,8 @@
-export function expirationString(maxAgeMins: number, timezone: string = 'UTC'): string {
+export function expirationString(maxAgeMins: number, timezone?: string) {
+	if (!timezone) {
+		return false
+	}
+
 	// Calculate expiration time based on maxAgeMins
 	const expiresAt = new Date(Date.now() + maxAgeMins * 60 * 1000)
 

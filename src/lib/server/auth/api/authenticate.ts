@@ -14,7 +14,7 @@ export async function startAuth({
 }: {
 	event: RequestEvent
 	identifier: string
-	timezone: string
+	timezone?: string
 	flow?: AuthFlow
 }) {
 	// Rate limit
@@ -90,7 +90,7 @@ export async function sendCode({
 	sessionId: string
 	identifier: string
 	flow: AuthFlow
-	timezone: string
+	timezone?: string
 }) {
 	// Cleanup any existing login code challenges
 	const cleanupResult = await AuthCore.cleanupDuplicateLoginChallenges({

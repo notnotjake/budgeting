@@ -29,28 +29,28 @@ export type AuthConfig = {
 		sendLoginCodeNewUser: (params: {
 			email: string
 			code: string
-			timezone: string
+			timezone?: string
 			expiresAt: Date
 			maxAgeMins: number
 		}) => Promise<void>
 		sendLoginCodeExistingUser: (params: {
 			email: string
 			code: string
-			timezone: string
+			timezone?: string
 			expiresAt: Date
 			maxAgeMins: number
 		}) => Promise<void>
 		sendReauthCode: (params: {
 			email: string
 			code: string
-			timezone: string
+			timezone?: string
 			expiresAt: Date
 			maxAgeMins: number
 		}) => Promise<void>
 		sendChangeEmailCode: (params: {
 			email: string
 			code: string
-			timezone: string
+			timezone?: string
 			expiresAt: Date
 			maxAgeMins: number
 		}) => Promise<void>
@@ -95,28 +95,28 @@ export type AuthConfigInput = {
 		sendLoginCodeNewUser?: (params: {
 			email: string
 			code: string
-			timezone: string
+			timezone?: string
 			expiresAt: Date
 			maxAgeMins: number
 		}) => Promise<void>
 		sendLoginCodeExistingUser?: (params: {
 			email: string
 			code: string
-			timezone: string
+			timezone?: string
 			expiresAt: Date
 			maxAgeMins: number
 		}) => Promise<void>
 		sendReauthCode?: (params: {
 			email: string
 			code: string
-			timezone: string
+			timezone?: string
 			expiresAt: Date
 			maxAgeMins: number
 		}) => Promise<void>
 		sendChangeEmailCode?: (params: {
 			email: string
 			code: string
-			timezone: string
+			timezone?: string
 			expiresAt: Date
 			maxAgeMins: number
 		}) => Promise<void>
@@ -133,7 +133,7 @@ export type AuthConfigInput = {
 export type sendCodeParams = {
 	email: string
 	code: string
-	timezone: string
+	timezone?: string
 	expiresAt: Date
 	maxAgeMins: number
 }

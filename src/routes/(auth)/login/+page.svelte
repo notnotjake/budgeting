@@ -2,18 +2,23 @@
 	import { fade } from 'svelte/transition'
 	import { createClass } from '@opensky/style'
 	import { wipeVertical } from '$ui/transition'
-	import { IconChevronLeft, IconArrowRight } from '@tabler/icons-svelte'
+	import { IconChevronLeft, IconArrowRight, IconAlertCircleFilled } from '@tabler/icons-svelte'
 	import { Suspense } from '$ui/feedback'
 	import PinInput from '$ui/input/pin-code.svelte'
 	import PasskeyButton from '$ui/auth/passkey-button.svelte'
+	import { onMount } from 'svelte'
 
 	import { startLogin, verifyLoginCode } from '$lib/remotes/auth.remote'
 
+	let localTimezone = $state('test')
+	onMount(() => {
+		localTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone
+	})
+
 	// Set the timezone for the startLogin form
-	const localTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone
 	startLogin.fields.timezone.set(localTimezone)
 
-	let loginRequestResponse = $state(false)
+	let loginRequestResponse = $derived(startLogin.result)
 
 	let loginMethodsAvailable = $state({
 		code: null,
@@ -23,13 +28,29 @@
 
 	let title = $state('Welcome to Spring')
 
-	let loginHadExpired = $state(false)
-
-	let emailValue = $state('')
-
 	let errors = $state(false)
 
 	let doAttentionAnimation = $state(false)
+
+	let anyIssues = $derived(!!startLogin.fields.allIssues())
+	$inspect(anyIssues)
+
+	let emailIssues = $derived(startLogin.fields.identifier.issues())
+	$inspect(emailIssues)
+
+	let startButtonAvailable = $derived.by(() => {
+		if (startLogin.result) {
+			return false
+		}
+		const fields = startLogin.fields.value()
+		if (!fields?.identifier || fields?.identifier.length < 5) {
+			return false
+		}
+		if (anyIssues) {
+			return false
+		}
+		return true
+	})
 </script>
 
 {#if loginRequestResponse}
@@ -43,12 +64,12 @@
 	<div
 		class={createClass(
 			'relative flex min-h-40 w-full flex-shrink-0 grow flex-col items-center p-2.5 transition-all duration-200 sm:px-5',
-			loginRequestResponse ? 'rounded-[1.8rem] bg-white pb-10 pt-4' : 'rounded-[1.9rem] bg-none'
+			startLogin.result ? 'rounded-[1.8rem] bg-white pb-10 pt-4' : 'rounded-[1.9rem] bg-none'
 		)}
 	>
 		<div
 			class={createClass(
-				'h-18 left-0 top-0 z-0 hidden w-full rounded-t-[1.7rem] bg-gradient-to-b from-[#DFF3FF] to-[#E8F9FF]/0 transition-colors duration-200 sm:absolute sm:z-auto sm:block',
+				'h-18 left-0 top-0 z-0 hidden w-full rounded-t-[2.1rem] bg-gradient-to-b from-[#DFF3FF] to-[#E8F9FF]/0 transition-colors duration-200 sm:absolute sm:z-auto sm:block',
 				loginRequestResponse ? 'opacity-0' : 'opacity-100'
 			)}
 		></div>
@@ -64,7 +85,7 @@
 					{title}
 				</h2>
 				<p
-					class="animate-fade-in-scale text-[1.05rem] font-[430] leading-5 tracking-[-0.015em] text-neutral-500"
+					class="animate-fade-in-scale text-[1.05rem] font-[430] leading-4 tracking-[-0.015em] text-neutral-500"
 				>
 					Log in or sign up to get started
 				</p>
@@ -101,15 +122,17 @@
 					</button>
 				{/if}
 
-				<input {...startLogin.fields.timezone.as('hidden')} aria-hidden value={localTimezone} />
+				<input
+					{...startLogin.fields.timezone.as('hidden', localTimezone)}
+					aria-hidden
+					value={localTimezone}
+				/>
 
 				<input
 					{...startLogin.fields.identifier.as('email')}
 					autocomplete="username webauthn"
-					id="email"
 					placeholder="Continue with email"
 					aria-label="Enter your email"
-					bind:value={emailValue}
 					tabindex={loginRequestResponse ? '-1' : '1'}
 					onclick={() => {
 						if (loginRequestResponse) {
@@ -136,30 +159,46 @@
 				/>
 
 				<!-- Hint -->
-				<!-- <div
+				<div
 					class={createClass(
 						'pointer-events-none absolute right-0 top-0 z-0 h-full w-10 bg-gradient-to-l from-[#4496FF] to-[rgba(45,169,255,0.00)] transition-all duration-300',
-						errors.length > 0 || $emailForm.email.length < 5 ? 'w-0 opacity-0' : 'w-15 opacity-20',
-						$emailMessage && 'w-full opacity-10'
+						startButtonAvailable ? 'w-15 opacity-20' : 'w-0 opacity-0'
 					)}
-				></div> -->
+				></div>
+				<!-- {#each startLogin.fields.identifier.issues() as issue} -->
+				<!-- {/each} -->
 
 				<button
 					type="submit"
+					disabled={anyIssues}
 					class={createClass(
 						'group z-10 flex h-full shrink-0 flex-nowrap items-center justify-end transition-all duration-200',
-						loginRequestResponse ? 'opacity-0' : 'opacity-100'
+						startLogin.result ? 'opacity-0' : 'opacity-100',
+						emailIssues ? 'cursor-[w-resize]' : 'cursor-pointer'
 					)}
 				>
-					<IconArrowRight
-						stroke={3}
-						size={26}
-						class={createClass(
-							'animate-fade-in-scale-right mr-1 cursor-pointer transition-colors duration-300 ease-in-out group-disabled:text-neutral-500/80',
-							emailValue.length > 5 ? 'text-blue-vibrant' : 'text-neutral-400'
-						)}
-					/>
+					{#if !anyIssues}
+						<IconArrowRight
+							stroke={3}
+							size={26}
+							class={createClass(
+								'animate-fade-in-scale-right mr-1 transition-colors duration-300 ease-in-out group-disabled:text-neutral-500/80',
+								startButtonAvailable ? 'text-blue-vibrant' : 'text-neutral-400'
+							)}
+						/>
+					{:else}
+						<IconAlertCircleFilled stroke={3} size={26} class={createClass('mr-1 text-rose-500')} />
+					{/if}
 				</button>
+			</div>
+			<div class="mt-2 flex h-8 items-start justify-end">
+				{#if anyIssues}
+					{#each startLogin.fields.allIssues() as issue}
+						<p class="rounded-full bg-rose-100 px-3 py-0.5 text-[0.9rem] font-[450] text-rose-500">
+							{issue.message}
+						</p>
+					{/each}
+				{/if}
 			</div>
 		</form>
 
@@ -177,17 +216,18 @@
 				</form>
 			{/if}
 			{#if startLogin.result.passkeyAvailable}
-				<p>Passkey available</p>
+				<PasskeyButton />
 			{/if}
 		{/if}
 
-		{#if loginRequestResponse}
-			<PasskeyButton />
-		{/if}
-
-		<!-- {#if loginRequestResponse}
+		{#if startLogin.result}
 			<PinInput />
-		{/if} -->
+			<button
+				class="mt-2 rounded-full bg-none px-4 py-2 font-[500] text-neutral-500 text-neutral-700 hover:bg-neutral-100 hover:text-black"
+			>
+				Resend
+			</button>
+		{/if}
 
 		{#if loginRequestResponse}
 			<button

@@ -11,13 +11,7 @@ import AccountDeleted from './templates/account-deleted'
 
 const SEND_FROM = 'LightDance <accounts@resend.notnotjake.com>'
 
-export async function loginCodeNewUser({
-	email,
-	code,
-	timezone,
-	expiresAt,
-	maxAgeMins
-}: sendCodeParams) {
+export async function loginCodeNewUser({ email, code, timezone, maxAgeMins }: sendCodeParams) {
 	const headingText = 'Create your account'
 	const descriptiveText = 'Use this code to activate your account'
 	const preview = `Use code ${code} to finish creating your account. This code is available for ${maxAgeMins} minutes`
@@ -39,13 +33,7 @@ export async function loginCodeNewUser({
 	return
 }
 
-export async function loginCodeExistingUser({
-	email,
-	code,
-	timezone,
-	expiresAt,
-	maxAgeMins
-}: sendCodeParams) {
+export async function loginCodeExistingUser({ email, code, timezone, maxAgeMins }: sendCodeParams) {
 	const headingText = 'Log in to your account'
 	const descriptiveText = 'Use this code to securely log in'
 	const preview = `Use code ${code} to securely log in to your account. This code is available for ${maxAgeMins} minutes`
@@ -67,7 +55,7 @@ export async function loginCodeExistingUser({
 	return
 }
 
-export async function reauthCode({ email, code, timezone, expiresAt, maxAgeMins }: sendCodeParams) {
+export async function reauthCode({ email, code, timezone, maxAgeMins }: sendCodeParams) {
 	const headingText = 'Authorization Code'
 	const descriptiveText = `Use this code to authorize account action`
 	const preview = `Use code ${code} to authorize account action. This code is available for ${maxAgeMins} minutes`
@@ -89,13 +77,7 @@ export async function reauthCode({ email, code, timezone, expiresAt, maxAgeMins 
 	return
 }
 
-export async function changeEmailCode({
-	email,
-	code,
-	timezone,
-	expiresAt,
-	maxAgeMins
-}: sendCodeParams) {
+export async function changeEmailCode({ email, code, timezone, maxAgeMins }: sendCodeParams) {
 	const headingText = 'Confirm New Email'
 	const descriptiveText = 'Use this code to confirm your new email address.'
 	const preview = `To update your email, confirm with the code ${code}. This code is available for ${maxAgeMins} minutes`
