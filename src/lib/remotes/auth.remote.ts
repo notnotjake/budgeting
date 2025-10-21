@@ -1,7 +1,14 @@
 import { z } from 'zod'
 import { query, form, command, getRequestEvent } from '$app/server'
 import Auth from '$lib/server/auth'
-import { error } from '@sveltejs/kit'
+import { error, redirect } from '@sveltejs/kit'
+
+function requireUser() {
+	const { locals } = getRequestEvent()
+	if (!locals.session || !locals.user) {
+		redirect(303, Auth.routes.login)
+	}
+}
 
 export const remotesTest = query(
 	z.object({

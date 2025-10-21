@@ -55,7 +55,7 @@
 	>
 		<div
 			class={createClass(
-				'h-18 left-0 top-0 z-0 hidden w-full rounded-t-[2.1rem] bg-gradient-to-b from-[#DFF3FF] to-[#E8F9FF]/0 transition-colors duration-200 sm:absolute sm:z-auto sm:block',
+				'h-18 left-0 top-0 z-0 hidden w-full rounded-t-[1.8rem] bg-gradient-to-b from-[#DFF3FF] to-[#E8F9FF]/0 transition-colors duration-200 sm:absolute sm:z-auto sm:block',
 				loginRequestResponse ? 'opacity-0' : 'opacity-100'
 			)}
 		></div>
