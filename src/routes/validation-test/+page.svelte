@@ -26,6 +26,6 @@
 	<p>Returned: {test.result.message}</p>
 {/if}
 
-{#each test.fields.allIssues() ?? [] as issue}
+{#each test.fields.allIssues() as issue}
 	<p class="text-neutral-600">{issue.message}</p>
 {/each}

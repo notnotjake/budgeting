@@ -9,8 +9,11 @@ export const test = form(
 			state: z.string().startsWith('V')
 		})
 	}),
-	async (data) => {
+	async (data, invalid) => {
 		console.log(data)
+		if (data.name === 'alex') {
+			invalid(invalid.name('name taken'))
+		}
 		return { success: true, message: 'hello world' }
 	}
 )

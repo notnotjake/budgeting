@@ -30,7 +30,7 @@ export const startLogin = form(
 		timezone: z.string().optional()
 	}),
 	async (data, invalid) => {
-		throw error(500, 'unexpected error')
+		// throw error(500, 'unexpected error')
 
 		const event = getRequestEvent()
 
