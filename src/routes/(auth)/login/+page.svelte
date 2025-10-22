@@ -10,7 +10,7 @@
 	import { z } from 'zod'
 
 	import { startLogin, verifyLoginCode } from '$lib/remotes/auth.remote'
-	import { createValidation } from '@opensky/remotes'
+	import { createValidation, createEnhancedForm } from '@opensky/remotes'
 	// import { createValidation } from '$lib/utils/validation.svelte'
 
 	let { data } = $props()
@@ -19,39 +19,32 @@
 		identifier: z.string().email(),
 		timezone: z.string().optional()
 	})
-	const valid = createValidation(startLogin)
+	const startLoginValid = createValidation(startLogin)
+	const startLoginForm = createEnhancedForm(startLogin, { validator: startLoginValid })
 
 	const localTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone
-
 	let identifierInput = $state<HTMLInputElement>()
 
 	let loginRequestResponse = $derived(startLogin.result)
 
-	type FailStates = 'pending' | 'timeout' | 'error' | 'delayed' | null
-	let startLoginState = $state<FailStates>(null)
-
-	let errors = $state(false)
-
 	let startButtonAvailable = $derived(
 		!startLogin.result &&
-			!valid.issues('identifier') &&
+			!startLoginValid.issues('identifier') &&
 			startLogin.fields.value()?.identifier &&
 			startLogin.fields.value()?.identifier.length >= 5
 	)
 
 	let doAttentionAnimation = $state(false)
 
-	const focusInput = {
-		onclick: () => {
-			identifierInput?.focus()
-		}
+	function focusInput() {
+		identifierInput?.focus()
 	}
 
-	$inspect(startLogin.fields.allIssues())
+	// $inspect(startLogin.fields.allIssues())
 </script>
 
 <!-- Apply gray background on second step -->
-{#if startLogin.result}
+{#if startLoginForm.success}
 	<div
 		transition:fade={{ duration: 150 }}
 		class="pointer-events-none absolute inset-0 z-0 h-full w-full bg-neutral-400/10"
@@ -64,19 +57,19 @@
 	<div
 		class={createClass(
 			'relative flex min-h-40 w-full flex-shrink-0 grow flex-col items-center p-2.5 transition-all duration-200 sm:px-5',
-			startLogin.result ? 'rounded-[1.8rem] bg-white pb-10 pt-4' : 'rounded-[1.9rem] bg-none'
+			startLoginForm.success ? 'rounded-[1.8rem] bg-white pb-10 pt-4' : 'rounded-[1.9rem] bg-none'
 		)}
 	>
 		<!-- Colorful gradient on first step -->
 		<div
 			class={createClass(
 				'h-18 left-0 top-0 z-0 hidden w-full rounded-t-[1.8rem] bg-gradient-to-b from-[#E3F4FF] to-[#E8F9FF]/0 transition-colors duration-200 sm:absolute sm:z-auto sm:block',
-				startLogin.result ? 'opacity-0' : 'opacity-100'
+				startLoginForm.success ? 'opacity-0' : 'opacity-100'
 			)}
 		></div>
 
 		<!-- Message shown on first step -->
-		{#if !startLogin.result}
+		{#if !startLoginForm.success}
 			<div
 				transition:wipeVertical={{ duration: 400 }}
 				class="z-10 w-full flex-col items-center justify-center px-7 pb-6 pt-2 text-center"
@@ -95,33 +88,27 @@
 		{/if}
 
 		<form
-			{...startLogin.preflight(startLoginSchema).enhance(async ({ form, submit, data }) => {
-				try {
-					console.log('submit called')
-					await submit()
-
-					if (startLogin?.result) {
-						console.log('success')
-					} else {
-						await valid.updateIssues()
+			{...startLogin.preflight(startLoginSchema).enhance(async (opts) =>
+				startLoginForm.enhance(opts, {
+					delayMs: 500,
+					onDelay: () => {
+						console.log('delayed')
+					},
+					timeoutMs: 9000,
+					onTimeout: () => {
+						console.log('timedout')
 					}
-				} catch (error) {
-					console.error('Client: Submit failed:', error)
-
-					await valid.validateAll()
-					errors = true
-					startLoginState = 'error'
-				}
-			})}
+				})
+			)}
 			class="z-10 w-full"
 		>
 			<div
 				class={createClass(
 					'group relative flex h-12 w-full items-center overflow-hidden rounded-[1rem] border-2 border-red-500/0 focus-within:border-2 focus-within:border-blue-500',
-					startLogin.result ? 'bg-neutral-50' : 'bg-neutral-100'
+					startLoginForm.success ? 'bg-neutral-50' : 'bg-neutral-100'
 				)}
 			>
-				{#if startLogin.result}
+				{#if startLoginForm.success}
 					<button
 						onclick={() => {
 							// reset to initial
@@ -133,17 +120,17 @@
 				{/if}
 
 				{#if localTimezone}
-					<input {...startLogin.fields.timezone.as('hidden', localTimezone)} aria-hidden />
+					<input {...startLogin.fields.timezone.as('hidden', localTimezone)} aria-hidden="true" />
 				{/if}
 
 				<input
 					{...startLogin.fields.identifier.as('email')}
-					{...valid.fields('identifier')}
+					{...startLoginValid.fields('identifier')}
 					bind:this={identifierInput}
 					autocomplete="username webauthn"
 					placeholder="Continue with email"
 					aria-label="Enter your email"
-					tabindex={loginRequestResponse ? '-1' : '1'}
+					tabindex={loginRequestResponse ? -1 : 1}
 					onclick={() => {
 						// cancel attempt
 					}}
@@ -156,7 +143,7 @@
 					class:attention-animation={doAttentionAnimation}
 					class={createClass(
 						'flex-grow-1 h-full w-full translate-y-0 pl-4 font-[450] text-zinc-900 outline-none transition-all selection:bg-sky-200 selection:text-blue-600 placeholder:font-[450] placeholder:text-neutral-400',
-						loginRequestResponse
+						startLoginForm.success
 							? 'cursor-pointer bg-none pr-4 text-center text-neutral-500'
 							: 'pr-1'
 					)}
@@ -176,11 +163,11 @@
 				<div
 					class={createClass(
 						'group z-10 flex h-full shrink-0 flex-nowrap items-center justify-end transition-all duration-200',
-						startLogin.result ? 'opacity-0' : 'opacity-100',
-						valid.issues('identifier') ? 'cursor-[w-resize]' : 'cursor-pointer'
+						startLoginForm.success ? 'opacity-0' : 'opacity-100',
+						startLoginValid.issues('identifier') ? 'cursor-[w-resize]' : 'cursor-pointer'
 					)}
 				>
-					{#if !valid.issues('identifier')}
+					{#if !startLoginValid.issues('identifier')}
 						<button type="submit">
 							<IconArrowRight
 								stroke={3}
@@ -192,7 +179,7 @@
 							/>
 						</button>
 					{:else}
-						<button class="cursor-[w-resize]" {...focusInput}>
+						<button class="cursor-[w-resize]" onclick={focusInput}>
 							<IconAlertCircleFilled
 								stroke={3}
 								size={26}
@@ -203,20 +190,20 @@
 				</div>
 			</div>
 			<div class="mt-2 flex h-8 items-start justify-end">
-				{#if errors}
+				{#if startLoginForm.error}
 					<button
 						type="button"
 						class="cursor-pointer rounded-full px-3 py-0.5 text-[0.9rem] font-[450] text-rose-500"
-						{...focusInput}
+						onclick={focusInput}
 					>
 						An error occured, try again
 					</button>
-				{:else if !!valid.issues('identifier')}
-					{#each valid.issues('identifier') ?? [] as issue}
+				{:else if !!startLoginValid.issues('identifier')}
+					{#each startLoginValid.issues('identifier') ?? [] as issue (issue)}
 						<button
 							type="button"
 							class="cursor-pointer rounded-full bg-rose-100 px-3 py-0.5 text-[0.9rem] font-[450] text-rose-500"
-							{...focusInput}
+							onclick={focusInput}
 						>
 							{issue}
 						</button>
