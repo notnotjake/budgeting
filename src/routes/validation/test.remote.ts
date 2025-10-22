@@ -1,5 +1,6 @@
 import { z } from 'zod'
 import { form } from '$app/server'
+import { delay } from '$lib/utils/timing'
 
 export const test = form(
 	z.object({
@@ -11,9 +12,13 @@ export const test = form(
 	}),
 	async (data, invalid) => {
 		console.log(data)
+
 		if (data.name === 'alex') {
 			invalid(invalid.name('name taken'))
 		}
+
+		await delay(9000)
+
 		return { success: true, message: 'hello world' }
 	}
 )

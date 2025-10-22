@@ -9,6 +9,7 @@
         "@fontsource-variable/jetbrains-mono": "^5.2.8",
         "@fontsource/sn-pro": "^5.2.5",
         "@node-rs/argon2": "^2.0.2",
+        "@opensky/remotes": "^0.0.2",
         "@opensky/seo": "^1.1.0",
         "@opensky/style": "^0.1.0",
         "@oslojs/crypto": "^1.0.1",
@@ -332,6 +333,8 @@
     "@nodelib/fs.stat": ["@nodelib/fs.stat@2.0.5", "", {}, "sha512-RkhPPp2zrqDAQA/2jNhnztcPAlv64XdhIp7a7454A5ovI7Bukxgt7MX7udwAu3zg1DcpPU0rz3VV1SeaqvY4+A=="],
 
     "@nodelib/fs.walk": ["@nodelib/fs.walk@1.2.8", "", { "dependencies": { "@nodelib/fs.scandir": "2.1.5", "fastq": "^1.6.0" } }, "sha512-oGB+UxlgWcgQkgwo8GcEGwemoTFt3FIO9ababBmaGwXIoBKZ+GTy0pP185beGg7Llih/NSHSV2XAs1lnznocSg=="],
+
+    "@opensky/remotes": ["@opensky/remotes@0.0.2", "", { "dependencies": { "runed": "^0.35.1" }, "peerDependencies": { "@sveltejs/kit": "^2.27.0", "svelte": "^5.0.0" } }, "sha512-0VVJcqfGvXt5OZSJLVpnmMnR5H9J/DVD+jSGjd9onNv+4c8iRBclVOvnQZSy7v1/U1dBce8mJe7ch+PZ+Sv+/Q=="],
 
     "@opensky/seo": ["@opensky/seo@1.1.0", "", { "dependencies": { "zod": "^4.0.5" }, "peerDependencies": { "@sveltejs/kit": "^2.0.0", "svelte": "^5.0.0" } }, "sha512-zz12salvPkKT6XLMRW2MWPuaGRccUq99kJ1nqCZAR3uARreTmv+BqXGerkkR9It8MOx4fhbFqAbj8Uwus3YqbA=="],
 

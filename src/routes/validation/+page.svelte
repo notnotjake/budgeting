@@ -2,7 +2,7 @@
 	import { createClass } from '@opensky/style'
 	import { test } from './test.remote'
 	import { z } from 'zod'
-	import { createValidation } from './validation.svelte'
+	import { createValidation, createEnhancedForm } from '@opensky/remotes'
 
 	const testSchema = z.object({
 		name: z.string().min(4, 'Too short').max(10, 'Too long'),
@@ -13,26 +13,38 @@
 	})
 
 	const valid = createValidation(test)
+	const testForm = createEnhancedForm(test, { validator: valid })
 </script>
 
-<form
-	{...test.preflight(testSchema).enhance(async ({ form, submit, data }) => {
-		try {
-			await submit()
+<p>{testForm.state}</p>
 
-			if (test?.result) {
-				console.log('success')
-				form.reset()
-			} else {
-				// await validateAll()
-				await valid.updateIssues()
+<form
+	{...test.preflight(testSchema).enhance(async (opts) =>
+		testForm.enhance(opts, {
+			onSubmit: () => {
+				console.log('submitting')
+			},
+			delayMs: 500,
+			onDelay: () => {
+				console.log('delayed')
+			},
+			timeoutMs: 3500,
+			onTimeout: () => {
+				console.log('timeout')
+			},
+			onReturn: ({ data, result }) => {
+				console.log(data)
+				console.log('returned')
+				console.log(result)
+			},
+			onIssues: () => {
+				console.log('issues')
+			},
+			onError: ({ error }) => {
+				console.log(error)
 			}
-		} catch {
-			await valid.validateAll()
-			// await validateAll()
-			console.log('error')
-		}
-	})}
+		})
+	)}
 	class="mx-auto flex max-w-lg flex-col gap-2 px-2 py-10"
 >
 	<input
@@ -87,15 +99,32 @@
 	{/each} -->
 
 	<button
-		class="rounded-full bg-blue-500 py-3 text-white hover:bg-blue-600"
+		disabled={testForm.pending || testForm.delayed}
+		class="rounded-full bg-blue-500 py-3 text-white hover:bg-blue-600 disabled:bg-neutral-500"
 		onmouseenter={() => {
-			valid.validateAll()
-		}}>Try Submit</button
+			// valid.validateAll()
+		}}
 	>
+		{testForm.delayed ? 'loading' : 'Try Submit'}
+	</button>
 </form>
 
-<button onclick={() => valid.validateAll()}>Validate All</button>
-<button onclick={() => valid.resetIssues()}>Reset</button>
+{#if testForm.delayed}
+	<p>Loading...</p>
+{/if}
+
+{#if testForm.timeout}
+	<p>Request Timed Out.</p>
+{/if}
+
+<button
+	onclick={() => {
+		test.fields.name.set('alyx')
+		test.fields.address.state.set('Va')
+	}}
+>
+	Fill Form
+</button>
 
 {#if test.result}
 	<p>Returned: {test.result.message}</p>
