@@ -230,7 +230,7 @@ export async function verifyCode({ event, code }: { event: RequestEvent; code: s
 
 		const redirectUrl = AuthCore.consumeRedirectUrlCookie(event)
 
-		throw redirect(303, redirectUrl || Auth.redirects.afterLogin)
+		return { success: true, redirectUrl: redirectUrl || Auth.redirects.afterLogin }
 	} else {
 		const tempName = AuthCore.generateRandomName()
 
@@ -254,7 +254,7 @@ export async function verifyCode({ event, code }: { event: RequestEvent; code: s
 			expiresAt: authenticationResult.data.session.expiresAt
 		})
 
-		throw redirect(303, Auth.redirects.afterAccountCreated)
+		return { success: true, redirectUrl: Auth.redirects.afterAccountCreated }
 	}
 }
 

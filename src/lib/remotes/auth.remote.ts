@@ -11,20 +11,6 @@ function requireUser() {
 	}
 }
 
-export const remotesTest = query(
-	z.object({
-		identifier: z.string()
-	}),
-	async ({ identifier }) => {
-		console.log(identifier)
-
-		return {
-			success: true,
-			data: 'test'
-		}
-	}
-)
-
 export const startLogin = form(
 	z.object({
 		identifier: z.string().email(),
@@ -32,6 +18,8 @@ export const startLogin = form(
 	}),
 	async (data, invalid) => {
 		// throw error(500, 'unexpected error')
+
+		console.log('S1')
 
 		const event = getRequestEvent()
 
@@ -45,9 +33,10 @@ export const startLogin = form(
 			timezone: data.timezone
 		})
 
-		await delay(3000)
+		await delay(800)
 
 		return {
+			identifier: data.identifier,
 			codeSent,
 			passkeyAvailable
 		}
@@ -64,7 +53,16 @@ export const verifyLoginCode = form(
 	async ({ code }: { code: string }) => {
 		const event = getRequestEvent()
 
-		await Auth.verifyCode({ event, code })
+		try {
+			const result = await Auth.verifyCode({ event, code })
+
+			if (result.success && result.redirectUrl) {
+				console.log('AA')
+				return { success: true, redirectUrl: result.redirectUrl }
+			}
+		} catch {
+			return { success: false }
+		}
 	}
 )
 

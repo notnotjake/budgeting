@@ -1,7 +1,8 @@
 <script lang="ts">
-	import { startLogin, verifyLoginCode } from '$lib/remotes/auth.remote'
+	import { startLogin } from '$lib/remotes/auth.remote'
 	import { createValidation, createEnhancedForm } from '@opensky/remotes'
 	import { z } from 'zod'
+	import { onMount } from 'svelte'
 
 	import { createClass } from '@opensky/style'
 	import { wipeVertical } from '$ui/transition'
@@ -10,7 +11,7 @@
 	import { IconChevronLeft, IconArrowRight } from '@tabler/icons-svelte'
 
 	import { Suspense } from '$ui/feedback'
-	import PinInput from '$ui/input/pin-code.svelte'
+	import CodeInput from '$ui/auth/code-input.svelte'
 	import PasskeyButton from '$ui/auth/passkey-button.svelte'
 
 	let { data } = $props()
@@ -23,7 +24,7 @@
 	const startLoginValid = createValidation(startLogin)
 	const startLoginForm = createEnhancedForm(startLogin, {
 		validation: startLoginValid,
-		delayMs: 500,
+		delayMs: 100,
 		timeoutMs: 9000
 	})
 
@@ -31,6 +32,10 @@
 		amplitude: 7,
 		shakes: 2,
 		duration: 325
+	})
+
+	onMount(() => {
+		startLoginForm.reset()
 	})
 
 	const localTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone
@@ -47,17 +52,10 @@
 		identifierInput?.focus()
 	}
 
-	let loggingInFor = $state('')
-	$effect(() => {
-		if (startLoginForm.state !== 'result') {
-			loggingInFor = ''
-		}
-	})
-
 	function resetForm() {
-		const current = loggingInFor
+		const current = startLogin.result?.identifier
 		startLoginForm.reset()
-		startLogin.fields.identifier.set(current)
+		startLogin.fields.identifier.set(current ?? '')
 	}
 
 	let showCodeInput = $state(false)
@@ -125,9 +123,6 @@
 					class="flex h-full w-full items-center"
 					{...startLogin.preflight(startLoginSchema).enhance(async (opts) =>
 						startLoginForm.enhance(opts, {
-							onReturn: ({ data }) => {
-								loggingInFor = data.identifier
-							},
 							onIssues: () => {
 								incorrectShake()
 							},
@@ -154,24 +149,22 @@
 					/>
 
 					<!-- Gradient State Indicator -->
-					<div class="w-18 h-full">
-						<!-- Button Available -->
-						<div
-							class={createClass(
-								'w-18 pointer-events-none absolute right-0 top-0 z-0 h-full bg-gradient-to-l from-[#4496FF] to-[rgba(45,169,255,0.00)]',
-								startButtonAvailable ? 'w-18 opacity-20' : 'w-0 opacity-0'
-							)}
-						></div>
-						<!-- Errors/Issues Present -->
-						<div
-							class={createClass(
-								'w-18 pointer-events-none absolute right-0 top-0 z-0 h-full bg-gradient-to-l from-rose-400/60 to-rose-300/0',
-								startLoginForm.error || startLoginValid.issues('identifier')
-									? 'w-18 opacity-25'
-									: 'w-0 opacity-0'
-							)}
-						></div>
-					</div>
+					<!-- Button Available -->
+					<div
+						class={createClass(
+							'w-18 pointer-events-none absolute right-0 top-0 z-0 h-full bg-gradient-to-l from-[#4496FF] to-[rgba(45,169,255,0.00)]',
+							startButtonAvailable ? 'w-18 opacity-20' : 'w-0 opacity-0'
+						)}
+					></div>
+					<!-- Errors/Issues Present -->
+					<div
+						class={createClass(
+							'w-18 pointer-events-none absolute right-0 top-0 z-0 h-full bg-gradient-to-l from-rose-400/60 to-rose-300/0',
+							startLoginForm.error || startLoginValid.issues('identifier')
+								? 'w-18 opacity-25'
+								: 'w-0 opacity-0'
+						)}
+					></div>
 
 					<!-- Button: either continue or error alert -->
 					<div class="flex h-full shrink-0 items-center justify-end pr-2">
@@ -202,7 +195,7 @@
 						class="flex h-full w-full items-center justify-center font-[450] text-neutral-500 group-hover:text-neutral-700"
 						class:attention-animation={doAttentionAnimation}
 					>
-						{loggingInFor || 'test@example.com'}
+						{startLogin.result?.identifier || 'Continue Login'}
 					</p>
 				</button>
 			{/if}
@@ -234,7 +227,7 @@
 
 				{#if startLogin.result.codeSent || showCodeInput}
 					<div class="flex flex-col items-center gap-1">
-						<PinInput />
+						<CodeInput />
 
 						<button
 							class="mt-2 rounded-full bg-none px-4 py-2 font-[500] text-neutral-500 text-neutral-700 hover:bg-neutral-100 hover:text-black"
