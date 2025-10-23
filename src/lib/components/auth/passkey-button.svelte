@@ -61,7 +61,7 @@
 	onclick={handleClick}
 	class={createClass(
 		'bg-blue-vibrant-light flex cursor-pointer items-center justify-center gap-2 py-3 font-medium text-white outline-none transition-all',
-		idle ? 'rounded-[1.1rem] px-10' : 'my-2 rounded-[2rem] px-4',
+		idle ? 'rounded-[1.2rem] px-10' : 'my-2 rounded-[2rem] px-4',
 		error &&
 			error.type !== 'cancelled' &&
 			'ring-3 bg-rose-100 text-rose-500 ring-inset ring-rose-500',

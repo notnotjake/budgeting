@@ -3,8 +3,10 @@
 	import { createClass } from '@opensky/style'
 	import { delay } from '$utils/timing'
 	import { Suspense } from '$ui/feedback'
-	import { IconCheck, IconCircleCheck } from '@tabler/icons-svelte'
+	import { IconCircleCheck } from '@tabler/icons-svelte'
 	import { createShake } from '$lib/components/adapt/shake-behavior'
+
+	import { verifyLoginCode } from '$lib/remotes/auth.remote'
 
 	let value = $state('')
 	let pending = $state(false)
@@ -61,28 +63,51 @@
 		duration: 350
 	})
 
+	let form = $state<HTMLFormElement>()
+
 	async function onComplete() {
 		pending = true
-		await delay(2000)
-		pending = false
+
+		verifyLoginCode.fields.code.set(value)
+
+		form?.requestSubmit()
+
+		// await delay(2000)
+		// pending = false
 
 		// Simulate incorrect code - trigger shake
-		if (value.includes('8')) {
-			error = true
-		} else {
-			success = true
-		}
+		// if (value.includes('8')) {
+		// 	error = true
+		// } else {
+		// 	success = true
+		// }
 	}
+
+	$inspect(verifyLoginCode.result)
 </script>
 
+<form {...verifyLoginCode} bind:this={form}>
+	<input
+		{...verifyLoginCode.fields.code.as('text')}
+		autocomplete="one-time-code"
+		inputmode="numeric"
+		maxlength="6"
+		{value}
+	/>
+</form>
+
 <div class="flex flex-col items-center">
-	<p class="pb-1 text-[1.08rem]">Enter one-time code</p>
+	{#if stickyError}
+		<p class="py-1 text-[0.9rem] font-[450] text-rose-600">Code invalid, try again</p>
+	{:else}
+		<p class="pb-1 text-[1.02rem]">Enter Code</p>
+	{/if}
 
 	<div style:transform="translateX({$translateX}px)">
 		<PinInput.Root
 			bind:value
 			class={createClass(
-				'group flex w-fit cursor-pointer items-center overflow-hidden rounded-[1.2rem] border-2 border-gray-100 bg-gray-100 px-2.5 py-0.5 focus-within:border-blue-500 has-[:disabled]:opacity-70',
+				'group flex w-fit cursor-pointer items-center overflow-hidden rounded-[1.2rem] border-2 border-gray-100 bg-gray-100 px-3.5 py-0.5 focus-within:border-blue-500 has-[:disabled]:opacity-70',
 				completed && 'border-blue-200/20 bg-blue-200/20 focus-within:border-blue-200/20',
 				success && 'border-green-500 focus-within:border-green-500',
 				error && 'border-rose-500 focus-within:border-rose-500'
@@ -123,7 +148,7 @@
 
 				<div class="flex w-5 items-center justify-center"></div>
 
-				<div class="flex gap-1">
+				<div class="flex gap-[0.1rem]">
 					{#each cells.slice(3, 6) as cell}
 						{@render Cell(cell)}
 					{/each}
@@ -131,17 +156,13 @@
 			{/snippet}
 		</PinInput.Root>
 	</div>
-
-	{#if stickyError}
-		<p class="py-1 text-[0.9rem] text-rose-600">Code invalid, try again</p>
-	{/if}
 </div>
 
 {#snippet Cell(cell: CellProps)}
 	<PinInput.Cell
 		{cell}
 		class={createClass(
-			'group/cell relative flex h-10 w-6 cursor-pointer items-center justify-center rounded-xl transition-all duration-500',
+			'group/cell relative flex h-10 w-5 cursor-pointer items-center justify-center rounded-xl transition-all duration-500',
 			cell.char !== null && 'data-[active]:bg-sky-400/10',
 			pending ? 'scale-110 opacity-0 blur-md' : 'scale-100 opacity-100 blur-none'
 		)}

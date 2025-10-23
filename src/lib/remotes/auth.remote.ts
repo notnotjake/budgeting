@@ -2,6 +2,7 @@ import { z } from 'zod'
 import { query, form, command, getRequestEvent } from '$app/server'
 import Auth from '$lib/server/auth'
 import { error, redirect } from '@sveltejs/kit'
+import { delay } from '$lib/utils/timing'
 
 function requireUser() {
 	const { locals } = getRequestEvent()
@@ -43,6 +44,8 @@ export const startLogin = form(
 			identifier: data.identifier,
 			timezone: data.timezone
 		})
+
+		await delay(3000)
 
 		return {
 			codeSent,

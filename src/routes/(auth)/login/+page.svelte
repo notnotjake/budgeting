@@ -4,7 +4,7 @@
 	import { z } from 'zod'
 
 	import { createClass } from '@opensky/style'
-	import { wipeVertical, wipeHorizontal } from '$ui/transition'
+	import { wipeVertical } from '$ui/transition'
 	import { fade } from 'svelte/transition'
 	import { createShake } from '$ui/adapt/shake-behavior'
 	import { IconChevronLeft, IconArrowRight } from '@tabler/icons-svelte'
@@ -13,14 +13,13 @@
 	import PinInput from '$ui/input/pin-code.svelte'
 	import PasskeyButton from '$ui/auth/passkey-button.svelte'
 
-	// import { createValidation } from '$lib/utils/validation.svelte'
-
 	let { data } = $props()
 
 	const startLoginSchema = z.object({
 		identifier: z.string().email(),
 		timezone: z.string().optional()
 	})
+
 	const startLoginValid = createValidation(startLogin)
 	const startLoginForm = createEnhancedForm(startLogin, {
 		validation: startLoginValid,
@@ -28,10 +27,14 @@
 		timeoutMs: 9000
 	})
 
+	const { translateX, triggerShake: incorrectShake } = createShake({
+		amplitude: 7,
+		shakes: 2,
+		duration: 325
+	})
+
 	const localTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone
 	let identifierInput = $state<HTMLInputElement>()
-
-	let loginRequestResponse = $derived(startLogin.result)
 
 	let startButtonAvailable = $derived(
 		!startLoginForm.result &&
@@ -39,14 +42,6 @@
 			startLogin.fields.value()?.identifier &&
 			startLogin.fields.value()?.identifier.length >= 5
 	)
-
-	let doAttentionAnimation = $state(false)
-
-	const { translateX, triggerShake: incorrectShake } = createShake({
-		amplitude: 7,
-		shakes: 2,
-		duration: 325
-	})
 
 	function focusInput() {
 		identifierInput?.focus()
@@ -64,6 +59,10 @@
 		startLoginForm.reset()
 		startLogin.fields.identifier.set(current)
 	}
+
+	let showCodeInput = $state(false)
+
+	let doAttentionAnimation = $state(false)
 </script>
 
 <!-- Apply gray background on second step -->
@@ -228,36 +227,33 @@
 
 		<!-- Second step ui -->
 		{#if startLoginForm.result && startLogin.result}
-			<div class="flex w-full flex-col items-center pb-3 pt-8">
-				{#if startLogin.result.codeSent}
-					<form {...verifyLoginCode}>
-						<input
-							{...verifyLoginCode.fields.code.as('text')}
-							autocomplete="one-time-code"
-							inputmode="numeric"
-							maxlength="6"
-						/>
-
-						<button>Submit</button>
-					</form>
-				{/if}
+			<div class="flex w-full flex-col items-center gap-7 pb-3 pt-14">
 				{#if startLogin.result.passkeyAvailable}
 					<PasskeyButton />
 				{/if}
 
-				<PinInput />
+				{#if startLogin.result.codeSent || showCodeInput}
+					<div class="flex flex-col items-center gap-1">
+						<PinInput />
 
-				<button
-					class="mt-2 rounded-full bg-none px-4 py-2 font-[500] text-neutral-500 text-neutral-700 hover:bg-neutral-100 hover:text-black"
-				>
-					Resend
-				</button>
+						<button
+							class="mt-2 rounded-full bg-none px-4 py-2 font-[500] text-neutral-500 text-neutral-700 hover:bg-neutral-100 hover:text-black"
+						>
+							Resend
+						</button>
+					</div>
+				{/if}
 
-				<button
-					class="rounded-full bg-none px-4 py-2 font-[500] text-neutral-500 hover:bg-neutral-100"
-				>
-					or <span class="text-neutral-700 hover:text-black">login with email</span>
-				</button>
+				{#if startLogin.result.passkeyAvailable && !showCodeInput}
+					<button
+						onclick={() => {
+							showCodeInput = true
+						}}
+						class="mt-4 rounded-full bg-none px-4 py-2 font-[500] text-neutral-500 hover:bg-neutral-100"
+					>
+						or <span class="text-neutral-700 hover:text-black">login with email</span>
+					</button>
+				{/if}
 			</div>
 		{/if}
 	</div>
