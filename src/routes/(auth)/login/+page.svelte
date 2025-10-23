@@ -20,7 +20,11 @@
 		timezone: z.string().optional()
 	})
 	const startLoginValid = createValidation(startLogin)
-	const startLoginForm = createEnhancedForm(startLogin, { validator: startLoginValid })
+	const startLoginForm = createEnhancedForm(startLogin, {
+		validation: startLoginValid,
+		delayMs: 500,
+		timeoutMs: 9000
+	})
 
 	const localTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone
 	let identifierInput = $state<HTMLInputElement>()
@@ -44,7 +48,7 @@
 </script>
 
 <!-- Apply gray background on second step -->
-{#if startLoginForm.success}
+{#if startLoginForm.result}
 	<div
 		transition:fade={{ duration: 150 }}
 		class="pointer-events-none absolute inset-0 z-0 h-full w-full bg-neutral-400/10"
@@ -57,19 +61,19 @@
 	<div
 		class={createClass(
 			'relative flex min-h-40 w-full flex-shrink-0 grow flex-col items-center p-2.5 transition-all duration-200 sm:px-5',
-			startLoginForm.success ? 'rounded-[1.8rem] bg-white pb-10 pt-4' : 'rounded-[1.9rem] bg-none'
+			startLoginForm.result ? 'rounded-[1.8rem] bg-white pb-10 pt-4' : 'rounded-[1.9rem] bg-none'
 		)}
 	>
 		<!-- Colorful gradient on first step -->
 		<div
 			class={createClass(
 				'h-18 left-0 top-0 z-0 hidden w-full rounded-t-[1.8rem] bg-gradient-to-b from-[#E3F4FF] to-[#E8F9FF]/0 transition-colors duration-200 sm:absolute sm:z-auto sm:block',
-				startLoginForm.success ? 'opacity-0' : 'opacity-100'
+				startLoginForm.result ? 'opacity-0' : 'opacity-100'
 			)}
 		></div>
 
 		<!-- Message shown on first step -->
-		{#if !startLoginForm.success}
+		{#if !startLoginForm.result}
 			<div
 				transition:wipeVertical={{ duration: 400 }}
 				class="z-10 w-full flex-col items-center justify-center px-7 pb-6 pt-2 text-center"
@@ -90,11 +94,9 @@
 		<form
 			{...startLogin.preflight(startLoginSchema).enhance(async (opts) =>
 				startLoginForm.enhance(opts, {
-					delayMs: 500,
 					onDelay: () => {
 						console.log('delayed')
 					},
-					timeoutMs: 9000,
 					onTimeout: () => {
 						console.log('timedout')
 					}
@@ -105,13 +107,13 @@
 			<div
 				class={createClass(
 					'group relative flex h-12 w-full items-center overflow-hidden rounded-[1rem] border-2 border-red-500/0 focus-within:border-2 focus-within:border-blue-500',
-					startLoginForm.success ? 'bg-neutral-50' : 'bg-neutral-100'
+					startLoginForm.result ? 'bg-neutral-50' : 'bg-neutral-100'
 				)}
 			>
-				{#if startLoginForm.success}
+				{#if startLoginForm.result}
 					<button
 						onclick={() => {
-							// reset to initial
+							startLoginForm.reset()
 						}}
 						class="absolute inset-0 z-10 flex h-full w-full items-center justify-start"
 					>
@@ -143,7 +145,7 @@
 					class:attention-animation={doAttentionAnimation}
 					class={createClass(
 						'flex-grow-1 h-full w-full translate-y-0 pl-4 font-[450] text-zinc-900 outline-none transition-all selection:bg-sky-200 selection:text-blue-600 placeholder:font-[450] placeholder:text-neutral-400',
-						startLoginForm.success
+						startLoginForm.result
 							? 'cursor-pointer bg-none pr-4 text-center text-neutral-500'
 							: 'pr-1'
 					)}
@@ -163,7 +165,7 @@
 				<div
 					class={createClass(
 						'group z-10 flex h-full shrink-0 flex-nowrap items-center justify-end transition-all duration-200',
-						startLoginForm.success ? 'opacity-0' : 'opacity-100',
+						startLoginForm.result ? 'opacity-0' : 'opacity-100',
 						startLoginValid.issues('identifier') ? 'cursor-[w-resize]' : 'cursor-pointer'
 					)}
 				>
@@ -212,7 +214,7 @@
 			</div>
 		</form>
 
-		{#if startLogin.result}
+		{#if startLoginForm.result && startLogin.result}
 			{#if startLogin.result.codeSent}
 				<form {...verifyLoginCode}>
 					<input
@@ -228,18 +230,14 @@
 			{#if startLogin.result.passkeyAvailable}
 				<PasskeyButton />
 			{/if}
-		{/if}
 
-		{#if startLogin.result}
 			<PinInput />
 			<button
 				class="mt-2 rounded-full bg-none px-4 py-2 font-[500] text-neutral-500 text-neutral-700 hover:bg-neutral-100 hover:text-black"
 			>
 				Resend
 			</button>
-		{/if}
 
-		{#if loginRequestResponse}
 			<button
 				class="rounded-full bg-none px-4 py-2 font-[500] text-neutral-500 hover:bg-neutral-100"
 			>

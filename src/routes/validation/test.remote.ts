@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { form } from '$app/server'
+import { form, query } from '$app/server'
 import { delay } from '$lib/utils/timing'
 
 export const test = form(
@@ -17,8 +17,16 @@ export const test = form(
 			invalid(invalid.name('name taken'))
 		}
 
-		await delay(9000)
+		if (data.name === 'aaaa') {
+			return { success: true, message: 'test aaa' }
+		}
+
+		await delay(3000)
 
 		return { success: true, message: 'hello world' }
 	}
 )
+
+export const getPosts = query(async () => {
+	return { posts: 'Once upon a time' }
+})

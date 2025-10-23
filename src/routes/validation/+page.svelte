@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { createClass } from '@opensky/style'
-	import { test } from './test.remote'
+	import { test, getPosts } from './test.remote'
 	import { z } from 'zod'
 	import { createValidation, createEnhancedForm } from '@opensky/remotes'
 
@@ -13,35 +13,49 @@
 	})
 
 	const valid = createValidation(test)
-	const testForm = createEnhancedForm(test, { validator: valid })
+	const testForm = createEnhancedForm(test, {
+		validation: valid,
+		delayMs: 500,
+		timeoutMs: 8000
+	})
+
+	const posts = $derived(await getPosts())
 </script>
 
 <p>{testForm.state}</p>
+{#if testForm.result}
+	<p>RESULT</p>
+{/if}
+
+<p>{posts.posts}</p>
 
 <form
 	{...test.preflight(testSchema).enhance(async (opts) =>
 		testForm.enhance(opts, {
-			onSubmit: () => {
+			onSubmit: ({ data, cancel, updates }) => {
+				if (data.name === 'a111') {
+					cancel('issues')
+					valid.addIssue('name', 'a111 not allowed')
+				}
+
 				console.log('submitting')
+
+				updates(
+					getPosts().withOverride(() => {
+						return { posts: 'Updating!' }
+					})
+				)
 			},
-			delayMs: 500,
 			onDelay: () => {
 				console.log('delayed')
 			},
-			timeoutMs: 3500,
 			onTimeout: () => {
 				console.log('timeout')
 			},
 			onReturn: ({ data, result }) => {
-				console.log(data)
+				// console.log(data)
 				console.log('returned')
-				console.log(result)
-			},
-			onIssues: () => {
-				console.log('issues')
-			},
-			onError: ({ error }) => {
-				console.log(error)
+				// console.log(result)
 			}
 		})
 	)}
@@ -56,11 +70,11 @@
 		)}
 	/>
 	{#if valid.issues('name')}
-		{#each valid.issues('name') as issue}
+		{#each valid.issues('name') as issue (issue)}
 			<p class="text-rose-600">{issue}</p>
 		{/each}
 	{/if}
-	{#each test.fields.name.issues() as issue}
+	{#each test.fields.name.issues() as issue (issue)}
 		<p class="text-neutral-400">{issue.message}</p>
 	{/each}
 
@@ -73,11 +87,11 @@
 		)}
 	/>
 	{#if valid.issues('address.state')}
-		{#each valid.issues('address.state') as issue}
+		{#each valid.issues('address.state') as issue (issue)}
 			<p class="text-rose-600">{issue}</p>
 		{/each}
 	{/if}
-	{#each test.fields.address.state.issues() as issue}
+	{#each test.fields.address.state.issues() as issue (issue)}
 		<p class="text-neutral-400">{issue.message}</p>
 	{/each}
 
@@ -126,10 +140,18 @@
 	Fill Form
 </button>
 
+<button
+	onclick={() => {
+		testForm.reset()
+	}}
+>
+	Reset state
+</button>
+
 {#if test.result}
 	<p>Returned: {test.result.message}</p>
 {/if}
 
-{#each test.fields.allIssues() ?? [] as issue}
+{#each test.fields.allIssues() ?? [] as issue (issue.message)}
 	<p class="text-neutral-600">{issue.message}</p>
 {/each}
