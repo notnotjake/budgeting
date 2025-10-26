@@ -15,6 +15,7 @@ const config = {
 			remoteFunctions: true
 		},
 		alias: {
+			$remotes: 'src/lib/remotes',
 			$ui: 'src/lib/components/',
 			$utils: 'src/lib/utils/',
 			$tailwind: 'src/lib/theme/app.css'

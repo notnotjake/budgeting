@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { startRegistration } from '@simplewebauthn/browser'
-	import { startPasskeyRegistration, verifyPasskeyRegistration } from '$lib/remotes/auth.remote'
+	import { startPasskeyRegistration, verifyPasskeyRegistration } from '$remotes/auth/passkey.remote'
 
 	let name = $state('')
 

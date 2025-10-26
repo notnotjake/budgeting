@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { startLogin } from '$lib/remotes/auth.remote'
+	import { startLogin } from '$remotes/auth/authenticate.remote'
 	import { createValidation, createEnhancedForm } from '@opensky/remotes'
 	import { z } from 'zod'
 	import { onMount } from 'svelte'

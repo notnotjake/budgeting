@@ -1,8 +1,8 @@
 <script lang="ts">
-	import { verifyLoginCode } from '$lib/remotes/auth.remote'
+	import { verifyLoginCode } from '$remotes/auth/authenticate.remote'
 	import { createEnhancedForm } from '@opensky/remotes'
-	import { goto } from '$app/navigation'
-	import { resolve } from '$app/paths'
+	// import { goto } from '$app/navigation'
+	// import { resolve } from '$app/paths'
 	import { onMount } from 'svelte'
 
 	import { createClass } from '@opensky/style'

@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { logout } from '$lib/remotes/auth.remote'
+	import { logout } from '$remotes/auth/authenticate.remote'
 	import { Button } from '$ui/input'
 
 	let { data } = $props()
