@@ -38,6 +38,11 @@ const DEFAULT_CONFIG: AuthConfig = {
 		sessionLastSeenUpdateWindow: 5 * MIN_IN_MS,
 		sessionRetentionWindow: 30 * DAY_IN_MS
 	},
+	passkeys: {
+		rpID: 'localhost',
+		rpName: 'SvelteKit Example',
+		expectedOrigin: 'http://localhost:5173'
+	},
 	emails: {
 		sendLoginCodeNewUser: async () => {
 			console.error('Auth: sendLoginCodeNewUser email not implemented')
@@ -70,6 +75,7 @@ const config: AuthConfig = {
 	routes: { ...DEFAULT_CONFIG.routes, ...userConfig.routes },
 	redirects: { ...DEFAULT_CONFIG.redirects, ...userConfig.redirects },
 	durations: { ...DEFAULT_CONFIG.durations, ...userConfig.durations },
+	passkeys: { ...DEFAULT_CONFIG.passkeys, ...userConfig.passkeys },
 	emails: { ...DEFAULT_CONFIG.emails, ...userConfig.emails }
 }
 
@@ -77,6 +83,7 @@ const Auth = {
 	routes: config.routes,
 	redirects: config.redirects,
 	durations: config.durations,
+	passkeys: config.passkeys,
 	hooks: {
 		handleAuthentication,
 		handleProtected

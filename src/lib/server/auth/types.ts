@@ -25,6 +25,11 @@ export type AuthConfig = {
 		sessionLastSeenUpdateWindow: number
 		sessionRetentionWindow: number
 	}
+	passkeys: {
+		rpID: string
+		rpName: string
+		expectedOrigin: string
+	}
 	emails: {
 		sendLoginCodeNewUser: (params: {
 			email: string
@@ -90,6 +95,11 @@ export type AuthConfigInput = {
 		sessionRenewalUpdateWindow?: number
 		sessionLastSeenUpdateWindow?: number
 		sessionRetentionWindow?: number
+	}
+	passkeys: {
+		rpID: string
+		rpName: string
+		expectedOrigin: string
 	}
 	emails?: {
 		sendLoginCodeNewUser?: (params: {
