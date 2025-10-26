@@ -10,7 +10,7 @@ import {
 import {
 	setSessionTokenCookie,
 	getSessionTokenCookie,
-	deleteSessionTokenCookie,
+	clearSessionTokenCookie,
 	setRedirectUrlCookie,
 	getRedirectUrlCookie,
 	clearRedirectUrlCookie,
@@ -59,7 +59,7 @@ const AuthCore = {
 	// Cookies
 	setSessionTokenCookie,
 	getSessionTokenCookie,
-	deleteSessionTokenCookie,
+	clearSessionTokenCookie,
 	setRedirectUrlCookie,
 	getRedirectUrlCookie,
 	clearRedirectUrlCookie,

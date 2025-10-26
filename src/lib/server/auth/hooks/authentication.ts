@@ -30,7 +30,7 @@ export const handleAuthentication: Handle = async ({ event, resolve }) => {
 			AuthCore.setSessionTokenCookie({ event, token: sessionToken, expiresAt: session.expiresAt })
 		} else {
 			// Otherwise, delete the existing cookie
-			AuthCore.deleteSessionTokenCookie(event)
+			AuthCore.clearSessionTokenCookie(event)
 		}
 
 		// Return the user and session (could be verified or null)

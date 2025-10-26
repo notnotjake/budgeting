@@ -26,7 +26,7 @@ export function getSessionTokenCookie(event: RequestEvent): string | null {
 	return event.cookies.get(SESSION_COOKIE_NAME) ?? null
 }
 
-export function deleteSessionTokenCookie(event: RequestEvent) {
+export function clearSessionTokenCookie(event: RequestEvent) {
 	event.cookies.set(SESSION_COOKIE_NAME, '', {
 		httpOnly: true,
 		sameSite: 'lax',

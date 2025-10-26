@@ -258,12 +258,28 @@ export async function verifyCode({ event, code }: { event: RequestEvent; code: s
 	}
 }
 
+export async function startPasskey({
+	event,
+	identifier
+}: {
+	event: RequestEvent
+	identifier?: string
+}) {
+	if (!event.locals.session) {
+		throw error(500)
+	}
+
+	if (!identifier) {
+		// create passkey options
+	}
+}
+
 export async function verifyPasskey() {}
 
 export async function logout({ event }: { event: RequestEvent }) {
 	if (!event.locals.session) {
 		AuthCore.clearRedirectUrlCookie(event)
-		AuthCore.deleteSessionTokenCookie(event)
+		AuthCore.clearSessionTokenCookie(event)
 
 		throw redirect(303, Auth.redirects.afterLogout)
 	}
@@ -277,7 +293,7 @@ export async function logout({ event }: { event: RequestEvent }) {
 
 	// Remove the session cookie and any redirects
 	AuthCore.clearRedirectUrlCookie(event)
-	AuthCore.deleteSessionTokenCookie(event)
+	AuthCore.clearSessionTokenCookie(event)
 
 	throw redirect(303, Auth.redirects.afterLogout)
 }
