@@ -6,7 +6,7 @@
 
 	import { createClass } from '@opensky/style'
 	import { wipeVertical } from '$ui/transition'
-	import { fade } from 'svelte/transition'
+	import { fade, fly } from 'svelte/transition'
 	import { createShake } from '$ui/adapt/shake-behavior'
 	import { IconChevronLeft, IconArrowRight } from '@tabler/icons-svelte'
 
@@ -72,7 +72,7 @@
 {/if}
 
 <!-- Container inside the layout -->
-<div class="z-10 flex h-full w-full max-w-[30rem] items-center justify-center px-2">
+<div class="z-10 flex h-full w-full max-w-[29rem] items-center justify-center px-2">
 	<!-- Login card container -->
 	<div
 		class={createClass(
@@ -83,7 +83,7 @@
 		<!-- Color gradient on first step -->
 		<div
 			class={createClass(
-				'h-18 left-0 top-0 z-0 hidden w-full rounded-t-[1.8rem] bg-gradient-to-b from-[#E3F4FF] to-[#E8F9FF]/0 transition-colors duration-200 sm:absolute sm:z-auto sm:block',
+				'h-18 left-0 top-0 z-0 hidden w-full rounded-t-[1.8rem] bg-gradient-to-b from-[#E3F4FF] to-[#E8F9FF]/0 transition-all duration-200 sm:absolute sm:z-auto sm:block',
 				startLoginForm.result ? 'opacity-0' : 'opacity-100'
 			)}
 		></div>
@@ -92,7 +92,7 @@
 		{#if !startLoginForm.result}
 			<div
 				transition:wipeVertical={{ duration: 400 }}
-				class="z-10 w-full flex-col items-center justify-center px-7 pb-6 pt-2 text-center"
+				class="z-10 mb-6 w-full flex-col items-center justify-center px-7 pt-2 text-center"
 			>
 				<h2
 					class="tracking-tight-md animate-fade-in-scale text-[1.33rem] font-[550] leading-loose text-black"
@@ -188,10 +188,13 @@
 			{:else}
 				<!-- Second step shows back button -->
 				<button onclick={resetForm} class="flex h-full w-full items-center justify-center">
-					<IconChevronLeft
-						class="absolute inset-0 h-full text-neutral-400 group-hover:text-neutral-700"
-					/>
+					<div in:fade>
+						<IconChevronLeft
+							class="absolute inset-0 h-full text-neutral-400 group-hover:text-neutral-700"
+						/>
+					</div>
 					<p
+						in:fly={{ x: -100, opacity: 0.5, duration: 500 }}
 						class="flex h-full w-full items-center justify-center font-[450] text-neutral-500 group-hover:text-neutral-700"
 						class:attention-animation={doAttentionAnimation}
 					>
@@ -220,7 +223,7 @@
 
 		<!-- Second step ui -->
 		{#if startLoginForm.result && startLogin.result}
-			<div class="flex w-full flex-col items-center gap-7 pb-3 pt-14">
+			<div transition:wipeVertical class="flex w-full flex-col items-center gap-7 pb-3 pt-14">
 				{#if startLogin.result.passkeyAvailable}
 					<PasskeyButton />
 				{/if}
