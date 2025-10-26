@@ -1,12 +1,10 @@
 <script lang="ts">
-	import { onMount } from 'svelte'
 	import { startAuthentication, type AuthenticationResponseJSON } from '@simplewebauthn/browser'
-	import { remotesTest } from '$lib/remotes/auth.remote'
 
 	import { createClass } from '@opensky/style'
 	import { scale } from 'svelte/transition'
 	import { Suspense } from '$ui/feedback'
-	import { IconReload, IconAlertTriangleFilled } from '@tabler/icons-svelte'
+	import { IconReload } from '@tabler/icons-svelte'
 	import IconPasskey from './passkey-icon.svelte'
 
 	let { identifier, supressAuto = false }: { identifier: string; supressAuto: boolean } = $props()
@@ -29,7 +27,7 @@
 		} else if (state.status === 'pending') {
 			state = {
 				status: 'error',
-				type: 'unknown',
+				type: 'cancelled',
 				message: 'Something went wrong trying to verify your passkey'
 			}
 		} else {
@@ -40,18 +38,18 @@
 	async function handlePasskeyRequestChallenge() {
 		state = { status: 'pending' }
 
-		try {
-			const result = await remotesTest({ identifier: 'test@test.com' })
+		// try {
+		// 	const result = await remotesTest({ identifier: 'test@test.com' })
 
-			if (result?.success && result?.data) {
-				console.log('success', result)
-			} else {
-				state = { status: 'error', type: 'unknown', message: 'Server error occurred' }
-			}
-		} catch (e) {
-			console.error(e)
-			state = { status: 'error', type: 'unknown', message: 'Server error occurred' }
-		}
+		// 	if (result?.success && result?.data) {
+		// 		console.log('success', result)
+		// 	} else {
+		// 		state = { status: 'error', type: 'unknown', message: 'Server error occurred' }
+		// 	}
+		// } catch (e) {
+		// 	console.error(e)
+		// 	state = { status: 'error', type: 'unknown', message: 'Server error occurred' }
+		// }
 	}
 	function handlePasskeySignChallenge() {}
 	function handlePasskeyVerifyAssertion() {}
@@ -95,11 +93,10 @@
 </button>
 
 {#if error && error.message}
-	<div class="px-5 pb-6 pt-3" in:scale={{ start: 0.8, opacity: 0.7, duration: 300 }}>
-		<div class="flex max-w-64 flex-col items-start justify-start gap-1">
+	<div class="px-5 pb-6 pt-1" in:scale={{ start: 0.8, opacity: 0.7, duration: 300 }}>
+		<div class="flex max-w-56 flex-col items-start justify-start">
 			<div class="flex items-center gap-1">
-				<IconAlertTriangleFilled size={22} class="text-rose-600" />
-				<p class="font-semibold text-rose-600">Details:</p>
+				<p class="font-semibold text-rose-600">Error</p>
 			</div>
 			<p class="font-[450] leading-5 tracking-tight text-neutral-700">
 				{error.message}

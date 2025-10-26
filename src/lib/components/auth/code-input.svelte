@@ -36,7 +36,7 @@
 	})
 
 	let resultSuccess = $derived(verifyLoginCodeForm.result && verifyLoginCode?.result?.success)
-	let resultError = $derived(verifyLoginCode?.result?.success === false)
+	let resultError = $derived(verifyLoginCode?.result?.success === false && codeValue === '')
 </script>
 
 <form
@@ -87,11 +87,11 @@
 			maxlength={6}
 			pattern={REGEXP_ONLY_DIGITS}
 			class={createClass(
-				'group flex w-fit cursor-pointer items-center overflow-hidden rounded-[1.2rem] border-2 border-gray-100 bg-gray-100 px-3.5 py-0.5 focus-within:border-blue-500 has-[:disabled]:opacity-70',
-				verifyLoginCodeForm.pending &&
-					'border-blue-200/20 bg-blue-200/20 focus-within:border-blue-200/20',
-				resultSuccess && 'border-green-500 focus-within:border-green-500',
-				resultError && 'border-rose-500 focus-within:border-rose-500'
+				'group flex w-fit cursor-pointer items-center overflow-hidden rounded-[1.2rem] bg-gray-100 px-3.5 py-0.5 has-[:disabled]:opacity-70',
+				'focus-within:outline-2 focus-within:outline-blue-500',
+				verifyLoginCodeForm.pending && 'bg-blue-200/30 focus-within:outline-none',
+				resultSuccess && 'outline-2 outline-green-500 focus-within:outline-green-500',
+				resultError && 'outline-2 outline-rose-500 focus-within:outline-rose-500'
 			)}
 		>
 			{#snippet children({ cells })}
