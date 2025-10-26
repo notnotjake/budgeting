@@ -233,7 +233,7 @@
 						<CodeInput />
 
 						<button
-							class="mt-2 rounded-full bg-none px-4 py-2 font-[500] text-neutral-500 text-neutral-700 hover:bg-neutral-100 hover:text-black"
+							class="mt-2 rounded-full bg-none px-4 py-2 font-[500] text-neutral-600 hover:bg-neutral-100 hover:text-black"
 						>
 							Resend
 						</button>

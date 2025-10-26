@@ -51,8 +51,9 @@
 		// 	state = { status: 'error', type: 'unknown', message: 'Server error occurred' }
 		// }
 	}
-	function handlePasskeySignChallenge() {}
-	function handlePasskeyVerifyAssertion() {}
+
+	// function handlePasskeySignChallenge() {}
+	// function handlePasskeyVerifyAssertion() {}
 </script>
 
 <button

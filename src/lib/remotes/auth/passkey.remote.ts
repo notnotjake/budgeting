@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { form, query, command, getRequestEvent } from '$app/server'
+import { query, command, getRequestEvent } from '$app/server'
 import { error } from '@sveltejs/kit'
 
 import Auth from '$lib/server/auth'
