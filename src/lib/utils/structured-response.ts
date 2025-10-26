@@ -79,7 +79,7 @@ export function unwrap<T>(result: StructuredResponse<T>, onError: (message: stri
 	if (!result.success) {
 		return onError(result.error ?? 'Unknown error')
 	}
-	if (!result.data) {
+	if (result.data === undefined) {
 		console.warn(
 			'unwrap() throwing beacuse result has no data. Verify the function should return data otherwise remove unwrap call to prevent errors'
 		)

@@ -40,6 +40,7 @@
 </script>
 
 <form
+	class="hidden"
 	{...verifyLoginCode.enhance(async (opts) =>
 		verifyLoginCodeForm.enhance(opts, {
 			onReturn: async ({ result }) => {
@@ -151,7 +152,6 @@
 			<div
 				style:opacity={cell.char === null ? '1.0' : '0.0'}
 				style:transform={cell.char === null ? 'translateY(0%)' : 'translateY(150%)'}
-				<!-- eslint-disable-next-line svelte/no-unknown-style-directive-property -->
 				style:scaleY={cell.char === null ? '1.0' : '3.0'}
 				class={createClass(
 					`h-2 w-2 rounded-full transition-all duration-200`,
