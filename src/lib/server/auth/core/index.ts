@@ -1,3 +1,5 @@
+import { sendLoginCode, sendReauthCode } from './sending'
+
 import {
 	generateToken,
 	hashToken,
@@ -48,6 +50,10 @@ import {
 } from './challenges'
 
 const AuthCore = {
+	// Sending
+	sendLoginCode,
+	sendReauthCode,
+
 	// Utils
 	generateToken,
 	hashToken,

@@ -66,10 +66,10 @@ export const startLogin = form(
 		}
 
 		// Send login code
-		await sendCode({
+		await AuthCore.sendLoginCode({
 			sessionId: event.locals.session.id,
 			identifier,
-			flow: user ? 'existinguser' : 'newuser',
+			existingUser: !!user,
 			timezone: timezone
 		})
 

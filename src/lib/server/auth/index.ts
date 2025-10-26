@@ -3,9 +3,6 @@ import userConfig from './config'
 
 import { handleAuthentication } from './hooks/authentication'
 import { handleProtected } from './hooks/protected'
-
-import { startAuth, sendCode, verifyCode, verifyPasskey, logout } from './api/authenticate'
-import { startPasskeyRegistration, verifyPasskeyRegistration } from './api/passkey'
 import { requireSession, requireAuthenticatedUser, requireRecentAuth } from './api/protect'
 
 const DAY_IN_MS = 24 * 60 * 60 * 1000
@@ -92,16 +89,7 @@ const Auth = {
 		requireSession,
 		requireAuthenticatedUser,
 		requireRecentAuth
-	},
-	// Authenticate functions
-	startAuth,
-	sendCode,
-	verifyCode,
-	verifyPasskey,
-	logout,
-	// Passkey
-	startPasskeyRegistration,
-	verifyPasskeyRegistration
+	}
 }
 export default Auth
 
