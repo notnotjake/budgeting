@@ -11,6 +11,12 @@ function requireUser() {
 	}
 }
 
+export const logout = form(async () => {
+	const event = getRequestEvent()
+
+	await Auth.logout({ event })
+})
+
 export const startLogin = form(
 	z.object({
 		identifier: z.string().email(),
@@ -18,8 +24,6 @@ export const startLogin = form(
 	}),
 	async (data, invalid) => {
 		// throw error(500, 'unexpected error')
-
-		console.log('S1')
 
 		const event = getRequestEvent()
 
@@ -43,6 +47,16 @@ export const startLogin = form(
 	}
 )
 
+// export const sendLoginCode = form(
+// 	z.object({
+// 		identifier: z.string().email(),
+// 		timezone: z.string().optional()
+// 	}),
+// 	async (data, invalid) => {
+// 		return { identifier: data.identifier, codeSent: true }
+// 	}
+// )
+
 export const verifyLoginCode = form(
 	z.object({
 		code: z
@@ -57,7 +71,6 @@ export const verifyLoginCode = form(
 			const result = await Auth.verifyCode({ event, code })
 
 			if (result.success && result.redirectUrl) {
-				console.log('AA')
 				return { success: true, redirectUrl: result.redirectUrl }
 			}
 		} catch {
@@ -66,11 +79,19 @@ export const verifyLoginCode = form(
 	}
 )
 
-export const logout = form(async () => {
-	const event = getRequestEvent()
+export const startLoginPasskey = query(
+	z.object({
+		identifier: z.string().email().optional()
+	}),
+	async ({ identifier }) => {
+		const event = getRequestEvent()
 
-	await Auth.logout({ event })
-})
+		if (!identifier) {
+		}
+	}
+)
+
+export const verifyLoginPasskey = form()
 
 export const startPasskeyRegistration = query(async () => {
 	const event = getRequestEvent()

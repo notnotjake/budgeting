@@ -139,10 +139,6 @@ export async function getUser({
 			)
 			.limit(1)
 
-		if (!userFound) {
-			return Response.succeed(userFound)
-		}
-
 		return Response.succeed(userFound)
 	} catch (e) {
 		console.error('Failed to lookup user', e)

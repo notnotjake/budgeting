@@ -148,7 +148,7 @@ export async function cleanupDuplicateLoginChallenges({
 	sessionId,
 	type
 }: {
-	identifier: string
+	identifier: string | null
 	sessionId: string | null
 	type: ChallengeType
 }): Promise<Response<never>> {
@@ -158,14 +158,15 @@ export async function cleanupDuplicateLoginChallenges({
 		// Delete by type
 		conditions.push(eq(table.challenge.type, type))
 
-		if (sessionId) {
-			// Delete by session id and identifier
+		// Delete by sessionId and/or identifier
+		if (identifier && sessionId) {
 			conditions.push(
 				or(eq(table.challenge.identifier, identifier), eq(table.challenge.sessionId, sessionId))
 			)
-		} else {
-			// Delete by identifier only (no session)
+		} else if (identifier) {
 			conditions.push(eq(table.challenge.identifier, identifier))
+		} else if (sessionId) {
+			conditions.push(eq(table.challenge.sessionId, sessionId))
 		}
 
 		await db.delete(table.challenge).where(and(...conditions))
