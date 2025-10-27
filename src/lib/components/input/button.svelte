@@ -85,7 +85,7 @@
 </script>
 
 {#if as}
-	<svelte:element this={as} class={createClass(variants.classes, classProp)} aria-role="button">
+	<svelte:element this={as} class={createClass(variants.classes, classProp)} role="button">
 		{#if suspense}
 			<div class="flex h-full items-center pr-1">
 				<Suspense.Spinner size={16} />

@@ -1,6 +1,6 @@
 import type { Handle } from '@sveltejs/kit'
 import AuthCore from '$lib/server/auth/core'
-import { ERROR_MESSAGE } from '$lib/server/auth'
+import { ERROR_MESSAGE } from '$lib/server/auth/core/errors'
 
 export const handleAuthentication: Handle = async ({ event, resolve }) => {
 	try {
