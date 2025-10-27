@@ -7,7 +7,7 @@ import AuthCore from '$lib/server/auth/core'
 import { unwrap } from '$utils/structured-response'
 import { generateAuthenticationOptions } from '@simplewebauthn/server'
 
-// import { delay } from '$utils/timing'
+import { delay } from '$utils/timing'
 
 export const logout = form(async () => {
 	const event = getRequestEvent()
@@ -34,15 +34,19 @@ export const startLogin = form(
 		timezone: z.string().optional()
 	}),
 	async ({ identifier: identifierRaw, timezone }) => {
-		const event = getRequestEvent()
+		const { locals } = getRequestEvent()
 
 		// Require session
-		if (!event.locals.session) {
-			throw error(500)
+		if (!locals.session) {
+			throw error(400)
 		}
 
 		// Normalize input
 		const identifier = identifierRaw.toLowerCase().trim()
+
+		if (identifier === 'test@test.com') {
+			return error(401, 'Email not Allowed')
+		}
 
 		// Check if user exists
 		const user = unwrap(await AuthCore.getUser({ identifier }), () => {
@@ -67,7 +71,7 @@ export const startLogin = form(
 
 		// Send login code
 		await AuthCore.sendLoginCode({
-			sessionId: event.locals.session.id,
+			sessionId: locals.session.id,
 			identifier,
 			existingUser: !!user,
 			timezone: timezone
@@ -81,7 +85,39 @@ export const startLogin = form(
 	}
 )
 
-// export const sendLoginCode = form()
+export const sendLoginCode = form(
+	z.object({
+		identifier: z.string().email(),
+		timezone: z.string().optional()
+	}),
+	async ({ identifier: identifierRaw, timezone }) => {
+		await delay(3000)
+
+		const { locals } = getRequestEvent()
+
+		if (!locals.session) {
+			throw error(400)
+		}
+
+		// Normalize input
+		const identifier = identifierRaw.toLowerCase().trim()
+
+		// Check if user exists
+		const user = unwrap(await AuthCore.getUser({ identifier }), () => {
+			throw error(500, 'Failed to get user')
+		})
+
+		// Send login code
+		await AuthCore.sendLoginCode({
+			sessionId: locals.session.id,
+			identifier,
+			existingUser: !!user,
+			timezone: timezone
+		})
+
+		return { success: true }
+	}
+)
 
 export const verifyLoginCode = form(
 	z.object({
