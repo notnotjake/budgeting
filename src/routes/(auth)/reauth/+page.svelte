@@ -5,7 +5,6 @@
 	import { createClass } from '@opensky/style'
 	import CodeInput from '$ui/auth/code-input.svelte'
 	import PasskeyButton from '$ui/auth/passkey-button.svelte'
-	import { IconLockFilled } from '@tabler/icons-svelte'
 
 	const reauthParams = z.object({
 		title: z.string().optional(),
@@ -21,14 +20,11 @@
 
 	let { data } = $props()
 
-	let showCodeInput = $state(false)
+	const localTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone
 </script>
 
 <!-- Gray background gradient -->
-<div
-	transition:fade={{ duration: 200 }}
-	class="pointer-events-none absolute inset-0 z-0 h-full w-full bg-neutral-400/10"
-></div>
+<div class="pointer-events-none absolute inset-0 z-0 h-full w-full bg-neutral-400/10"></div>
 
 <!-- Container inside the layout -->
 <div class="z-10 flex h-full w-full max-w-[29rem] items-center justify-center px-2">
@@ -40,16 +36,8 @@
 		)}
 	>
 		<div class="flex h-fit w-full flex-col pb-8">
-			<!-- User identifier -->
-			<p
-				class="flex w-fit items-center gap-1 rounded-full bg-neutral-100 px-4 py-2 font-[450] text-neutral-600"
-			>
-				<IconLockFilled size={19} class="text-green-700" />
-				{data.user?.identifier}
-			</p>
-
 			<!-- Message-->
-			<div class="w-full flex-col items-start justify-center px-3 pt-5">
+			<div class="w-full flex-col items-start justify-center px-5 pt-5">
 				<h2
 					class="tracking-tight-md animate-fade-in-scale text-[1.33rem] font-[550] leading-loose text-black"
 				>
@@ -68,28 +56,11 @@
 				<PasskeyButton />
 			{/if}
 
-			{#if data.codeSent || showCodeInput}
-				<div class="flex flex-col items-center gap-1">
-					<CodeInput />
-
-					<button
-						class="mt-2 rounded-full bg-none px-4 py-2 font-[500] text-neutral-600 hover:bg-neutral-100 hover:text-black"
-					>
-						Resend
-					</button>
-				</div>
-			{/if}
-
-			{#if data.passkeyAvailable && !showCodeInput}
-				<button
-					onclick={() => {
-						showCodeInput = true
-					}}
-					class="mt-4 rounded-full bg-none px-4 py-2 font-[500] text-neutral-500 hover:bg-neutral-100"
-				>
-					or <span class="text-neutral-700 hover:text-black">login with email</span>
-				</button>
-			{/if}
+			<CodeInput
+				codeSent={data.codeSent}
+				identifier={data.user?.identifier}
+				timezone={localTimezone}
+			/>
 		</div>
 	</div>
 </div>

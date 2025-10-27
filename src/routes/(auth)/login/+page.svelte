@@ -8,10 +8,11 @@
 	import { wipeVertical } from '$ui/transition'
 	import { fade, fly } from 'svelte/transition'
 	import { createShake } from '$ui/adapt/shake-behavior'
-	import { IconChevronLeft, IconArrowRight } from '@tabler/icons-svelte'
+	import { IconChevronLeft, IconArrowRight, IconCircleCheckFilled } from '@tabler/icons-svelte'
 
 	import { Suspense } from '$ui/feedback'
 	import CodeInput from '$ui/auth/code-input.svelte'
+	import ResendEmailButton from '$ui/auth/resend-email-button.svelte'
 	import PasskeyButton from '$ui/auth/passkey-button.svelte'
 
 	let { data } = $props()
@@ -76,8 +77,8 @@
 	<!-- Login card container -->
 	<div
 		class={createClass(
-			'relative flex min-h-40 w-full flex-shrink-0 grow flex-col items-center p-2.5 transition-all duration-200 sm:px-5',
-			startLoginForm.result ? 'rounded-[1.8rem] bg-white pt-4' : 'rounded-[1.9rem] bg-none'
+			'relative flex min-h-40 w-full flex-shrink-0 grow flex-col items-center transition-all duration-200',
+			startLoginForm.result ? 'rounded-[1.8rem] bg-white p-4' : 'rounded-[1.9rem] bg-none p-3 px-5'
 		)}
 	>
 		<!-- Color gradient on first step -->
@@ -228,28 +229,11 @@
 					<PasskeyButton />
 				{/if}
 
-				{#if startLogin.result.codeSent || showCodeInput}
-					<div class="flex flex-col items-center gap-1">
-						<CodeInput />
-
-						<button
-							class="mt-2 rounded-full bg-none px-4 py-2 font-[500] text-neutral-600 hover:bg-neutral-100 hover:text-black"
-						>
-							Resend
-						</button>
-					</div>
-				{/if}
-
-				{#if startLogin.result.passkeyAvailable && !showCodeInput}
-					<button
-						onclick={() => {
-							showCodeInput = true
-						}}
-						class="mt-4 rounded-full bg-none px-4 py-2 font-[500] text-neutral-500 hover:bg-neutral-100"
-					>
-						or <span class="text-neutral-700 hover:text-black">login with email</span>
-					</button>
-				{/if}
+				<CodeInput
+					codeSent={startLogin.result.codeSent}
+					identifier={startLogin.result.identifier}
+					timezone={localTimezone}
+				/>
 			</div>
 		{/if}
 	</div>
