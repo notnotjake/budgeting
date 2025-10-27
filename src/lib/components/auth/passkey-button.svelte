@@ -1,76 +1,97 @@
 <script lang="ts">
-	import { startAuthentication, type AuthenticationResponseJSON } from '@simplewebauthn/browser'
+	import { goto } from '$app/navigation'
+	import { onMount } from 'svelte'
+	import { startLoginPasskey, verifyLoginPasskey } from '$remotes/auth/authenticate.remote'
+	import { startAuthentication } from '@simplewebauthn/browser'
 
 	import { createClass } from '@opensky/style'
 	import { scale } from 'svelte/transition'
-	import { Suspense } from '$ui/feedback'
+
 	import { IconReload } from '@tabler/icons-svelte'
 	import IconPasskey from './passkey-icon.svelte'
+	import { Suspense } from '$ui/feedback'
 
-	let { identifier, supressAuto = false }: { identifier: string; supressAuto: boolean } = $props()
+	let { identifier, auto = true }: { identifier: string; auto: boolean } = $props()
 
-	type ErrorTypes = 'unknown' | 'cancelled' | 'timeout' | 'network'
-	type State =
-		| { status: 'idle' }
-		| { status: 'pending' }
-		| { status: 'error'; type: ErrorTypes; message: string | null }
+	type StandardState = 'idle' | 'pending' | 'result' | 'delayed' | 'timeout' | 'issues' | 'error'
+	let standardState = $state<StandardState>('idle')
 
-	let state = $state<State>({ status: 'idle' })
-	// Derived values for easier access
-	const idle = $derived(state.status === 'idle')
-	const pending = $derived(state.status === 'pending')
-	const error = $derived(state.status === 'error' && state) // return false or the state object (with type and message)
+	function setState(state: StandardState) {
+		standardState = state
+	}
 
-	function handleClick() {
-		if (state.status === 'idle') {
-			handlePasskeyRequestChallenge()
-		} else if (state.status === 'pending') {
-			state = {
-				status: 'error',
-				type: 'cancelled',
-				message: 'Something went wrong trying to verify your passkey'
-			}
-		} else {
-			state = { status: 'idle' }
+	let buttonState = $derived.by(() => {
+		return {
+			current: standardState,
+			idle: standardState === 'idle',
+			pending: standardState === 'pending',
+			result: standardState === 'result',
+			delayed: standardState === 'delayed', // not used
+			timeout: standardState === 'timeout', // not used
+			issues: standardState === 'issues', // not used
+			error: standardState === 'error'
+		}
+	})
+
+	let error = $state<boolean | 'cancelled' | 'invalid'>(false)
+
+	async function handleClick() {
+		if (buttonState.idle) {
+			await tryLoginPasskey()
+		} else if (buttonState.pending) {
+			setState('idle')
+			// cancel attempt?
+		} else if (buttonState.error) {
+			setState('idle')
+			await tryLoginPasskey()
 		}
 	}
 
-	async function handlePasskeyRequestChallenge() {
-		state = { status: 'pending' }
+	async function tryLoginPasskey() {
+		setState('pending')
+		console.log('calling')
 
-		// try {
-		// 	const result = await remotesTest({ identifier: 'test@test.com' })
+		try {
+			const optionsResult = await startLoginPasskey({ identifier })
 
-		// 	if (result?.success && result?.data) {
-		// 		console.log('success', result)
-		// 	} else {
-		// 		state = { status: 'error', type: 'unknown', message: 'Server error occurred' }
-		// 	}
-		// } catch (e) {
-		// 	console.error(e)
-		// 	state = { status: 'error', type: 'unknown', message: 'Server error occurred' }
-		// }
+			const authenticationResponse = await startAuthentication({
+				optionsJSON: optionsResult.options
+			})
+
+			const result = await verifyLoginPasskey({ attestation: authenticationResponse })
+
+			if (result.success && result.redirectUrl) {
+				setState('result')
+				goto(result.redirectUrl)
+			}
+		} catch (e) {
+			console.error(e)
+			setState('error')
+		}
 	}
 
-	// function handlePasskeySignChallenge() {}
-	// function handlePasskeyVerifyAssertion() {}
+	onMount(async () => {
+		console.log('mounted')
+		if (auto) {
+			await tryLoginPasskey()
+		}
+	})
 </script>
 
 <button
 	onclick={handleClick}
 	class={createClass(
 		'bg-blue-vibrant-light flex cursor-pointer items-center justify-center gap-2 py-3 font-medium text-white outline-none transition-all',
-		idle ? 'rounded-[1.2rem] px-10' : 'my-2 rounded-[2rem] px-4',
-		error &&
-			error.type !== 'cancelled' &&
-			'ring-3 bg-rose-100 text-rose-500 ring-inset ring-rose-500',
-		error && error.type === 'cancelled' && 'bg-neutral-600 text-neutral-100'
+		buttonState.idle ? 'rounded-[1.2rem] px-10' : 'my-2 rounded-[2rem] px-4',
+		buttonState.result && 'bg-green-600',
+		buttonState.error && error === 'cancelled' && 'bg-neutral-600 text-neutral-100',
+		buttonState.error && 'ring-3 bg-rose-100 text-rose-500 ring-inset ring-rose-500'
 	)}
 >
-	{#if idle}
+	{#if buttonState.idle}
 		<IconPasskey />
 		<p>Use Passkey</p>
-	{:else if pending}
+	{:else if buttonState.pending || buttonState.result}
 		<Suspense.Spinner
 			size={14}
 			thickness={10}
@@ -84,7 +105,7 @@
 			backgroundColor="var(--color-sky-200)"
 			primaryColor="var(--color-white)">Trying Passkey</Suspense.Text
 		>
-	{:else if error && error.type === 'cancelled'}
+	{:else if buttonState.error && error === 'cancelled'}
 		<IconReload stroke={2.5} size={19} />
 		<p class="whitespace-nowrap font-medium">Cancelled. Try again</p>
 	{:else}
@@ -93,15 +114,17 @@
 	{/if}
 </button>
 
-{#if error && error.message}
+{#if buttonState.error}
 	<div class="px-5 pb-6 pt-1" in:scale={{ start: 0.8, opacity: 0.7, duration: 300 }}>
 		<div class="flex max-w-56 flex-col items-start justify-start">
 			<div class="flex items-center gap-1">
 				<p class="font-semibold text-rose-600">Error</p>
 			</div>
-			<p class="font-[450] leading-5 tracking-tight text-neutral-700">
-				{error.message}
-			</p>
+			{#if error}
+				<p class="font-[450] leading-5 tracking-tight text-neutral-700">
+					{error}
+				</p>
+			{/if}
 		</div>
 	</div>
 {/if}

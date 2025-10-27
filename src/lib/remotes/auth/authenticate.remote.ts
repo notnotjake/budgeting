@@ -1,11 +1,15 @@
-import { form, getRequestEvent, query } from '$app/server'
+import { form, query, command, getRequestEvent } from '$app/server'
 import { error, redirect } from '@sveltejs/kit'
 import { z } from 'zod'
 
 import Auth from '$lib/server/auth'
 import AuthCore from '$lib/server/auth/core'
 import { unwrap } from '$utils/structured-response'
-import { generateAuthenticationOptions } from '@simplewebauthn/server'
+import {
+	generateAuthenticationOptions,
+	verifyAuthenticationResponse,
+	type PublicKeyCredentialRequestOptionsJSON
+} from '@simplewebauthn/server'
 
 import { delay } from '$utils/timing'
 
@@ -130,7 +134,7 @@ export const verifyLoginCode = form(
 		const event = getRequestEvent()
 
 		if (!event.locals.session) {
-			throw error(500)
+			throw error(400)
 		}
 
 		const session = event.locals.session
@@ -215,6 +219,8 @@ export const startLoginPasskey = query(
 		identifier: z.string().email().optional()
 	}),
 	async ({ identifier }) => {
+		console.log('running')
+
 		const { locals } = getRequestEvent()
 
 		if (!locals.session) {
@@ -254,14 +260,14 @@ export const startLoginPasskey = query(
 
 		const expiresAt = new Date(Date.now() + Auth.durations.challengePasskeyMaxAge)
 
-		await AuthCore.cleanupDuplicateLoginChallenges({
-			identifier: null,
-			sessionId: locals.session.id,
-			type: 'passkey'
-		})
+		// await AuthCore.cleanupDuplicateLoginChallenges({
+		// 	identifier: identifier || null,
+		// 	sessionId: locals.session.id,
+		// 	type: 'passkey'
+		// })
 
 		const challengeResult = await AuthCore.createChallenge({
-			identifier: '',
+			identifier: identifier || '',
 			sessionId: locals.session.id,
 			type: 'passkey',
 			credential: options.challenge,
@@ -276,4 +282,94 @@ export const startLoginPasskey = query(
 	}
 )
 
-// export const verifyLoginPasskey = form()
+export const verifyLoginPasskey = command(
+	z.object({
+		attestation: z.any()
+	}),
+	async ({ attestation }) => {
+		const event = getRequestEvent()
+
+		if (!event.locals.session) {
+			throw error(400)
+		}
+
+		const session = event.locals.session
+
+		const challenge = unwrap(
+			await AuthCore.getChallenge({
+				type: 'passkey',
+				sessionId: session.id
+			}),
+			() => {
+				throw error(500)
+			}
+		)
+
+		if (!challenge || !challenge.credential) {
+			throw error(400, 'No login challenge found')
+		}
+
+		if (!attestation?.id) {
+			throw error(400, 'Missing credential ID')
+		}
+
+		const savedPasskey = unwrap(
+			await AuthCore.getPasskeyCredential({ passkeyId: attestation.id }),
+			() => {
+				throw error(500)
+			}
+		)
+
+		if (!savedPasskey) {
+			throw error(400, 'No passkey found')
+		}
+
+		const attempt = await verifyAuthenticationResponse({
+			response: attestation,
+			expectedChallenge: challenge.credential,
+			expectedOrigin: Auth.passkeys.expectedOrigin,
+			expectedRPID: Auth.passkeys.rpID,
+			credential: {
+				id: attestation.id,
+				publicKey: savedPasskey,
+				counter: 0
+			}
+		})
+
+		if (attempt.verified) {
+			const user = unwrap(await AuthCore.getPasskeyUser({ passkeyId: attestation.id }), () => {
+				throw error(500)
+			})
+
+			if (!user) {
+				throw error(400)
+			}
+
+			await AuthCore.cleanupLoginChallenges({
+				identifier: challenge.identifier,
+				sessionId: session.id
+			})
+
+			// Authentiacte the session
+			const authenticatedSession = unwrap(
+				await AuthCore.authenticateSession({ event, user }),
+				() => {
+					throw error(500)
+				}
+			)
+
+			// Set the session cookie
+			AuthCore.setSessionTokenCookie({
+				event,
+				token: authenticatedSession.rawSessionToken,
+				expiresAt: authenticatedSession.session.expiresAt
+			})
+
+			const redirectUrl = AuthCore.consumeRedirectUrlCookie(event) || Auth.redirects.afterLogin
+
+			return { success: true, redirectUrl }
+		}
+
+		return { success: false }
+	}
+)

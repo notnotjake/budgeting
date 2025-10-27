@@ -1,19 +1,18 @@
 <script lang="ts">
+	import { onMount } from 'svelte'
+	import { z } from 'zod'
 	import { startLogin } from '$remotes/auth/authenticate.remote'
 	import { createValidation, createEnhancedForm } from '@opensky/remotes'
-	import { z } from 'zod'
-	import { onMount } from 'svelte'
 
 	import { createClass } from '@opensky/style'
+	import { createShake } from '$ui/adapt/shake-behavior'
 	import { wipeVertical } from '$ui/transition'
 	import { fade, fly } from 'svelte/transition'
-	import { createShake } from '$ui/adapt/shake-behavior'
-	import { IconChevronLeft, IconArrowRight, IconCircleCheckFilled } from '@tabler/icons-svelte'
+	import { IconChevronLeft, IconArrowRight } from '@tabler/icons-svelte'
 
 	import { Suspense } from '$ui/feedback'
-	import CodeInput from '$ui/auth/code-input.svelte'
-	import ResendEmailButton from '$ui/auth/resend-email-button.svelte'
 	import PasskeyButton from '$ui/auth/passkey-button.svelte'
+	import CodeInput from '$ui/auth/code-input.svelte'
 
 	let { data } = $props()
 
@@ -58,8 +57,6 @@
 		startLoginForm.reset()
 		startLogin.fields.identifier.set(current ?? '')
 	}
-
-	let showCodeInput = $state(false)
 
 	let doAttentionAnimation = $state(false)
 </script>
@@ -226,7 +223,7 @@
 		{#if startLoginForm.result && startLogin.result}
 			<div transition:wipeVertical class="flex w-full flex-col items-center gap-7 pb-3 pt-14">
 				{#if startLogin.result.passkeyAvailable}
-					<PasskeyButton />
+					<PasskeyButton identifier={startLogin.result.identifier} />
 				{/if}
 
 				<CodeInput

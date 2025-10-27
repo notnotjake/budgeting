@@ -57,11 +57,7 @@ export async function createPasskey({
  * @param passkeyId - The unique ID of the passkey to retrieve
  * @returns Response containing the public key as Uint8Array, or null if not found
  */
-export async function getPasskeyCredential({
-	passkeyId
-}: {
-	passkeyId: string
-}): Promise<Response<Uint8Array | null>> {
+export async function getPasskeyCredential({ passkeyId }: { passkeyId: string }) {
 	try {
 		const [result] = await db
 			.select({ credential: table.key.credential })
@@ -70,8 +66,12 @@ export async function getPasskeyCredential({
 			.limit(1)
 
 		if (result?.credential) {
-			const decoded = decodeBase64(result.credential) // decode text to Uint8Array
-			return Response.succeed(decoded)
+			// decode text
+			const decoded = decodeBase64(result.credential)
+			// convert to ArrayBuffer (from ArrayBufferLike)
+			const decodedResponse = new Uint8Array(decoded)
+
+			return Response.succeed(decodedResponse)
 		}
 
 		return Response.succeed(null)

@@ -1,5 +1,5 @@
 import { db } from '$lib/server/db'
-import { eq, lt, gt, and, or, inArray } from 'drizzle-orm'
+import { eq, lt, gt, and, or, desc, inArray } from 'drizzle-orm'
 import * as table from '$lib/server/auth/schema'
 
 import type { Challenge, ChallengeType } from '$lib/server/auth/schema'
@@ -10,6 +10,9 @@ import { randomUUID } from 'crypto'
 /**
  * Creates a new authentication challenge for a user.
  * Challenges are used for email verification codes, passkey authentication, etc.
+ *
+ * This function automatically cleans up any existing challenges of the same type
+ * for the given identifier/session before creating the new one, ensuring atomicity.
  *
  * @param identifier - The user's identifier (typically email) (**normalized**)
  * @param sessionId - Optional session ID to associate with the challenge
@@ -32,17 +35,42 @@ export async function createChallenge({
 	expiresAt: Date
 }): Promise<Response<Challenge>> {
 	try {
-		const [newChallenge] = await db
-			.insert(table.challenge)
-			.values({
-				id: randomUUID(),
-				type,
-				identifier,
-				sessionId,
-				credential,
-				expiresAt
-			})
-			.returning()
+		const newChallenge = await db.transaction(async (tx) => {
+			//
+			// Cleanup existing challenges
+			const deleteConditions = []
+
+			// Delete by type
+			deleteConditions.push(eq(table.challenge.type, type))
+
+			if (identifier && sessionId) {
+				deleteConditions.push(
+					or(eq(table.challenge.identifier, identifier), eq(table.challenge.sessionId, sessionId))
+				)
+			} else if (identifier) {
+				deleteConditions.push(eq(table.challenge.identifier, identifier))
+			} else if (sessionId) {
+				deleteConditions.push(eq(table.challenge.sessionId, sessionId))
+			}
+
+			await tx.delete(table.challenge).where(and(...deleteConditions))
+
+			//
+			// Then create the new challenge
+			const [created] = await tx
+				.insert(table.challenge)
+				.values({
+					id: randomUUID(),
+					type,
+					identifier,
+					sessionId,
+					credential,
+					expiresAt
+				})
+				.returning()
+
+			return created
+		})
 
 		return Response.succeed(newChallenge)
 	} catch (e) {
@@ -91,6 +119,7 @@ export async function getChallenge({
 			.select()
 			.from(table.challenge)
 			.where(and(...conditions))
+			.orderBy(desc(table.challenge.createdAt))
 			.limit(1)
 
 		return Response.succeed(challenge ?? null)

@@ -7,8 +7,6 @@
 	async function addPasskey() {
 		const optionsResult = await startPasskeyRegistration()
 
-		console.log(optionsResult)
-
 		const registrationResponse = await startRegistration({ optionsJSON: optionsResult.options })
 
 		const result = await verifyPasskeyRegistration({ name, registration: registrationResponse })
