@@ -11,6 +11,7 @@
 	import { IconChevronLeft, IconArrowRight } from '@tabler/icons-svelte'
 
 	import { Suspense } from '$ui/feedback'
+	import PasskeyAuto from '$ui/auth/passkey-auto.svelte'
 	import PasskeyButton from '$ui/auth/passkey-button.svelte'
 	import CodeInput from '$ui/auth/code-input.svelte'
 
@@ -60,6 +61,10 @@
 
 	let doAttentionAnimation = $state(false)
 </script>
+
+{#if !startLoginForm.result}
+	<PasskeyAuto />
+{/if}
 
 <!-- Apply gray background on second step -->
 {#if startLoginForm.result}
