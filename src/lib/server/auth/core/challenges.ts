@@ -172,7 +172,7 @@ export async function cleanupLoginChallenges({
  * @param type - The specific challenge type to remove duplicates of
  * @returns Response indicating success or failure
  */
-export async function cleanupDuplicateLoginChallenges({
+export async function cleanupChallengesByType({
 	identifier,
 	sessionId,
 	type

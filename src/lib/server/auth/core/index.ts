@@ -45,7 +45,7 @@ import {
 	createChallenge,
 	getChallenge,
 	cleanupLoginChallenges,
-	cleanupDuplicateLoginChallenges,
+	cleanupChallengesByType,
 	cleanupExpiredChallenges
 } from './challenges'
 
@@ -101,7 +101,7 @@ const AuthCore = {
 	createChallenge,
 	getChallenge,
 	cleanupLoginChallenges,
-	cleanupDuplicateLoginChallenges,
+	cleanupChallengesByType,
 	cleanupExpiredChallenges
 }
 

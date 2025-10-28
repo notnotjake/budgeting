@@ -4,7 +4,7 @@ import Auth from '$lib/server/auth'
 import { AuthEmails } from '$lib/server/auth'
 import type { sendCodeParams } from '$lib/server/auth/types'
 
-import { createChallenge, cleanupDuplicateLoginChallenges } from './challenges'
+import { createChallenge, cleanupChallengesByType } from './challenges'
 import { generateShortCode, hashShortCode } from './utils'
 
 export async function sendLoginCode({
@@ -66,7 +66,7 @@ async function sendCodeCore({
 	timezone?: string
 }): Promise<sendCodeParams> {
 	// Cleanup any existing login code challenges
-	const cleanupResult = await cleanupDuplicateLoginChallenges({
+	const cleanupResult = await cleanupChallengesByType({
 		identifier,
 		sessionId,
 		type: 'code'

@@ -26,12 +26,6 @@ export const startPasskeyRegistration = query(async () => {
 
 	const expiresAt = new Date(Date.now() + Auth.durations.challengePasskeyMaxAge)
 
-	await AuthCore.cleanupDuplicateLoginChallenges({
-		type: 'passkey_register',
-		sessionId: session.id,
-		identifier: user.identifier
-	})
-
 	const result = await AuthCore.createChallenge({
 		identifier: user.identifier,
 		sessionId: session.id,
@@ -91,7 +85,7 @@ export const verifyPasskeyRegistration = command(
 				throw error(500)
 			}
 
-			await AuthCore.cleanupDuplicateLoginChallenges({
+			await AuthCore.cleanupChallengesByType({
 				type: 'passkey_register',
 				sessionId: session.id,
 				identifier: user.identifier

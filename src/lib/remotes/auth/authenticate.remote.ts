@@ -166,7 +166,6 @@ export const verifyLoginCode = form(
 
 		//
 		// Code accepted: login or create user
-		//
 
 		await AuthCore.cleanupLoginChallenges({
 			identifier: challenge.identifier,
@@ -257,12 +256,6 @@ export const startLoginPasskey = query(
 		}
 
 		const expiresAt = new Date(Date.now() + Auth.durations.challengePasskeyMaxAge)
-
-		// await AuthCore.cleanupDuplicateLoginChallenges({
-		// 	identifier: identifier || null,
-		// 	sessionId: locals.session.id,
-		// 	type: 'passkey'
-		// })
 
 		const challengeResult = await AuthCore.createChallenge({
 			identifier: identifier || '',
