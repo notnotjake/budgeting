@@ -104,13 +104,13 @@
 	</DropdownMenu.Trigger>
 
 	<DropdownMenu.Content
-		class="w-50 rounded-xl bg-neutral-900 p-1.5 shadow-lg outline-none"
+		class="w-44 rounded-[1.15rem] bg-neutral-900 p-[0.25rem] shadow-lg outline-none"
 		sideOffset={8}
 		collisionPadding={8}
 	>
 		<DropdownMenu.Item onselect={handleSettings} class="outline-none">
 			<div
-				class="flex cursor-pointer gap-2 rounded-md px-2 py-1.5 pr-3 text-white hover:bg-neutral-600/80"
+				class="flex cursor-pointer gap-2 rounded-[0.9rem] px-2 py-1.5 pr-3 text-white hover:bg-neutral-600/80"
 			>
 				<IconSettings color="var(--color-neutral-200)" />
 				<p class="px-1.5 font-medium text-neutral-200">Settings</p>
@@ -119,7 +119,7 @@
 		<DropdownMenu.Separator class="bg-neutral-600" />
 		<DropdownMenu.Item onSelect={handleLogout} class="outline-none">
 			<div
-				class="flex cursor-pointer gap-2 rounded-md px-2 py-1.5 pr-3 text-white hover:bg-neutral-600/80"
+				class="flex cursor-pointer gap-2 rounded-[0.9rem] px-2 py-1.5 pr-3 text-white hover:bg-neutral-600/80"
 			>
 				<IconLogout color="var(--color-neutral-200)" />
 				<p class="px-1.5 font-medium text-neutral-200">Logout</p>
