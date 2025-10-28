@@ -14,10 +14,10 @@
 	}
 </script>
 
-<div class="w-full h-screen flex flex-col items-center p-1">
+<div class="flex h-screen w-full flex-col items-center p-1">
 	<AccountButton {user} />
 
-	<div class="w-full h-full debug flex flex-col gap-2 items-center justify-center">
+	<div class="flex h-full w-full flex-col items-center justify-center gap-2">
 		<h1 class="text-2xl font-semibold text-neutral-500">Welcome back</h1>
 
 		<form {...logout}>

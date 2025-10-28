@@ -13,21 +13,21 @@
 
 	let { user } = $props()
 
-	let isActive = $state(false)
-	let swapData = $state<string | undefined>()
+	let swapActive = $state(false)
+	let swapData = $state<string | undefined | null>()
 
 	const sequence = createSequence({ interruptible: true })
 
 	sequence
 		.at(0, () => {
-			isActive = true
+			swapActive = true
 			swapData = 'initial'
 		})
 		.add(2000, () => {
 			swapData = 'welcome'
 		})
 		.add(3000, () => {
-			isActive = false
+			swapActive = false
 			swapData = null
 		})
 
@@ -39,14 +39,23 @@
 		sequence.stop()
 	})
 
-	let showingMenu = $state<boolean>(false)
-
 	let menuOpen = $state(false)
 
-	let openToast = $state(null)
-	let closeToast = $state(null)
+	$effect(() => {
+		if (menuOpen) {
+			sequence.stop()
+			swapActive = true
+			swapData = 'menu'
+		} else {
+			swapActive = false
+			swapData = null
+		}
+	})
 
 	const handleLogout = () => {
+		console.log('will need to call form submit')
+	}
+	const handleSettings = () => {
 		console.log('will need to call form submit')
 	}
 </script>
@@ -55,11 +64,17 @@
 	<DropdownMenu.Trigger class="outline-none">
 		<div
 			class={createClass(
-				'flex items-center justify-center gap-2 rounded-[3rem] transition-all duration-200',
-				isActive ? 'bg-neutral-900 shadow-md' : 'bg-neutral-100'
+				'flex items-center justify-center gap-2 rounded-[3rem] bg-neutral-100 transition-all duration-200',
+				swapActive && 'bg-neutral-900 shadow-md',
+				menuOpen && 'bg-neutral-700'
 			)}
 		>
-			<Adapt.Swap bind:isActive bind:swapData class="flex items-center" adaptSize={true}>
+			<Adapt.Swap
+				bind:isActive={swapActive}
+				bind:swapData
+				class="flex items-center"
+				adaptSize={true}
+			>
 				{#snippet swapContent(data)}
 					<div transition:fade={{ duration: 200 }}>
 						{#if data === 'initial'}
@@ -89,19 +104,17 @@
 	</DropdownMenu.Trigger>
 
 	<DropdownMenu.Content
-		class="	w-50 rounded-xl bg-neutral-900 p-1.5 shadow-lg outline-none"
+		class="w-50 rounded-xl bg-neutral-900 p-1.5 shadow-lg outline-none"
 		sideOffset={8}
 		collisionPadding={8}
 	>
-		<DropdownMenu.Item class="outline-none">
-			<Button resetStyles href="/settings" class="w-full">
-				<div
-					class="flex cursor-pointer gap-2 rounded-md px-2 py-1.5 pr-3 text-white hover:bg-neutral-600/80"
-				>
-					<IconSettings color="var(--color-neutral-200)" />
-					<p class="px-1.5 font-medium text-neutral-200">Settings</p>
-				</div>
-			</Button>
+		<DropdownMenu.Item onselect={handleSettings} class="outline-none">
+			<div
+				class="flex cursor-pointer gap-2 rounded-md px-2 py-1.5 pr-3 text-white hover:bg-neutral-600/80"
+			>
+				<IconSettings color="var(--color-neutral-200)" />
+				<p class="px-1.5 font-medium text-neutral-200">Settings</p>
+			</div>
 		</DropdownMenu.Item>
 		<DropdownMenu.Separator class="bg-neutral-600" />
 		<DropdownMenu.Item onSelect={handleLogout} class="outline-none">
