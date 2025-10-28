@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { goto } from '$app/navigation'
-	import { onMount } from 'svelte'
+	import { onMount, tick } from 'svelte'
 	import { startLoginPasskey, verifyLoginPasskey } from '$remotes/auth/authenticate.remote'
 	import { startAuthentication } from '@simplewebauthn/browser'
 
@@ -49,7 +49,6 @@
 
 	async function tryLoginPasskey() {
 		setState('pending')
-		console.log('calling')
 
 		try {
 			const optionsResult = await startLoginPasskey({ identifier })
@@ -71,8 +70,8 @@
 	}
 
 	onMount(async () => {
-		console.log('mounted')
 		if (auto) {
+			await tick()
 			await tryLoginPasskey()
 		}
 	})

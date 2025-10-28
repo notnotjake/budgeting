@@ -223,7 +223,7 @@
 		{#if startLoginForm.result && startLogin.result}
 			<div transition:wipeVertical class="flex w-full flex-col items-center gap-7 pb-3 pt-14">
 				{#if startLogin.result.passkeyAvailable}
-					<PasskeyButton identifier={startLogin.result.identifier} />
+					<PasskeyButton auto={true} identifier={startLogin.result.identifier} />
 				{/if}
 
 				<CodeInput

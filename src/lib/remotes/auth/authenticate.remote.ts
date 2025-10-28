@@ -219,8 +219,6 @@ export const startLoginPasskey = query(
 		identifier: z.string().email().optional()
 	}),
 	async ({ identifier }) => {
-		console.log('running')
-
 		const { locals } = getRequestEvent()
 
 		if (!locals.session) {
