@@ -16,7 +16,7 @@
 	let isActive = $state(false)
 	let swapData = $state<string | undefined>()
 
-	const sequence = createSequence({ interruptible: true})
+	const sequence = createSequence({ interruptible: true })
 
 	sequence
 		.at(0, () => {
@@ -72,11 +72,11 @@
 								<h3 class="text-[0.95rem] font-medium text-white">Welcome back</h3>
 								<p class="text-[0.93rem] text-neutral-300">{user.name}</p>
 							</div>
-							{:else if data === 'menu'}
-														<div class="flex items-center justify-center gap-2 px-4 py-2" in:fade>
-															<h3 class="text-[0.95rem] font-medium text-white">{user.name}</h3>
-															<p class="text-[0.93rem] text-neutral-300">{user.email}</p>
-														</div>
+						{:else if data === 'menu'}
+							<div class="flex items-center justify-center gap-2 px-4 py-2" in:fade>
+								<h3 class="text-[0.95rem] font-medium text-white">{user.name}</h3>
+								<p class="text-[0.93rem] text-neutral-300">{user.email}</p>
+							</div>
 						{/if}
 					</div>
 				{/snippet}
