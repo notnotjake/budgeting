@@ -95,7 +95,7 @@ export const sendLoginCode = form(
 		timezone: z.string().optional()
 	}),
 	async ({ identifier: identifierRaw, timezone }) => {
-		await delay(3000)
+		await delay(750)
 
 		const { locals } = getRequestEvent()
 

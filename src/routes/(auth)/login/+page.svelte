@@ -35,10 +35,6 @@
 		duration: 325
 	})
 
-	onMount(() => {
-		startLoginForm.reset()
-	})
-
 	const localTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone
 	let identifierInput = $state<HTMLInputElement>()
 
@@ -59,10 +55,15 @@
 		startLogin.fields.identifier.set(current ?? '')
 	}
 
+	onMount(() => {
+		startLoginForm.reset()
+		startLogin.fields.identifier.set('')
+	})
+
 	let doAttentionAnimation = $state(false)
 </script>
 
-{#if !startLoginForm.result}
+{#if !startLogin.result}
 	<PasskeyAuto />
 {/if}
 

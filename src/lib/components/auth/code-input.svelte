@@ -1,16 +1,16 @@
 <script lang="ts">
+	import { onMount, tick } from 'svelte'
 	import { sendLoginCode, verifyLoginCode } from '$remotes/auth/authenticate.remote'
 	import { createEnhancedForm } from '@opensky/remotes'
-	import { onMount } from 'svelte'
 
 	import { delay } from '$utils/timing'
 	import { createClass } from '@opensky/style'
-	import { PinInput, REGEXP_ONLY_DIGITS, type PinInputRootSnippetProps } from 'bits-ui'
-	import { Adapt, type AdaptSwitchChangeState } from '$ui/adapt'
-	import { Suspense } from '$ui/feedback'
 	import { createShake } from '$lib/components/adapt/shake-behavior'
 	import { scale } from 'svelte/transition'
 	import { IconCircleCheck, IconCircleCheckFilled } from '@tabler/icons-svelte'
+	import { PinInput, REGEXP_ONLY_DIGITS, type PinInputRootSnippetProps } from 'bits-ui'
+
+	import { Suspense } from '$ui/feedback'
 	import ResendEmailButton from './resend-email-button.svelte'
 
 	let {
@@ -58,7 +58,9 @@
 
 	//
 	// Reset form on component mount
-	onMount(() => {
+	onMount(async () => {
+		await tick()
+
 		codeValue = ''
 		verifyLoginCodeForm.reset()
 
@@ -103,11 +105,7 @@
 	</form>
 
 	<div class="flex flex-col items-center" in:scale={{ start: 0.7 }}>
-		{#if resultError}
-			<p class="py-1 text-[0.9rem] font-[450] text-rose-600">Code invalid, try again</p>
-		{:else}
-			<p class="pb-1 text-[1.02rem]">Enter Code</p>
-		{/if}
+		<p class="pb-1 text-[1.02rem]">Enter Code</p>
 
 		<div style:transform="translateX({$translateX}px)">
 			<PinInput.Root
@@ -199,6 +197,10 @@
 				</PinInput.Cell>
 			{/snippet}
 		</div>
+
+		{#if resultError}
+			<p class="py-1 text-[0.9rem] font-[450] text-rose-600">Code invalid, try again</p>
+		{/if}
 	</div>
 {/if}
 
@@ -228,22 +230,22 @@
 {/if}
 
 <div class="flex h-12 w-full items-center justify-center">
-	{#if !codeSentInitially && !codeSent && sendLoginCodeForm.idle}
+	{#if emailSentSuccessToast}
+		<div class="flex items-center gap-1 whitespace-nowrap" in:scale>
+			<IconCircleCheckFilled size={19} class="text-green-600" />
+			<p class="font-medium tracking-tight text-green-600">Email Sent</p>
+		</div>
+	{:else if sendLoginCodeForm.delayed}
+		<div class="flex items-center gap-4" in:scale>
+			<Suspense.Text class="font-medium">Sending Email</Suspense.Text>
+		</div>
+	{:else if !codeSentInitially && !codeSent}
 		<button
 			onclick={() => sendLoginCodeFormElement?.requestSubmit()}
 			class="rounded-full bg-none px-4 py-2 font-medium text-neutral-500 transition-all hover:bg-neutral-100 active:scale-95"
 		>
 			or <span class="text-neutral-700 hover:text-black">login with email</span>
 		</button>
-	{:else if sendLoginCodeForm.delayed}
-		<div class="flex items-center gap-4" in:scale>
-			<Suspense.Text class="font-medium">Sending Email</Suspense.Text>
-		</div>
-	{:else if emailSentSuccessToast}
-		<div class="flex items-center gap-1 whitespace-nowrap" in:scale>
-			<IconCircleCheckFilled size={19} class="text-green-600" />
-			<p class="font-medium tracking-tight text-green-600">Email Sent</p>
-		</div>
 	{:else}
 		<div in:scale={{ duration: 300 }}>
 			<ResendEmailButton
