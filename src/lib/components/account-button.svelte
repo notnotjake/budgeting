@@ -1,6 +1,7 @@
 <script lang="ts">
-	import { onMount, onDestroy, tick } from 'svelte'
-	import { logout } from '$remotes/auth/authenticate.remote'
+	import { onMount, onDestroy } from 'svelte'
+	import { goto } from '$app/navigation'
+	import { logoutCommand } from '$remotes/auth/authenticate.remote'
 
 	import { createClass } from '@opensky/style'
 	import { fade } from 'svelte/transition'
@@ -9,7 +10,6 @@
 
 	import { Adapt } from '$ui/adapt'
 	import { DropdownMenu } from 'bits-ui'
-	import Button from '$ui/input/button.svelte'
 
 	let { user } = $props()
 
@@ -52,11 +52,20 @@
 		}
 	})
 
-	const handleLogout = () => {
-		console.log('will need to call form submit')
+	const handleLogout = async () => {
+		console.log('trying logout')
+		try {
+			const result = await logoutCommand()
+
+			goto(result?.redirectUrl)
+		} catch (e) {
+			console.error(e)
+		}
 	}
+
 	const handleSettings = () => {
 		console.log('will need to call form submit')
+		goto('/settings')
 	}
 </script>
 
@@ -108,20 +117,19 @@
 		sideOffset={8}
 		collisionPadding={8}
 	>
-		<DropdownMenu.Item onselect={handleSettings} class="outline-none">
+		<DropdownMenu.Item onSelect={handleSettings} class="outline-none">
 			<div
 				class="flex cursor-pointer gap-2 rounded-[0.9rem] px-2 py-1.5 pr-3 text-white hover:bg-neutral-600/80"
 			>
-				<IconSettings color="var(--color-neutral-200)" />
+				<IconSettings class="text-neutral-200" />
 				<p class="px-1.5 font-medium text-neutral-200">Settings</p>
 			</div>
 		</DropdownMenu.Item>
-		<DropdownMenu.Separator class="bg-neutral-600" />
 		<DropdownMenu.Item onSelect={handleLogout} class="outline-none">
 			<div
 				class="flex cursor-pointer gap-2 rounded-[0.9rem] px-2 py-1.5 pr-3 text-white hover:bg-neutral-600/80"
 			>
-				<IconLogout color="var(--color-neutral-200)" />
+				<IconLogout class="text-neutral-200" />
 				<p class="px-1.5 font-medium text-neutral-200">Logout</p>
 			</div>
 		</DropdownMenu.Item>

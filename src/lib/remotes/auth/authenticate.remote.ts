@@ -32,6 +32,25 @@ export const logout = form(async () => {
 	throw redirect(303, Auth.redirects.afterLogout)
 })
 
+export const logoutCommand = command(async () => {
+	const event = getRequestEvent()
+	const session = event.locals.session
+
+	// Invalidate the session if we have one
+	if (session) {
+		const invalidateSessionResult = await AuthCore.invalidateSession(session.id)
+
+		if (!invalidateSessionResult.success) {
+			throw error(500)
+		}
+	}
+
+	AuthCore.clearRedirectUrlCookie(event)
+	AuthCore.clearSessionTokenCookie(event)
+
+	return { redirectUrl: Auth.redirects.afterLogout }
+})
+
 export const startLogin = form(
 	z.object({
 		identifier: z.string().email(),
