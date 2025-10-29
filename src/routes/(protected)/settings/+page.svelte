@@ -26,15 +26,27 @@
 				<div class="flex w-full items-center justify-between">
 					<IconX class="text-white" stroke={2.5} />
 
-					<div class="rounded-full text-[1.18rem] font-semibold tracking-tight">Your Settings</div>
-
 					<button
 						class="rounded-full bg-[#212121] px-3 py-1 shadow-[inset_0.5px_0.5px_0_rgba(255,255,255,0.2)]"
 						>Logout</button
 					>
 				</div>
 
-				<div class="flex flex-col gap-4 py-4">
+				<div class="flex flex-col gap-4 bg-black py-4">
+					<div class="flex w-full flex-col items-center gap-2">
+						<div class="h-20 w-20 rounded-full bg-linear-to-b from-green-500 to-green-600"></div>
+						<div class="flex gap-[0.15rem]">
+							<div class="h-fit w-fit rounded-l-2xl bg-neutral-800/70 px-4 py-2">
+								Johnny Appleseed
+							</div>
+							<div class="h-fit w-fit rounded-r-2xl bg-sky-500/15 px-4 py-2 text-blue-vibrant">
+								jappleseed@gmail.com
+							</div>
+						</div>
+					</div>
+
+					<div class="h-px w-full bg-neutral-500/30"></div>
+
 					<div class="flex items-center gap-2">
 						<div class="flex w-8 justify-start">
 							<IconKeyFilled class="text-neutral-500" size={28} />
@@ -72,7 +84,7 @@
 										<button class="h-9 rounded-full bg-neutral-600 px-3 py-1">Add Passkey</button>
 									</div>
 									<div
-										class="flex h-9 w-9 cursor-pointer items-center justify-center rounded-full bg-gradient-to-b from-blue-vibrant to-sky-500 shadow-[inset_0.5px_0.5px_0_rgba(255,255,255,0.2)] transition-transform hover:scale-105 active:scale-95"
+										class="flex h-9 w-9 cursor-pointer items-center justify-center rounded-full bg-linear-to-b from-blue-vibrant to-sky-500 shadow-[inset_0.5px_0.5px_0_rgba(255,255,255,0.2)] transition-transform hover:scale-105 active:scale-95"
 									>
 										<IconCheck />
 									</div>
