@@ -1,12 +1,12 @@
 <script lang="ts">
-	import { Button } from '$ui/input'
 	import {
 		IconX,
 		IconKeyFilled,
 		IconDeviceIpadHorizontalPin,
 		IconChevronRight,
 		IconCheck,
-		IconDotsVertical
+		IconDotsVertical,
+		IconTrashFilled
 	} from '@tabler/icons-svelte'
 </script>
 
@@ -33,7 +33,7 @@
 				</div>
 
 				<div class="flex flex-col gap-4 bg-black py-4">
-					<div class="flex w-full flex-col items-center gap-2">
+					<div class="flex w-full flex-col items-center gap-2 pb-5">
 						<div class="h-20 w-20 rounded-full bg-linear-to-b from-green-500 to-green-600"></div>
 						<div class="flex gap-[0.15rem]">
 							<div class="h-fit w-fit rounded-l-2xl bg-neutral-800/70 px-4 py-2">
@@ -45,13 +45,22 @@
 						</div>
 					</div>
 
-					<div class="h-px w-full bg-neutral-500/30"></div>
+					<div class="flex w-full items-baseline gap-2">
+						<p class="text-[0.94rem] font-semibold whitespace-nowrap text-neutral-400">
+							Account Settings
+						</p>
+						<div class="h-px w-full bg-neutral-500/30"></div>
+					</div>
 
 					<div class="flex items-center gap-2">
 						<div class="flex w-8 justify-start">
 							<IconKeyFilled class="text-neutral-500" size={28} />
 						</div>
 						<h2 class="text-[1.2rem] font-medium tracking-tight text-neutral-50">Passkeys</h2>
+						<p class="text-neutral-300">2 Passkeys</p>
+						<div class="flex grow justify-end">
+							<IconChevronRight />
+						</div>
 					</div>
 
 					<div class="h-px w-full bg-neutral-500/30"></div>
@@ -66,7 +75,18 @@
 							<IconChevronRight />
 						</div>
 					</div>
-					<h2>Sessions</h2>
+
+					<div class="h-px w-full bg-neutral-500/30"></div>
+
+					<div class="flex items-center gap-2">
+						<div class="flex w-8 justify-start">
+							<IconTrashFilled class="text-neutral-500" size={28} />
+						</div>
+						<h2 class="text-[1.2rem] font-medium tracking-tight text-neutral-50">Delte Account</h2>
+						<div class="flex grow justify-end">
+							<IconDotsVertical class="text-neutral-300 hover:text-neutral-100" />
+						</div>
+					</div>
 				</div>
 			</div>
 
