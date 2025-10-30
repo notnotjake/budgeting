@@ -6,8 +6,20 @@
 		IconChevronRight,
 		IconCheck,
 		IconDotsVertical,
-		IconTrashFilled
+		IconTrashFilled,
+		IconArrowBackUp,
+		IconUserCircle,
+		IconLogout,
+		IconCircleChevronUpFilled
 	} from '@tabler/icons-svelte'
+	import { createClass } from '@opensky/style'
+	import { delay } from '$utils/timing'
+
+	import { AdaptFit } from '$ui/adapt'
+
+	let editingName = $state(false)
+	let name = $state('Curious Panda')
+	let editNameField = $state<HTMLInputElement>()
 </script>
 
 <!-- Overscroll Top -->
@@ -15,49 +27,105 @@
 
 <div class="flex min-h-screen w-full justify-center bg-neutral-100">
 	<div class="relative w-xl">
-		<svg class="absolute top-0 -left-5 h-10">
+		<svg class="pointer-events-none absolute top-0 -left-5 h-10">
 			<path d="M 0 0 Q 20 0 20 20 L 20 0 Z" fill="black" />
 		</svg>
-		<svg class="absolute top-0 -right-[19px] h-[20px] w-[20px]">
+		<svg class="pointer-events-none absolute top-0 -right-[19px] h-[20px] w-[20px]">
 			<path d="M 0 20 Q 0 0 20 0 L 0 0 Z" fill="black" />
 		</svg>
-		<div class="min-h-50 w-full rounded-b-4xl bg-neutral-950 text-neutral-100 shadow-lg">
+		<div
+			class="max-h-152 min-h-50 w-full overflow-y-scroll rounded-b-4xl bg-neutral-950 text-neutral-100 shadow-lg"
+		>
 			<div class="min-h-50 w-full p-5 pt-3">
 				<div class="flex w-full items-center justify-between">
-					<IconX class="text-white" stroke={2.5} />
+					<button
+						class="flex items-center gap-1 rounded-full bg-linear-to-b from-[#212121] to-neutral-900 px-4 py-1.5 pl-1.5 shadow-[inset_0.5px_0.5px_0_rgba(255,255,255,0.2),inset_-0.5px_-0.5px_0_rgba(255,255,255,0.1)]"
+					>
+						<IconCircleChevronUpFilled size={21} />
+						<p class="font-[450]">Done</p>
+					</button>
 
 					<button
-						class="rounded-full bg-[#212121] px-3 py-1 shadow-[inset_0.5px_0.5px_0_rgba(255,255,255,0.2)]"
-						>Logout</button
+						class="flex items-center gap-1 rounded-full bg-linear-to-b from-[#212121] to-neutral-900 px-4 py-1.5 shadow-[inset_0.5px_0.5px_0_rgba(255,255,255,0.2),inset_-0.5px_-0.5px_0_rgba(255,255,255,0.1)]"
 					>
+						<IconLogout size={21} />
+						<p class="font-[450]">Logout</p>
+					</button>
 				</div>
 
-				<div class="flex flex-col gap-4 bg-black py-4">
+				<div class="flex flex-col gap-4 pb-4">
 					<div class="flex w-full flex-col items-center gap-2 pb-5">
 						<div class="h-20 w-20 rounded-full bg-linear-to-b from-green-500 to-green-600"></div>
-						<div class="flex gap-[0.15rem]">
-							<div class="h-fit w-fit rounded-l-2xl bg-neutral-800/70 px-4 py-2">
-								Johnny Appleseed
-							</div>
-							<div class="h-fit w-fit rounded-r-2xl bg-sky-500/15 px-4 py-2 text-blue-vibrant">
-								jappleseed@gmail.com
-							</div>
-						</div>
+						<AdaptFit
+							class={createClass(
+								'group flex w-fit cursor-pointer gap-[0.15rem] rounded-2xl bg-neutral-800/70 whitespace-nowrap',
+								editingName ? 'rounded-4xl' : 'rounded-2xl'
+							)}
+						>
+							{#if !editingName}
+								<button
+									onclick={async () => {
+										editingName = true
+										await delay(300)
+										editNameField?.focus()
+									}}
+									class="h-fit w-fit px-4 py-2 transition-all active:scale-95"
+								>
+									{name}
+								</button>
+							{:else}
+								<div class="flex w-fit items-center gap-2 px-3">
+									<div class="flex h-9 w-9 items-center justify-center rounded-full bg-neutral-600">
+										<IconArrowBackUp class="text-neutral-300" />
+									</div>
+									<div class="flex flex-col items-center justify-center py-2">
+										<p class="text-[0.9rem] text-neutral-500">Edit Name</p>
+										<input
+											bind:value={name}
+											bind:this={editNameField}
+											type="text"
+											class="border-none text-center outline-none"
+										/>
+									</div>
+									<button
+										onclick={() => (editingName = false)}
+										class="flex h-9 w-9 cursor-pointer items-center justify-center rounded-full bg-linear-to-b from-blue-vibrant to-sky-500 shadow-[inset_0.5px_0.5px_0_rgba(255,255,255,0.2)] transition-transform hover:scale-105 active:scale-95"
+									>
+										<IconCheck />
+									</button>
+								</div>
+							{/if}
+						</AdaptFit>
 					</div>
+
+					<div class="flex w-full items-center justify-center"></div>
 
 					<div class="flex w-full items-baseline gap-2">
 						<p class="text-[0.94rem] font-semibold whitespace-nowrap text-neutral-400">
 							Account Settings
 						</p>
-						<div class="h-px w-full bg-neutral-500/30"></div>
+						<!-- <div class="h-px w-full bg-neutral-500/30"></div> -->
 					</div>
 
 					<div class="flex items-center gap-2">
-						<div class="flex w-8 justify-start">
-							<IconKeyFilled class="text-neutral-500" size={28} />
+						<div class="flex w-7 justify-start">
+							<IconUserCircle class="text-neutral-500" size={24} />
+						</div>
+						<h2 class="text-[1.2rem] font-medium tracking-tight text-neutral-50">Login Method</h2>
+						<p class="text-neutral-400">jake@notnotjake.com</p>
+						<div class="flex grow justify-end">
+							<IconDotsVertical class="text-neutral-300 hover:text-neutral-100" />
+						</div>
+					</div>
+
+					<div class="h-px w-full bg-neutral-500/30"></div>
+
+					<div class="flex items-center gap-2">
+						<div class="flex w-7 justify-start">
+							<IconKeyFilled class="text-neutral-500" size={24} />
 						</div>
 						<h2 class="text-[1.2rem] font-medium tracking-tight text-neutral-50">Passkeys</h2>
-						<p class="text-neutral-300">2 Passkeys</p>
+						<p class="text-neutral-400">2 Passkeys</p>
 						<div class="flex grow justify-end">
 							<IconChevronRight />
 						</div>
@@ -66,11 +134,11 @@
 					<div class="h-px w-full bg-neutral-500/30"></div>
 
 					<div class="flex items-center gap-2">
-						<div class="flex w-8 justify-start">
-							<IconDeviceIpadHorizontalPin class="text-neutral-500" size={28} />
+						<div class="flex w-7 justify-start">
+							<IconDeviceIpadHorizontalPin class="text-neutral-500" size={24} />
 						</div>
 						<h2 class="text-[1.2rem] font-medium tracking-tight text-neutral-50">Sessions</h2>
-						<p class="text-neutral-300">Signed in 3 places</p>
+						<p class="text-neutral-400">Signed in 3 places</p>
 						<div class="flex grow justify-end">
 							<IconChevronRight />
 						</div>
@@ -79,8 +147,8 @@
 					<div class="h-px w-full bg-neutral-500/30"></div>
 
 					<div class="flex items-center gap-2">
-						<div class="flex w-8 justify-start">
-							<IconTrashFilled class="text-neutral-500" size={28} />
+						<div class="flex w-7 justify-start">
+							<IconTrashFilled class="text-neutral-500" size={24} />
 						</div>
 						<h2 class="text-[1.2rem] font-medium tracking-tight text-neutral-50">Delte Account</h2>
 						<div class="flex grow justify-end">
@@ -116,7 +184,7 @@
 
 						<div class="flex flex-col px-2 pb-4">
 							<div
-								class="flex items-center justify-between rounded-2xl px-3 py-4 hover:bg-neutral-700"
+								class="flex items-center justify-between rounded-2xl px-2 py-4 transition-all hover:bg-neutral-700 hover:px-3"
 							>
 								<div class="flex items-baseline gap-2">
 									<p class="text-[1.08rem] font-medium">1Password</p>
@@ -126,7 +194,7 @@
 							</div>
 
 							<div
-								class="flex items-center justify-between rounded-2xl px-3 py-4 hover:bg-neutral-700"
+								class="flex items-center justify-between rounded-2xl px-2 py-4 transition-all hover:bg-neutral-700 hover:px-3"
 							>
 								<div class="flex items-baseline gap-2">
 									<p class="text-[1.08rem] font-medium">Chrome</p>
