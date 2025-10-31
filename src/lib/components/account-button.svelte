@@ -11,7 +11,10 @@
 	import { Adapt } from '$ui/adapt'
 	import { DropdownMenu } from 'bits-ui'
 
-	let { user } = $props()
+	let {
+		user,
+		settingsShown = $bindable()
+	}: { user: { email: string; name: string }; settingsShown: boolean } = $props()
 
 	let swapActive = $state(false)
 	let swapData = $state<string | undefined | null>()
@@ -65,7 +68,8 @@
 
 	const handleSettings = () => {
 		console.log('will need to call form submit')
-		goto('/settings')
+		// goto('/settings')
+		settingsShown = true
 	}
 </script>
 
