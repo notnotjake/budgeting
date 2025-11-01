@@ -65,8 +65,8 @@
 </script>
 
 <div
-	style:height={!applyY ? 'unset' : !initialized ? 'h-fit' : `${containerHeight.current}px`}
-	style:width={!applyX ? 'unset' : !initialized ? 'w-fit' : `${containerWidth.current}px`}
+	style:height={!applyY ? 'unset' : !initialized ? 'fit-content' : `${containerHeight.current}px`}
+	style:width={!applyX ? 'unset' : !initialized ? 'fit-content' : `${containerWidth.current}px`}
 	class={createClass(classProp, 'relative', initialized ? 'overflow-hidden' : '')}
 >
 	<div
