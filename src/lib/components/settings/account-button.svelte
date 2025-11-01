@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { onMount, onDestroy } from 'svelte'
 	import { goto } from '$app/navigation'
-	import { logoutCommand } from '$remotes/auth/authenticate.remote'
+	import { logout } from '$remotes/auth/authenticate.remote'
 
 	import { createClass } from '@opensky/style'
 	import { fade } from 'svelte/transition'
@@ -58,7 +58,7 @@
 	const handleLogout = async () => {
 		console.log('trying logout')
 		try {
-			const result = await logoutCommand()
+			const result = await logout()
 
 			goto(result?.redirectUrl)
 		} catch (e) {

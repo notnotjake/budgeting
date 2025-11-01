@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { goto } from '$app/navigation'
 	import {
 		IconTrashFilled,
 		IconCircle,
@@ -8,42 +9,55 @@
 	import { scale } from 'svelte/transition'
 	import { createClass } from '@opensky/style'
 	import { AdaptSwap, AdaptFit } from '$ui/adapt'
+	import { SuspenseText } from '$ui/feedback'
+	import { deleteUserAccount } from '$remotes/auth/user.remote'
 
 	type Step = {
 		heading: string
 		description: string
-		acknowledged: boolean
 		prominent?: boolean
 	}
 
 	const steps = $state<Step[]>([
 		{
 			heading: 'Your data will be lost',
-			description: 'All of your user data will be completely and permanently lost',
-			acknowledged: false
+			description: 'All of your user data will be completely and permanently lost'
 		},
 		{
 			heading: 'Your subscription will be cancelled',
 			description:
-				'You will immediately lose access to your subsrciption features and you will not be charged again',
-			acknowledged: false
+				'You will immediately lose access to your subsrciption features and you will not be charged again'
 		},
 		{
 			heading: 'Permanently Delete Account',
 			description:
 				'Are you sure you want to delete your account? This is permanent and irrevocable.',
-			acknowledged: false,
 			prominent: true
 		}
 	])
 
 	let currentStep = $state(1)
+	let currentState = $state<null | 'pending' | 'success' | 'error'>(null)
 
-	function acknowledgeStep() {
+	const handleProceed = async () => {
 		currentStep += 1
 		if (currentStep > steps.length) {
-			console.log('DELETING')
+			currentState = 'pending'
+
+			const result = await deleteUserAccount()
+
+			if (result.success) {
+				currentState = 'success'
+				goto('/')
+			} else {
+				currentStep = steps.length
+				currentState = 'error'
+			}
 		}
+	}
+
+	const handleCancel = () => {
+		goto('/app')
 	}
 </script>
 
@@ -51,7 +65,7 @@
 	<div
 		class="flex w-full max-w-120 flex-col justify-center rounded-[2.5rem] bg-neutral-950 p-3 text-neutral-200 shadow-card"
 	>
-		<div class="flex flex-col px-5 pt-7 pb-12">
+		<div class="flex w-full flex-col px-5 pt-7 pb-12">
 			<!-- Heading -->
 			<div class="mb-8 flex flex-col">
 				<IconTrashFilled size={35} class="mb-2 text-rose-600" />
@@ -60,59 +74,76 @@
 			</div>
 
 			<AdaptFit>
-				<div class="flex flex-col gap-3">
-					{#each steps as step, i (step.heading)}
-						{#if i < currentStep}
-							<div class="flex gap-2" in:scale>
-								{#if !step?.prominent}
-									<AdaptSwap isActive={currentStep - 1 > i}>
-										<div
-											out:scale={{ duration: 200, start: 0.5 }}
-											class="flex h-7 w-7 shrink-0 items-center justify-center"
-										>
-											<IconCircle class="shrink-0" />
-										</div>
-
-										{#snippet swapContent()}
+				{#if currentState === 'pending'}
+					<div class="pt-6 pb-14">
+						<SuspenseText
+							class="text-lg font-medium"
+							backgroundColor="var(--color-neutral-500)"
+							primaryColor="var(--color-neutral-100)">Deleting Account...</SuspenseText
+						>
+					</div>
+				{:else}
+					<div class="flex flex-col gap-3">
+						{#each steps as step, i (step.heading)}
+							{#if i < currentStep}
+								<div class="flex gap-2" in:scale>
+									{#if !step?.prominent}
+										<AdaptSwap isActive={currentStep - 1 > i}>
 											<div
-												in:scale={{ delay: 225, duration: 200, start: 0.5 }}
+												out:scale={{ duration: 200, start: 0.5 }}
 												class="flex h-7 w-7 shrink-0 items-center justify-center"
 											>
-												<IconCircleCheckFilled class="shrink-0" />
+												<IconCircle class="shrink-0" />
 											</div>
-										{/snippet}
-									</AdaptSwap>
-								{:else}
-									<div class="flex h-7 w-7 shrink-0 items-center justify-center">
-										<IconAlertTriangleFilled class="text-rose-600" />
+
+											{#snippet swapContent()}
+												<div
+													in:scale={{ delay: 225, duration: 200, start: 0.5 }}
+													class="flex h-7 w-7 shrink-0 items-center justify-center"
+												>
+													<IconCircleCheckFilled class="shrink-0" />
+												</div>
+											{/snippet}
+										</AdaptSwap>
+									{:else}
+										<div class="flex h-7 w-7 shrink-0 items-center justify-center">
+											<IconAlertTriangleFilled class="text-rose-600" />
+										</div>
+									{/if}
+									<div>
+										<p class="font-medium text-white capitalize">{step.heading}</p>
+										<p class="text-neutral-300">
+											{step.description}
+										</p>
 									</div>
-								{/if}
-								<div>
-									<p class="font-medium text-white capitalize">{step.heading}</p>
-									<p class="text-neutral-300">
-										{step.description}
-									</p>
 								</div>
-							</div>
+							{/if}
+						{/each}
+
+						{#if currentState === 'error'}
+							<p class="text-rose-500">Something went wrong, please try again</p>
 						{/if}
-					{/each}
-				</div>
+					</div>
+				{/if}
 			</AdaptFit>
 		</div>
 
-		<!-- Buttons -->
-		<div class="flex flex-col gap-2">
-			<button
-				onclick={acknowledgeStep}
-				class="rounded-full bg-linear-to-b from-rose-600 to-rose-500 py-4 text-[1.05rem] text-white shadow-[inset_0.5px_0.5px_0_rgba(255,255,255,0.4),inset_-0.5px_-0.5px_0_rgba(255,255,255,0.2)] transition-transform active:scale-[0.97]"
-			>
-				{currentStep >= steps.length ? 'Delete Account' : 'Yes, Continue'}
-			</button>
-			<button
-				class="rounded-full bg-neutral-500 py-4 text-[1.05rem] font-semibold text-white transition-transform active:scale-[0.97]"
-				>Cancel</button
-			>
-		</div>
+		{#if currentState !== 'pending'}
+			<!-- Buttons -->
+			<div class="flex flex-col gap-2">
+				<button
+					onclick={handleProceed}
+					class="rounded-full bg-linear-to-b from-rose-600 to-rose-500 py-4 text-[1.05rem] text-white shadow-[inset_0.5px_0.5px_0_rgba(255,255,255,0.4),inset_-0.5px_-0.5px_0_rgba(255,255,255,0.2)] transition-transform active:scale-[0.97]"
+				>
+					{currentStep >= steps.length ? 'Delete Account' : 'Yes, Continue'}
+				</button>
+				<button
+					onclick={handleCancel}
+					class="rounded-full bg-neutral-500 py-4 text-[1.05rem] font-semibold text-white transition-transform active:scale-[0.97]"
+					>Cancel</button
+				>
+			</div>
+		{/if}
 	</div>
 </div>
 

@@ -1,8 +1,8 @@
 <script lang="ts">
-	import AccountButton from '$ui/account-button.svelte'
-	import SettingsPane from '$ui/settings.svelte'
+	import { fly } from 'svelte/transition'
 
-	import { slide, fly } from 'svelte/transition'
+	import AccountButton from '$ui/settings/account-button.svelte'
+	import SettingsPane from '$ui/settings/settings.svelte'
 
 	let { children } = $props()
 
