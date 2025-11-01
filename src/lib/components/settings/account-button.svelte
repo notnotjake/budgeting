@@ -15,13 +15,12 @@
 	let { settingsShown = $bindable() }: { settingsShown: boolean } = $props()
 
 	let user = {
-		email: 'Email Error',
-		name: 'Name Error'
+		email: 'Error',
+		name: 'Error'
 	}
 
-	let shouldWelcomeBack = $state(false)
-
-	function updateShouldWelcomeBack() {
+	function shouldWelcomeBack() {
+		let result = false
 		const lastSeenAt = localStorage.getItem('lastSeenAt')
 
 		if (lastSeenAt) {
@@ -29,22 +28,20 @@
 			const now = Date.now()
 
 			if (now - lastSeenTime > 45 * 60 * 1000) {
-				shouldWelcomeBack = true
+				result = true
 			}
 		} else {
-			shouldWelcomeBack = true
+			result = true
 		}
 
 		localStorage.setItem('lastSeenAt', Date.now().toString())
+		return result
 	}
 
 	let swapActive = $state(false)
 	let swapData = $state<string | undefined | null>()
 
 	const sequence = createSequence({ interruptible: true })
-
-	// TODO: want to only play sequence after login. subsequently dont need to
-	sequence
 		.at(0, () => {
 			swapActive = true
 			swapData = 'initial'
@@ -58,12 +55,12 @@
 		})
 
 	onMount(async () => {
+		// Get user info
 		const res = await getUser()
 		user = res
 
-		updateShouldWelcomeBack()
-
-		if (shouldWelcomeBack) {
+		// Show welcome message if returning after 45 mins
+		if (shouldWelcomeBack()) {
 			sequence.run()
 		}
 	})
