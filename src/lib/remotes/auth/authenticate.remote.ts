@@ -48,7 +48,7 @@ export const startLogin = form(
 		// Normalize input
 		const identifier = identifierRaw.toLowerCase().trim()
 
-		if (identifier === 'test@test.com') {
+		if (identifier === 'error@error.com') {
 			return error(401, 'Email not Allowed')
 		}
 

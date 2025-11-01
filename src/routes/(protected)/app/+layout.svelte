@@ -15,10 +15,12 @@
 </script>
 
 <div class="min-h-screen w-full">
-	<div class="absolute inset-0 z-100 h-screen w-full">
+	<div class="pointer-events-none absolute inset-0 z-100 h-screen w-full">
 		{#if settingsShown}
 			<div class="flex h-screen w-full justify-center">
-				<SettingsPane bind:settingsShown />
+				<div class="pointer-events-auto">
+					<SettingsPane bind:settingsShown />
+				</div>
 			</div>
 		{:else}
 			<div
@@ -26,7 +28,9 @@
 				out:fly={{ y: -100, duration: 200 }}
 				in:fly={{ y: -100, duration: 400, delay: 375 }}
 			>
-				<AccountButton {user} bind:settingsShown />
+				<div class="pointer-events-auto">
+					<AccountButton {user} bind:settingsShown />
+				</div>
 			</div>
 		{/if}
 	</div>
