@@ -1,7 +1,9 @@
 <script lang="ts">
 	import { onMount, onDestroy } from 'svelte'
 	import { goto } from '$app/navigation'
-	import { logout } from '$remotes/auth/authenticate.remote'
+	import { getUser } from './account-button.remote'
+
+	import { handleLogout } from '$ui/auth/logout'
 
 	import { createClass } from '@opensky/style'
 	import { fade } from 'svelte/transition'
@@ -12,10 +14,28 @@
 
 	let { settingsShown = $bindable() }: { settingsShown: boolean } = $props()
 
-	// TODO: use query to get this data
-	const user = {
-		email: 'test@test.com',
-		name: 'Curious Panda'
+	let user = {
+		email: 'Email Error',
+		name: 'Name Error'
+	}
+
+	let shouldWelcomeBack = $state(false)
+
+	function updateShouldWelcomeBack() {
+		const lastSeenAt = localStorage.getItem('lastSeenAt')
+
+		if (lastSeenAt) {
+			const lastSeenTime = parseInt(lastSeenAt)
+			const now = Date.now()
+
+			if (now - lastSeenTime > 45 * 60 * 1000) {
+				shouldWelcomeBack = true
+			}
+		} else {
+			shouldWelcomeBack = true
+		}
+
+		localStorage.setItem('lastSeenAt', Date.now().toString())
 	}
 
 	let swapActive = $state(false)
@@ -37,8 +57,15 @@
 			swapData = null
 		})
 
-	onMount(() => {
-		sequence.run()
+	onMount(async () => {
+		const res = await getUser()
+		user = res
+
+		updateShouldWelcomeBack()
+
+		if (shouldWelcomeBack) {
+			sequence.run()
+		}
 	})
 
 	onDestroy(() => {
