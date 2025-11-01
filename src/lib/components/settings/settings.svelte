@@ -10,7 +10,7 @@
 		IconTrashFilled,
 		IconUserCircle,
 		IconLogout,
-		IconCircleChevronUpFilled
+		IconCircleCheck
 	} from '@tabler/icons-svelte'
 	import LogoutButton from '$ui/auth/logout-button.svelte'
 	import ChangeName from './change-name.svelte'
@@ -29,7 +29,7 @@
 <!-- Horizontal Spacers (to make it smaller) -->
 {#snippet spacer()}
 	<div
-		class={createClass('transition-all duration-150 ease-out', detachedCard ? 'w-5' : 'w-0')}
+		class={createClass('transition-all duration-200 ease-out', detachedCard ? 'w-5' : 'w-0')}
 	></div>
 {/snippet}
 
@@ -41,7 +41,7 @@
 		in:slide={{ axis: 'y', delay: 300, duration: 400 }}
 		out:slide={{ axis: 'y', duration: 300 }}
 		class={createClass(
-			'max-h-152 min-h-50 w-full overflow-y-scroll rounded-b-4xl bg-neutral-950 text-neutral-100 shadow-lg transition-all duration-150 ease-out',
+			'max-h-152 min-h-50 w-full overflow-y-scroll rounded-b-4xl bg-neutral-950 text-neutral-100 shadow-lg transition-all duration-200 ease-out',
 			detachedCard ? 'mt-5 rounded-t-4xl' : 'mt-0 rounded-t-none'
 		)}
 	>
@@ -54,7 +54,7 @@
 						onclick={() => (settingsShown = false)}
 						class="flex items-center gap-1 rounded-full bg-linear-to-b from-[#212121] to-neutral-900 px-4 py-1.5 pl-1.5 shadow-[inset_0.5px_0.5px_0_rgba(255,255,255,0.2),inset_-0.5px_-0.5px_0_rgba(255,255,255,0.1)] transition-transform active:scale-95"
 					>
-						<IconCircleChevronUpFilled size={21} />
+						<IconCircleCheck size={21} />
 						<p class="font-[450]">Done</p>
 					</button>
 
