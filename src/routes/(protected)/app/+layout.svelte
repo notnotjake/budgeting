@@ -9,7 +9,14 @@
 	let settingsShown = $state(false)
 </script>
 
-<div class="min-h-screen w-full">
+<!-- Overscroll Top -->
+<div
+	class="fixed top-0 -z-2 h-[300px] w-full -translate-y-[299px]"
+	class:bg-neutral-950={settingsShown}
+	class:bg-neutral-50={!settingsShown}
+></div>
+
+<div class="min-h-screen w-full bg-neutral-50">
 	<div class="pointer-events-none absolute inset-0 z-100 h-screen w-full">
 		{#if settingsShown}
 			<div class="flex h-screen w-full justify-center">

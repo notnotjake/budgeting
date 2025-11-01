@@ -116,9 +116,6 @@
 	</button>
 {/snippet}
 
-<!-- Overscroll Top -->
-<div class="fixed top-0 -z-2 h-[300px] w-full -translate-y-[299px] bg-neutral-950"></div>
-
 <!-- Content -->
 <div class={createClass('relative flex w-xl')}>
 	{@render spacer()}
