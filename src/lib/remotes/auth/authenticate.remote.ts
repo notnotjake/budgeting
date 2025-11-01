@@ -1,5 +1,5 @@
 import { form, query, command, getRequestEvent } from '$app/server'
-import { error, redirect } from '@sveltejs/kit'
+import { error } from '@sveltejs/kit'
 import { z } from 'zod'
 
 import Auth from '$lib/server/auth'
@@ -13,26 +13,7 @@ import {
 
 import { delay } from '$utils/timing'
 
-export const logout = form(async () => {
-	const event = getRequestEvent()
-	const session = event.locals.session
-
-	// Invalidate the session if we have one
-	if (session) {
-		const invalidateSessionResult = await AuthCore.invalidateSession(session.id)
-
-		if (!invalidateSessionResult.success) {
-			throw error(500)
-		}
-	}
-
-	AuthCore.clearRedirectUrlCookie(event)
-	AuthCore.clearSessionTokenCookie(event)
-
-	throw redirect(303, Auth.redirects.afterLogout)
-})
-
-export const logoutCommand = command(async () => {
+export const logout = command(async () => {
 	const event = getRequestEvent()
 	const session = event.locals.session
 
@@ -72,9 +53,15 @@ export const startLogin = form(
 		}
 
 		// Check if user exists
-		const user = unwrap(await AuthCore.getUser({ identifier }), () => {
+		const userResult = await AuthCore.getUser({ identifier })
+
+		if (!userResult.success || userResult.data === undefined) {
+			console.log('A')
+			console.log(userResult)
 			throw error(500, 'Failed to get user')
-		})
+		}
+
+		const user = userResult.data
 
 		// Check if a user has passkey
 		let passkeyAvailable = false
