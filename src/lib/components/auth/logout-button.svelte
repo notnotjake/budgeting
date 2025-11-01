@@ -1,8 +1,8 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte'
-	import { goto } from '$app/navigation'
-	import { logout } from '$remotes/auth/authenticate.remote'
 	import { createClass } from '@opensky/style'
+
+	import { handleLogout } from '$ui/auth/logout'
 
 	interface Props {
 		/** Content to be displayed with adaptive sizing */
@@ -16,20 +16,14 @@
 	}
 
 	let { children, class: classProp, errorClass, error = $bindable() }: Props = $props()
-
-	const handleLogout = async () => {
-		try {
-			error = false
-			const res = await logout()
-
-			goto(res.redirectUrl)
-		} catch {
-			error = true
-		}
-	}
 </script>
 
-<button class={createClass(classProp, error && errorClass)} onclick={handleLogout}>
+<button
+	onclick={() => {
+		handleLogout(error)
+	}}
+	class={createClass(classProp, error && errorClass)}
+>
 	{#if children}
 		{@render children()}
 	{:else}

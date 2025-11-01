@@ -58,21 +58,12 @@
 		}
 	})
 
-	const handleLogout = async () => {
-		console.log('trying logout')
-		try {
-			const result = await logout()
-
-			goto(result?.redirectUrl)
-		} catch (e) {
-			console.error(e)
-		}
+	const handleSettings = () => {
+		settingsShown = true
 	}
 
-	const handleSettings = () => {
-		console.log('will need to call form submit')
-		// goto('/settings')
-		settingsShown = true
+	const selectLogout = async () => {
+		await handleLogout()
 	}
 </script>
 
@@ -132,7 +123,7 @@
 				<p class="px-1.5 font-medium text-neutral-200">Settings</p>
 			</div>
 		</DropdownMenu.Item>
-		<DropdownMenu.Item onSelect={handleLogout} class="outline-none">
+		<DropdownMenu.Item onSelect={selectLogout} class="outline-none">
 			<div
 				class="flex cursor-pointer gap-2 rounded-[0.9rem] px-2 py-1.5 pr-3 text-white hover:bg-neutral-600/80"
 			>
