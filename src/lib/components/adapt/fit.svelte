@@ -3,7 +3,6 @@
 	import { onMount } from 'svelte'
 	import { createClass } from '@opensky/style'
 	import { Spring } from 'svelte/motion'
-	import { elasticOut } from 'svelte/easing'
 	import { SPRING_DEFAULTS } from './spring-config.js'
 
 	interface Props {
@@ -15,14 +14,20 @@
 		stiffness?: number
 		/** Spring damping for size animations */
 		damping?: number
+		/** Direction for container to adapt */
+		direction?: 'x' | 'y' | 'both'
 	}
 
 	let {
 		children,
 		class: classProp,
 		stiffness = SPRING_DEFAULTS.stiffness,
-		damping = SPRING_DEFAULTS.damping
+		damping = SPRING_DEFAULTS.damping,
+		direction = 'both'
 	}: Props = $props()
+
+	let applyX = $derived(direction === 'x' || direction === 'both')
+	let applyY = $derived(direction === 'y' || direction === 'both')
 
 	// Tracks size of content
 	let innerHeight = $state(0)
@@ -54,14 +59,14 @@
 		if (innerWidth === 0 || innerHeight === 0 || !containerHeight || !containerWidth) return
 
 		// Animate size changes after initial measurement
-		containerHeight.target = innerHeight
 		containerWidth.target = innerWidth
+		containerHeight.target = innerHeight
 	})
 </script>
 
 <div
-	style:height={initialized ? `${containerHeight.current}px` : 'fit-content'}
-	style:width={initialized ? `${containerWidth.current}px` : 'fit-content'}
+	style:height={!applyY ? 'unset' : !initialized ? 'h-fit' : `${containerHeight.current}px`}
+	style:width={!applyX ? 'unset' : !initialized ? 'w-fit' : `${containerWidth.current}px`}
 	class={createClass(classProp, 'relative', initialized ? 'overflow-hidden' : '')}
 >
 	<div

@@ -71,7 +71,7 @@
 			<p class="text-[1.05rem] text-neutral-300">Deleting your account is permanent</p>
 		</div>
 
-		<AdaptFit>
+		<AdaptFit direction="y">
 			{#if currentState === 'pending'}
 				<div class="pt-6 pb-14">
 					<SuspenseText
