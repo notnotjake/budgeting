@@ -143,12 +143,3 @@
 		</div>
 	{/if}
 </div>
-
-<style>
-	.shadow-card {
-		box-shadow:
-			rgba(0, 0, 0, 0.07) 0px 0.602187px 0.602187px -1.166667px,
-			rgba(0, 0, 0, 0.063) 0px 2.288533px 2.288533px -2.333333px,
-			rgba(0, 0, 0, 0.03) 0px 10px 10px -3.5px;
-	}
-</style>

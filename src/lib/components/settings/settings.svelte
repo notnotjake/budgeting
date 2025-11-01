@@ -8,30 +8,116 @@
 		IconCheck,
 		IconDotsVertical,
 		IconTrashFilled,
-		IconUserCircle,
-		IconLogout,
-		IconCircleCheck
+		IconUserCircle
 	} from '@tabler/icons-svelte'
-	import LogoutButton from '$ui/auth/logout-button.svelte'
+	import Toolbar from './components/toolbar.svelte'
 	import ChangeName from './change-name.svelte'
+	import ChangeEmail from './change-email.svelte'
 	import DeleteAccount from './delete-account.svelte'
 
 	let { settingsShown = $bindable() }: { settingsShown: boolean } = $props()
 
+	type ListItemButton = {
+		title: string
+		hint: string
+		icon: any
+		action: {
+			type: 'inline' | 'menu'
+			onclick: () => void
+		}
+	}
+
+	const emailItem: ListItemButton = {
+		title: 'Login Method',
+		hint: 'jake@notnotjake.com',
+		action: {
+			type: 'menu',
+			onclick: () => {
+				openEmail = true
+			}
+		},
+		icon: IconUserCircle
+	}
+
+	const passkeyItem: ListItemButton = {
+		title: 'Passkeys',
+		hint: '2 Passkeys',
+		action: {
+			type: 'inline',
+			onclick: () => {
+				// TODO
+			}
+		},
+		icon: IconKeyFilled
+	}
+
+	const sessionsItem: ListItemButton = {
+		title: 'Sessions',
+		hint: 'Signed in 3 places',
+		action: {
+			type: 'inline',
+			onclick: () => {
+				// TODO
+			}
+		},
+		icon: IconDeviceIpadHorizontalPin
+	}
+
+	const deleteAccountItem: ListItemButton = {
+		title: 'Delete Account',
+		hint: '',
+		action: {
+			type: 'menu',
+			onclick: () => {
+				openDelete = true
+			}
+		},
+		icon: IconTrashFilled
+	}
+
 	let openDelete = $state(false)
+	let openEmail = $state(false)
 
-	let detachedCard = $derived(openDelete)
+	let detachedCard = $derived(openDelete || openEmail)
 </script>
-
-<!-- Overscroll Top -->
-<div class="fixed top-0 -z-2 h-[300px] w-full -translate-y-[299px] bg-neutral-950"></div>
 
 <!-- Horizontal Spacers (to make it smaller) -->
 {#snippet spacer()}
 	<div
-		class={createClass('transition-all duration-200 ease-out', detachedCard ? 'w-5' : 'w-0')}
+		class={createClass('transition-all duration-200 ease-out', detachedCard ? 'w-7' : 'w-0')}
 	></div>
 {/snippet}
+
+<!-- Divider Lines -->
+{#snippet dividerLine()}
+	<div class="w-full px-3">
+		<div class="h-px w-full bg-neutral-500/30"></div>
+	</div>
+{/snippet}
+
+<!-- Top Level Button Items -->
+{#snippet listItem(item: ListItemButton)}
+	<button
+		onclick={item.action.onclick}
+		class="flex items-center gap-2 rounded-2xl px-3 py-3.5 hover:bg-neutral-800/80"
+	>
+		<div class="flex w-7 justify-start">
+			<item.icon class="text-neutral-500" size={24} />
+		</div>
+		<h2 class="text-[1.2rem] font-medium tracking-tight text-neutral-50">{item.title}</h2>
+		<p class="text-neutral-400">{item.hint}</p>
+		<div class="flex grow justify-end">
+			{#if item.action.type === 'menu'}
+				<IconDotsVertical class="text-neutral-300 hover:text-neutral-100" />
+			{:else}
+				<IconChevronRight class="text-neutral-300 hover:text-neutral-100" />
+			{/if}
+		</div>
+	</button>
+{/snippet}
+
+<!-- Overscroll Top -->
+<div class="fixed top-0 -z-2 h-[300px] w-full -translate-y-[299px] bg-neutral-950"></div>
 
 <!-- Content -->
 <div class={createClass('relative flex w-xl')}>
@@ -41,33 +127,19 @@
 		in:slide={{ axis: 'y', delay: 300, duration: 400 }}
 		out:slide={{ axis: 'y', duration: 300 }}
 		class={createClass(
-			'max-h-152 min-h-50 w-full overflow-y-scroll rounded-b-4xl bg-neutral-950 text-neutral-100 shadow-lg transition-all duration-200 ease-out',
+			'relative max-h-152 min-h-50 w-full overflow-y-scroll rounded-b-4xl bg-neutral-950 text-neutral-100 shadow-lg transition-all duration-200 ease-out',
 			detachedCard ? 'mt-5 rounded-t-4xl' : 'mt-0 rounded-t-none'
 		)}
 	>
 		{#if openDelete}
 			<DeleteAccount bind:open={openDelete} />
+		{:else if openEmail}
+			<ChangeEmail bind:open={openEmail} />
 		{:else}
-			<div class="min-h-50 w-full p-5 pt-3">
-				<div class="flex w-full items-center justify-between">
-					<button
-						onclick={() => (settingsShown = false)}
-						class="flex items-center gap-1 rounded-full bg-linear-to-b from-[#212121] to-neutral-900 px-4 py-1.5 pl-1.5 shadow-[inset_0.5px_0.5px_0_rgba(255,255,255,0.2),inset_-0.5px_-0.5px_0_rgba(255,255,255,0.1)] transition-transform active:scale-95"
-					>
-						<IconCircleCheck size={21} />
-						<p class="font-[450]">Done</p>
-					</button>
+			<div class="relative min-h-50 w-full p-2 pt-3">
+				<Toolbar bind:settingsShown />
 
-					<LogoutButton
-						class="flex items-center gap-1 rounded-full bg-linear-to-b from-[#212121] to-neutral-900 px-4 py-1.5 shadow-[inset_0.5px_0.5px_0_rgba(255,255,255,0.2),inset_-0.5px_-0.5px_0_rgba(255,255,255,0.1)] transition-transform active:scale-95"
-						errorClass="outline-1 outline-rose-400"
-					>
-						<IconLogout size={21} />
-						<p class="font-[450]">Logout</p>
-					</LogoutButton>
-				</div>
-
-				<div class="flex flex-col gap-4 pb-4">
+				<div class="flex flex-col gap-1 pb-4">
 					<div class="flex w-full flex-col items-center gap-2 pb-5">
 						<div class="h-20 w-20 rounded-full bg-linear-to-b from-green-500 to-green-600"></div>
 						<ChangeName />
@@ -75,66 +147,25 @@
 
 					<div class="flex w-full items-center justify-center"></div>
 
-					<div class="flex w-full items-baseline gap-2">
+					<div class="flex w-full items-baseline gap-2 px-3">
 						<p class="text-[0.94rem] font-semibold whitespace-nowrap text-neutral-400">
 							Account Settings
 						</p>
-						<!-- <div class="h-px w-full bg-neutral-500/30"></div> -->
 					</div>
 
-					<div class="flex items-center gap-2">
-						<div class="flex w-7 justify-start">
-							<IconUserCircle class="text-neutral-500" size={24} />
-						</div>
-						<h2 class="text-[1.2rem] font-medium tracking-tight text-neutral-50">Login Method</h2>
-						<p class="text-neutral-400">jake@notnotjake.com</p>
-						<div class="flex grow justify-end">
-							<IconDotsVertical class="text-neutral-300 hover:text-neutral-100" />
-						</div>
-					</div>
+					{@render listItem(emailItem)}
 
-					<div class="h-px w-full bg-neutral-500/30"></div>
+					{@render dividerLine()}
 
-					<div class="flex items-center gap-2">
-						<div class="flex w-7 justify-start">
-							<IconKeyFilled class="text-neutral-500" size={24} />
-						</div>
-						<h2 class="text-[1.2rem] font-medium tracking-tight text-neutral-50">Passkeys</h2>
-						<p class="text-neutral-400">2 Passkeys</p>
-						<div class="flex grow justify-end">
-							<IconChevronRight />
-						</div>
-					</div>
+					{@render listItem(passkeyItem)}
 
-					<div class="h-px w-full bg-neutral-500/30"></div>
+					{@render dividerLine()}
 
-					<div class="flex items-center gap-2">
-						<div class="flex w-7 justify-start">
-							<IconDeviceIpadHorizontalPin class="text-neutral-500" size={24} />
-						</div>
-						<h2 class="text-[1.2rem] font-medium tracking-tight text-neutral-50">Sessions</h2>
-						<p class="text-neutral-400">Signed in 3 places</p>
-						<div class="flex grow justify-end">
-							<IconChevronRight />
-						</div>
-					</div>
+					{@render listItem(sessionsItem)}
 
-					<div class="h-px w-full bg-neutral-500/30"></div>
+					{@render dividerLine()}
 
-					<button
-						onclick={() => {
-							openDelete = true
-						}}
-						class="flex items-center gap-2 rounded-2xl hover:bg-neutral-800/80"
-					>
-						<div class="flex w-7 justify-start">
-							<IconTrashFilled class="text-neutral-500" size={24} />
-						</div>
-						<h2 class="text-[1.2rem] font-medium tracking-tight text-neutral-50">Delte Account</h2>
-						<div class="flex grow justify-end">
-							<IconDotsVertical class="text-neutral-300 hover:text-neutral-100" />
-						</div>
-					</button>
+					{@render listItem(deleteAccountItem)}
 				</div>
 			</div>
 
@@ -191,12 +222,3 @@
 
 	{@render spacer()}
 </div>
-
-<style>
-	.shadow-card {
-		box-shadow:
-			rgba(0, 0, 0, 0.07) 0px 0.602187px 0.602187px -1.166667px,
-			rgba(0, 0, 0, 0.063) 0px 2.288533px 2.288533px -2.333333px,
-			rgba(0, 0, 0, 0.03) 0px 10px 10px -3.5px;
-	}
-</style>
