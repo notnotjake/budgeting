@@ -6,11 +6,6 @@
 
 	let { children } = $props()
 
-	const user = {
-		email: 'test@test.com',
-		name: 'Curious Panda'
-	}
-
 	let settingsShown = $state(false)
 </script>
 
@@ -29,7 +24,7 @@
 				in:fly={{ y: -100, duration: 400, delay: 375 }}
 			>
 				<div class="pointer-events-auto">
-					<AccountButton {user} bind:settingsShown />
+					<AccountButton bind:settingsShown />
 				</div>
 			</div>
 		{/if}

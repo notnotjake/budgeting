@@ -18,11 +18,6 @@
 
 	let { settingsShown = $bindable() }: { settingsShown: boolean } = $props()
 
-	const user = {
-		email: 'jake@notnotjake.com',
-		name: 'Jake Go'
-	}
-
 	let openDelete = $state(false)
 
 	let detachedCard = $derived(openDelete)

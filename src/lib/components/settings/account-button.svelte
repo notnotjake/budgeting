@@ -7,20 +7,23 @@
 	import { fade } from 'svelte/transition'
 	import { createSequence } from '$lib/utils/timing'
 	import { IconSettings, IconDots, IconLogout } from '@tabler/icons-svelte'
-
 	import { Adapt } from '$ui/adapt'
 	import { DropdownMenu } from 'bits-ui'
 
-	let {
-		user,
-		settingsShown = $bindable()
-	}: { user: { email: string; name: string }; settingsShown: boolean } = $props()
+	let { settingsShown = $bindable() }: { settingsShown: boolean } = $props()
+
+	// TODO: use query to get this data
+	const user = {
+		email: 'test@test.com',
+		name: 'Curious Panda'
+	}
 
 	let swapActive = $state(false)
 	let swapData = $state<string | undefined | null>()
 
 	const sequence = createSequence({ interruptible: true })
 
+	// TODO: want to only play sequence after login. subsequently dont need to
 	sequence
 		.at(0, () => {
 			swapActive = true
