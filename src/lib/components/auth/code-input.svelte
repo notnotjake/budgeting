@@ -114,7 +114,7 @@
 				maxlength={6}
 				pattern={REGEXP_ONLY_DIGITS}
 				class={createClass(
-					'group flex w-fit cursor-pointer items-center overflow-hidden rounded-[1.2rem] bg-gray-100 px-3.5 py-0.5 has-[:disabled]:opacity-70',
+					'group flex w-fit cursor-pointer items-center overflow-hidden rounded-[1.2rem] bg-gray-100 px-3.5 py-0.5 has-disabled:opacity-70',
 					'focus-within:outline-2 focus-within:outline-blue-500',
 					verifyLoginCodeForm.pending && 'bg-blue-200/30 focus-within:outline-none',
 					resultSuccess && 'outline-2 outline-green-500 focus-within:outline-green-500',
@@ -173,7 +173,7 @@
 							: 'scale-100 opacity-100 blur-none'
 					)}
 				>
-					<div class="absolute left-0 top-0 flex h-full w-full items-center justify-center">
+					<div class="absolute top-0 left-0 flex h-full w-full items-center justify-center">
 						<div
 							style:opacity={cell.char === null ? '1.0' : '0.0'}
 							style:transform={cell.char === null ? 'translateY(0%)' : 'translateY(150%)'}
@@ -181,7 +181,7 @@
 							class={createClass(
 								`h-2 w-2 rounded-full transition-all duration-200`,
 								cell.hasFakeCaret
-									? 'bg-blue-vibrant-light h-3.5'
+									? 'h-3.5 bg-blue-vibrant-light'
 									: 'bg-neutral-400 group-hover:bg-neutral-600 group-hover:group-focus-within:bg-neutral-400'
 							)}
 						></div>

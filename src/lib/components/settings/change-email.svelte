@@ -8,11 +8,12 @@
 		IconChevronRight
 	} from '@tabler/icons-svelte'
 	import { onMount } from 'svelte'
-	import { scale } from 'svelte/transition'
+	import { scale, fade } from 'svelte/transition'
+	import { wipeVertical } from '$ui/transition'
 	import { AdaptSwap, AdaptFit } from '$ui/adapt'
 	import { SuspenseText } from '$ui/feedback'
 	import { createClass } from '@opensky/style'
-	import CodeInput from '$ui/auth/code-input.svelte'
+	import VerificationCodeInput from './verification-code-input.svelte'
 
 	let { open = $bindable() } = $props()
 
@@ -47,71 +48,107 @@
 			<p class="text-[1.05rem] text-neutral-300">Change how you login to your account</p>
 		</div>
 
-		{#if verificationStep}
-			<CodeInput codeSent={true} identifier={emailValue} timezone={localTimezone} />
-		{:else}
-			<div class="flex w-full flex-col gap-5 py-1">
-				<div>
-					<div class="flex w-full items-baseline gap-2 px-5">
-						<p class="pb-1 text-[0.94rem] font-semibold whitespace-nowrap text-neutral-400">
-							Email
-						</p>
-					</div>
-
-					<div
-						class="group flex w-full items-center rounded-3xl bg-neutral-800/70 px-5 py-3 pr-3 focus-within:outline-2 focus-within:outline-blue-vibrant"
-					>
-						<IconMail class="mr-2 text-neutral-500" />
-						<input
-							type="text"
-							bind:value={emailValue}
-							bind:this={emailInput}
-							class="grow border-none font-medium outline-none"
-						/>
-
-						<button
-							onclick={revert}
-							class="flex items-center px-3 py-2 text-neutral-500 transition-transform hover:text-neutral-300 active:-translate-x-1"
-						>
-							<IconArrowBackUp />
-						</button>
-
-						<button
-							onclick={() => {
-								verificationStep = true
-							}}
-							class={createClass(
-								'rounded-full bg-linear-to-b px-5 py-2 text-[1.05rem] transition-all active:scale-[0.97]',
-								emailDiff
-									? 'from-blue-500 to-sky-500 text-white shadow-[inset_0.5px_0.5px_0_rgba(255,255,255,0.3),inset_-0.5px_-0.5px_0_rgba(255,255,255,0.15)]'
-									: 'from-neutral-600 to-neutral-600 text-neutral-400 shadow-[inset_0.5px_0.5px_0_rgba(255,255,255,0.2),inset_-0.5px_-0.5px_0_rgba(255,255,255,0.1)]'
-							)}
-						>
-							Update
-						</button>
-					</div>
+		<div class="flex w-full flex-col gap-5 py-1">
+			<div>
+				<div class="flex w-full items-baseline gap-2 px-5">
+					<p class="pb-1 text-[0.94rem] font-semibold whitespace-nowrap text-neutral-400">Email</p>
 				</div>
 
-				<div>
-					<div class="flex w-full items-baseline gap-2 px-5">
-						<p class="pb-1 text-[0.94rem] font-semibold whitespace-nowrap text-neutral-400">
-							Phone Number
-						</p>
-					</div>
+				<div
+					class="group flex w-full flex-col items-center rounded-3xl bg-neutral-800/70 px-5 pr-3 focus-within:outline-2 focus-within:outline-blue-vibrant"
+				>
+					{#if verificationStep}
+						<div
+							in:fade={{ duration: 350 }}
+							class="flex w-full items-center justify-start gap-2 py-5"
+						>
+							<p class="text-[1.05rem] font-medium">Verification</p>
+							<p class="text-neutral-400">Enter code sent to new email</p>
+						</div>
+					{:else}
+						<div class="flex w-full items-center py-3">
+							<IconMail class="mr-2 text-neutral-500" />
+							<input
+								type="text"
+								bind:value={emailValue}
+								bind:this={emailInput}
+								class="grow border-none font-medium outline-none"
+							/>
 
-					<div
-						class="group flex w-full items-center rounded-3xl bg-neutral-800/70 px-5 py-3 pr-3 focus-within:outline-2 focus-within:outline-blue-500"
-					>
-						<IconDeviceMobile class="mr-2 text-neutral-500" />
-						<p class="grow">Switch to Phone Number</p>
+							{#if emailDiff}
+								<button
+									onclick={revert}
+									class="flex items-center px-3 py-2 text-neutral-400 transition-transform hover:text-neutral-300"
+								>
+									<IconArrowBackUp />
+								</button>
+							{/if}
 
-						<button class={createClass('py-2 text-[1.05rem] ')}>
-							<IconChevronRight />
-						</button>
-					</div>
+							<button
+								onclick={() => {
+									verificationStep = true
+								}}
+								class={createClass(
+									'rounded-full bg-linear-to-b px-5 py-2 text-[1.05rem] transition-all active:scale-[0.97]',
+									emailDiff
+										? 'from-blue-500 to-sky-500 text-white shadow-[inset_0.5px_0.5px_0_rgba(255,255,255,0.3),inset_-0.5px_-0.5px_0_rgba(255,255,255,0.15)]'
+										: 'from-neutral-600 to-neutral-600 text-neutral-400 shadow-[inset_0.5px_0.5px_0_rgba(255,255,255,0.2),inset_-0.5px_-0.5px_0_rgba(255,255,255,0.1)]'
+								)}
+							>
+								Update
+							</button>
+						</div>
+					{/if}
+					{#if verificationStep}
+						<div
+							in:wipeVertical
+							class="flex w-full items-center justify-between border-t border-neutral-700 py-3"
+						>
+							<VerificationCodeInput />
+							<div class="flex items-center gap-2">
+								<button
+									class={createClass(
+										'rounded-full px-5 py-2 text-[1.05rem] transition-all active:scale-[0.97]',
+										'text-neutral-400 hover:bg-neutral-700/70 hover:text-neutral-200'
+									)}
+								>
+									Resend
+								</button>
+								<button
+									class={createClass(
+										'rounded-full bg-linear-to-b px-5 py-2 text-[1.05rem] transition-all active:scale-[0.97]',
+										emailDiff
+											? 'from-blue-500 to-sky-500 text-white shadow-[inset_0.5px_0.5px_0_rgba(255,255,255,0.3),inset_-0.5px_-0.5px_0_rgba(255,255,255,0.15)]'
+											: 'from-neutral-600 to-neutral-600 text-neutral-400 shadow-[inset_0.5px_0.5px_0_rgba(255,255,255,0.2),inset_-0.5px_-0.5px_0_rgba(255,255,255,0.1)]'
+									)}
+								>
+									Continue
+								</button>
+							</div>
+						</div>
+					{/if}
 				</div>
 			</div>
-		{/if}
+
+			<div>
+				<div class="flex w-full items-baseline gap-2 px-5">
+					<p class="pb-1 text-[0.94rem] font-semibold whitespace-nowrap text-neutral-400">
+						Phone Number
+					</p>
+				</div>
+
+				<div
+					class="group flex w-full items-center rounded-3xl bg-neutral-800/70 px-5 py-3 pr-3 focus-within:outline-2 focus-within:outline-blue-500"
+				>
+					<IconDeviceMobile class="mr-2 text-neutral-500" />
+					<p class="grow">Switch to Phone Number</p>
+
+					<button class={createClass('py-2 text-[1.05rem] ')}>
+						<IconChevronRight />
+					</button>
+				</div>
+			</div>
+		</div>
 	</div>
 
 	<!-- Buttons -->

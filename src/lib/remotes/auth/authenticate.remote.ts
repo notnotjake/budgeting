@@ -56,8 +56,6 @@ export const startLogin = form(
 		const userResult = await AuthCore.getUser({ identifier })
 
 		if (!userResult.success || userResult.data === undefined) {
-			console.log('A')
-			console.log(userResult)
 			throw error(500, 'Failed to get user')
 		}
 
