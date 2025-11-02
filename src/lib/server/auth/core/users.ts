@@ -58,7 +58,7 @@ export async function updateUser({
 	userId: string
 	newName?: string
 	newIdentifier?: string
-}): Promise<Response<{ user: User }>> {
+}): Promise<Response<User>> {
 	try {
 		const updateData: Partial<{ name: string; identifier: string }> = {}
 
@@ -84,7 +84,7 @@ export async function updateUser({
 			return Response.fail(ERROR_MESSAGE.CORE.USER_NOT_FOUND)
 		}
 
-		return Response.succeed({ user: updatedUser })
+		return Response.succeed(updatedUser)
 	} catch (e) {
 		console.error('Failed to update user', e)
 		return Response.fail(ERROR_MESSAGE.CORE.USER_UPDATE_FAILED)
