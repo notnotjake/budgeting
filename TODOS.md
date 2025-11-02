@@ -1,11 +1,8 @@
 - improve spacing of passkey and email code on login
-- fix issue with code input state getting whach when you go back and forth. it should be unmounted and state being erased, but it seems to keep some state between its removal/addition to the page
-- reauth passkey and code input usage
-- consider moving reauth to a component instead
+
+- move reauth to a component
 
 settings:
-	- add layout
-	- main page
 	- list passkeys
 	- passkey list actions: remove, rename
 	- add new passkey
