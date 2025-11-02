@@ -7,7 +7,8 @@
 	import { scale } from 'svelte/transition'
 	import { PinInput, REGEXP_ONLY_DIGITS, type PinInputRootSnippetProps } from 'bits-ui'
 
-	let codeValue = $state('')
+	let { code: codeValue = $bindable() } = $props()
+
 	type CellProps = PinInputRootSnippetProps['cells'][0]
 
 	onMount(async () => {

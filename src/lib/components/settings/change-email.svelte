@@ -34,6 +34,8 @@
 	const localTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone
 	let verificationStep = $state(false)
 
+	let emailCode = $state('')
+
 	onMount(() => {
 		emailInput?.focus()
 	})
@@ -104,20 +106,12 @@
 							in:wipeVertical
 							class="flex w-full items-center justify-between border-t border-neutral-700 py-3"
 						>
-							<VerificationCodeInput />
+							<VerificationCodeInput bind:code={emailCode} />
 							<div class="flex items-center gap-2">
 								<button
 									class={createClass(
-										'rounded-full px-5 py-2 text-[1.05rem] transition-all active:scale-[0.97]',
-										'text-neutral-400 hover:bg-neutral-700/70 hover:text-neutral-200'
-									)}
-								>
-									Resend
-								</button>
-								<button
-									class={createClass(
 										'rounded-full bg-linear-to-b px-5 py-2 text-[1.05rem] transition-all active:scale-[0.97]',
-										emailDiff
+										emailCode.length === 6
 											? 'from-blue-500 to-sky-500 text-white shadow-[inset_0.5px_0.5px_0_rgba(255,255,255,0.3),inset_-0.5px_-0.5px_0_rgba(255,255,255,0.15)]'
 											: 'from-neutral-600 to-neutral-600 text-neutral-400 shadow-[inset_0.5px_0.5px_0_rgba(255,255,255,0.2),inset_-0.5px_-0.5px_0_rgba(255,255,255,0.1)]'
 									)}
