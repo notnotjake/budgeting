@@ -76,18 +76,18 @@
 {/if}
 
 <!-- Container inside the layout -->
-<div class="z-10 flex h-full w-full max-w-[29rem] items-center justify-center px-2">
+<div class="z-10 flex h-full w-full max-w-116 items-center justify-center px-2">
 	<!-- Login card container -->
 	<div
 		class={createClass(
-			'relative flex min-h-40 w-full flex-shrink-0 grow flex-col items-center transition-all duration-200',
+			'relative flex min-h-40 w-full shrink-0 grow flex-col items-center transition-all duration-200',
 			startLoginForm.result ? 'rounded-[1.8rem] bg-white p-4' : 'rounded-[1.9rem] bg-none p-3 px-5'
 		)}
 	>
 		<!-- Color gradient on first step -->
 		<div
 			class={createClass(
-				'h-18 left-0 top-0 z-0 hidden w-full rounded-t-[1.8rem] bg-gradient-to-b from-[#E3F4FF] to-[#E8F9FF]/0 transition-all duration-200 sm:absolute sm:z-auto sm:block',
+				'top-0 left-0 z-0 hidden h-18 w-full rounded-t-[1.8rem] bg-linear-to-b from-[#E3F4FF] to-[#E8F9FF]/0 transition-all duration-200 sm:absolute sm:z-auto sm:block',
 				startLoginForm.result ? 'opacity-0' : 'opacity-100'
 			)}
 		></div>
@@ -99,12 +99,12 @@
 				class="z-10 mb-6 w-full flex-col items-center justify-center px-7 pt-2 text-center"
 			>
 				<h2
-					class="tracking-tight-md animate-fade-in-scale text-[1.33rem] font-[550] leading-loose text-black"
+					class="animate-fade-in-scale text-[1.33rem] leading-loose font-[550] tracking-tight-md text-black"
 				>
 					{data?.title}
 				</h2>
 				<p
-					class="animate-fade-in-scale text-[1.05rem] font-[430] leading-4 tracking-[-0.015em] text-neutral-500"
+					class="animate-fade-in-scale text-[1.05rem] leading-4 font-[430] tracking-[-0.015em] text-neutral-500"
 				>
 					{data?.text}
 				</p>
@@ -149,21 +149,21 @@
 						autocomplete="username webauthn"
 						placeholder="Continue with email"
 						aria-label="Enter your email"
-						class="flex-grow-1 h-full w-full pl-4 font-[450] text-zinc-900 outline-none transition-all selection:bg-sky-200 selection:text-blue-600 placeholder:font-[450] placeholder:text-neutral-400"
+						class="h-full w-full grow pl-4 font-[450] text-zinc-900 transition-all outline-none selection:bg-sky-200 selection:text-blue-600 placeholder:font-[450] placeholder:text-neutral-400"
 					/>
 
 					<!-- Gradient State Indicator -->
 					<!-- Button Available -->
 					<div
 						class={createClass(
-							'w-18 pointer-events-none absolute right-0 top-0 z-0 h-full bg-gradient-to-l from-[#4496FF] to-[rgba(45,169,255,0.00)]',
+							'pointer-events-none absolute top-0 right-0 z-0 h-full w-18 bg-linear-to-l from-[#4496FF] to-[rgba(45,169,255,0.00)]',
 							startButtonAvailable ? 'w-18 opacity-20' : 'w-0 opacity-0'
 						)}
 					></div>
 					<!-- Errors/Issues Present -->
 					<div
 						class={createClass(
-							'w-18 pointer-events-none absolute right-0 top-0 z-0 h-full bg-gradient-to-l from-rose-400/60 to-rose-300/0',
+							'pointer-events-none absolute top-0 right-0 z-0 h-full w-18 bg-linear-to-l from-rose-400/60 to-rose-300/0',
 							startLoginForm.error || startLoginValid.issues('identifier')
 								? 'w-18 opacity-25'
 								: 'w-0 opacity-0'
@@ -227,7 +227,7 @@
 
 		<!-- Second step ui -->
 		{#if startLoginForm.result && startLogin.result}
-			<div transition:wipeVertical class="flex w-full flex-col items-center gap-7 pb-3 pt-14">
+			<div transition:wipeVertical class="flex w-full flex-col items-center gap-7 pt-14 pb-3">
 				{#if startLogin.result.passkeyAvailable}
 					<PasskeyButton auto={true} identifier={startLogin.result.identifier} />
 				{/if}
