@@ -37,7 +37,7 @@
 
 			<div class="flex w-4 items-center justify-center"></div>
 
-			<div class="flex gap-[0.1rem]">
+			<div class="flex">
 				{#each cells.slice(3, 6) as cell}
 					{@render Cell(cell)}
 				{/each}

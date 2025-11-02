@@ -114,7 +114,7 @@
 				maxlength={6}
 				pattern={REGEXP_ONLY_DIGITS}
 				class={createClass(
-					'group flex w-fit cursor-pointer items-center overflow-hidden rounded-[1.2rem] bg-gray-100 px-3.5 py-0.5 has-disabled:opacity-70',
+					'group flex w-fit cursor-pointer items-center overflow-hidden rounded-[1.2rem] bg-gray-100 px-5 py-1 has-disabled:opacity-70',
 					'focus-within:outline-2 focus-within:outline-blue-500',
 					verifyLoginCodeForm.pending && 'bg-blue-200/30 focus-within:outline-none',
 					resultSuccess && 'outline-2 outline-green-500 focus-within:outline-green-500',
@@ -145,15 +145,15 @@
 						</div>
 					</div>
 					<!-- Pin Input -->
-					<div class="flex gap-1">
+					<div class="flex">
 						{#each cells.slice(0, 3) as cell}
 							{@render Cell(cell)}
 						{/each}
 					</div>
 
-					<div class="flex w-5 items-center justify-center"></div>
+					<div class="flex w-4 items-center justify-center"></div>
 
-					<div class="flex gap-[0.1rem]">
+					<div class="flex">
 						{#each cells.slice(3, 6) as cell}
 							{@render Cell(cell)}
 						{/each}
@@ -167,7 +167,7 @@
 					{cell}
 					class={createClass(
 						'group/cell relative flex h-10 w-5 cursor-pointer items-center justify-center rounded-xl transition-all duration-500',
-						cell.char !== null && 'data-[active]:bg-sky-400/10',
+						cell.char !== null && 'data-active:bg-sky-400/10',
 						verifyLoginCodeForm.pending
 							? 'scale-110 opacity-0 blur-md'
 							: 'scale-100 opacity-100 blur-none'
@@ -179,18 +179,20 @@
 							style:transform={cell.char === null ? 'translateY(0%)' : 'translateY(150%)'}
 							style:scaleY={cell.char === null ? '1.0' : '3.0'}
 							class={createClass(
-								`h-2 w-2 rounded-full transition-all duration-200`,
+								`text-xl font-semibold transition-all duration-200`,
 								cell.hasFakeCaret
-									? 'h-3.5 bg-blue-vibrant-light'
-									: 'bg-neutral-400 group-hover:bg-neutral-600 group-hover:group-focus-within:bg-neutral-400'
+									? 'text-blue-vibrant-light'
+									: 'text-neutral-400 group-hover:text-neutral-600 group-hover:group-focus-within:text-neutral-400'
 							)}
-						></div>
+						>
+							0
+						</div>
 					</div>
 					<div
 						style:opacity={cell.char !== null ? '1.0' : '0.0'}
 						style:transform={cell.char !== null ? 'translateY(0%)' : 'translateY(-50%)'}
 						style:filter={cell.char !== null ? 'blur(0px)' : 'blur(5px)'}
-						class="text-xl font-medium transition-all duration-300 group-data-[active]/cell:text-blue-500"
+						class="text-xl font-medium transition-all duration-300 group-data-active/cell:text-blue-500"
 					>
 						{cell.char}
 					</div>
@@ -198,9 +200,11 @@
 			{/snippet}
 		</div>
 
-		{#if resultError}
-			<p class="py-1 text-[0.9rem] font-[450] text-rose-600">Code invalid, try again</p>
-		{/if}
+		<div class="h-4">
+			{#if resultError}
+				<p class="py-1 text-[0.9rem] font-[450] text-rose-600">Code invalid, try again</p>
+			{/if}
+		</div>
 	</div>
 {/if}
 
