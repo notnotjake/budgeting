@@ -133,9 +133,10 @@
 		{:else if openEmail}
 			<ChangeEmail bind:open={openEmail} />
 		{:else}
-			<div class="relative min-h-50 w-full p-2 pt-3">
+			<div class="sticky top-0 z-10 h-fit w-full">
 				<Toolbar bind:settingsShown />
-
+			</div>
+			<div class="relative min-h-50 w-full px-3 py-3">
 				<div class="flex flex-col gap-1 pb-4">
 					<div class="flex w-full flex-col items-center gap-2 pb-5">
 						<div class="h-20 w-20 rounded-full bg-linear-to-b from-green-500 to-green-600"></div>

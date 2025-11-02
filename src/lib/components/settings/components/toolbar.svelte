@@ -1,24 +1,27 @@
 <script lang="ts">
-	import { IconLogout, IconCircleCheck } from '@tabler/icons-svelte'
+	import { IconLogout, IconCircleCheck, IconX, IconHelp } from '@tabler/icons-svelte'
 	import LogoutButton from '$ui/auth/logout-button.svelte'
 
 	let { settingsShown = $bindable() } = $props()
+
+	const getHelp = () => {
+		console.log('TODO: implement help feature')
+	}
 </script>
 
-<div class="flex w-full items-center justify-between px-3">
+<div
+	class="flex w-full items-center justify-between bg-linear-to-b from-neutral-950 from-70% to-neutral-950/0 px-3 py-3 pb-6"
+>
 	<button
 		onclick={() => (settingsShown = false)}
-		class="flex items-center gap-1 rounded-full bg-linear-to-b from-[#212121] to-neutral-900 px-4 py-1.5 pl-1.5 shadow-[inset_0.5px_0.5px_0_rgba(255,255,255,0.2),inset_-0.5px_-0.5px_0_rgba(255,255,255,0.1)] transition-transform active:scale-95"
+		class="flex items-center transition-transform active:scale-95"
 	>
-		<IconCircleCheck size={21} />
-		<p class="font-[450]">Done</p>
+		<IconX size={30} stroke={2.5} />
 	</button>
 
-	<LogoutButton
-		class="flex items-center gap-1 rounded-full bg-linear-to-b from-[#212121] to-neutral-900 px-4 py-1.5 shadow-[inset_0.5px_0.5px_0_rgba(255,255,255,0.2),inset_-0.5px_-0.5px_0_rgba(255,255,255,0.1)] transition-transform active:scale-95"
-		errorClass="outline-1 outline-rose-400"
-	>
-		<IconLogout size={21} />
-		<p class="font-[450]">Logout</p>
-	</LogoutButton>
+	<p class="text-[1.15rem] font-semibold">Settings</p>
+
+	<button onclick={getHelp} class="flex items-center transition-transform active:scale-95">
+		<IconHelp size={30} />
+	</button>
 </div>
