@@ -9,8 +9,6 @@ import { unwrap } from '$utils/structured-response'
 export const getUser = query(async () => {
 	const { locals } = getRequestEvent()
 
-	console.log('GOTTEM')
-
 	return {
 		identifier: locals.user?.identifier || '',
 		name: locals.user?.name || ''
