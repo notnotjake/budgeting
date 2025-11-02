@@ -1,15 +1,18 @@
 <script lang="ts">
-	import { goto } from '$app/navigation'
 	import {
 		IconUserCircle,
-		IconCircle,
-		IconCircleCheckFilled,
-		IconAlertTriangleFilled
+		IconArrowLeft,
+		IconMail,
+		IconDeviceMobile,
+		IconArrowBackUp,
+		IconChevronRight
 	} from '@tabler/icons-svelte'
+	import { onMount } from 'svelte'
 	import { scale } from 'svelte/transition'
 	import { AdaptSwap, AdaptFit } from '$ui/adapt'
 	import { SuspenseText } from '$ui/feedback'
 	import { createClass } from '@opensky/style'
+	import CodeInput from '$ui/auth/code-input.svelte'
 
 	let { open = $bindable() } = $props()
 
@@ -17,10 +20,22 @@
 		open = false
 	}
 
+	const revert = () => {
+		emailValue = currentEmail
+	}
+
 	const currentEmail = 'jake@notnotjake.com'
 	let emailValue = $state('jake@notnotjake.com')
+	let emailInput = $state<HTMLFormElement>()
 
 	let emailDiff = $derived(emailValue !== currentEmail)
+
+	const localTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone
+	let verificationStep = $state(false)
+
+	onMount(() => {
+		emailInput?.focus()
+	})
 </script>
 
 <div class="flex w-full flex-col justify-center p-3 text-neutral-200">
@@ -32,29 +47,81 @@
 			<p class="text-[1.05rem] text-neutral-300">Change how you login to your account</p>
 		</div>
 
-		<div class="w-full py-1">
-			<div
-				class="group w-full rounded-2xl bg-neutral-800/70 px-5 py-3 focus-within:outline-2 focus-within:outline-blue-500"
-			>
-				<input type="text" bind:value={emailValue} class="border-none font-medium outline-none" />
-				<button
-					class={createClass(
-						'rounded-full bg-linear-to-b px-3 py-2 text-[1.05rem] transition-all active:scale-[0.97]',
-						emailDiff
-							? 'from-blue-500 to-sky-500 text-white shadow-[inset_0.5px_0.5px_0_rgba(255,255,255,0.4),inset_-0.5px_-0.5px_0_rgba(255,255,255,0.2)]'
-							: 'from-[#212121] to-neutral-900 text-neutral-300 shadow-[inset_0.5px_0.5px_0_rgba(255,255,255,0.2),inset_-0.5px_-0.5px_0_rgba(255,255,255,0.1)]'
-					)}>Change</button
-				>
+		{#if verificationStep}
+			<CodeInput codeSent={true} identifier={emailValue} timezone={localTimezone} />
+		{:else}
+			<div class="flex w-full flex-col gap-5 py-1">
+				<div>
+					<div class="flex w-full items-baseline gap-2 px-5">
+						<p class="pb-1 text-[0.94rem] font-semibold whitespace-nowrap text-neutral-400">
+							Email
+						</p>
+					</div>
+
+					<div
+						class="group flex w-full items-center rounded-3xl bg-neutral-800/70 px-5 py-3 pr-3 focus-within:outline-2 focus-within:outline-blue-vibrant"
+					>
+						<IconMail class="mr-2 text-neutral-500" />
+						<input
+							type="text"
+							bind:value={emailValue}
+							bind:this={emailInput}
+							class="grow border-none font-medium outline-none"
+						/>
+
+						<button
+							onclick={revert}
+							class="flex items-center px-3 py-2 text-neutral-500 transition-transform hover:text-neutral-300 active:-translate-x-1"
+						>
+							<IconArrowBackUp />
+						</button>
+
+						<button
+							onclick={() => {
+								verificationStep = true
+							}}
+							class={createClass(
+								'rounded-full bg-linear-to-b px-5 py-2 text-[1.05rem] transition-all active:scale-[0.97]',
+								emailDiff
+									? 'from-blue-500 to-sky-500 text-white shadow-[inset_0.5px_0.5px_0_rgba(255,255,255,0.3),inset_-0.5px_-0.5px_0_rgba(255,255,255,0.15)]'
+									: 'from-neutral-600 to-neutral-600 text-neutral-400 shadow-[inset_0.5px_0.5px_0_rgba(255,255,255,0.2),inset_-0.5px_-0.5px_0_rgba(255,255,255,0.1)]'
+							)}
+						>
+							Update
+						</button>
+					</div>
+				</div>
+
+				<div>
+					<div class="flex w-full items-baseline gap-2 px-5">
+						<p class="pb-1 text-[0.94rem] font-semibold whitespace-nowrap text-neutral-400">
+							Phone Number
+						</p>
+					</div>
+
+					<div
+						class="group flex w-full items-center rounded-3xl bg-neutral-800/70 px-5 py-3 pr-3 focus-within:outline-2 focus-within:outline-blue-500"
+					>
+						<IconDeviceMobile class="mr-2 text-neutral-500" />
+						<p class="grow">Switch to Phone Number</p>
+
+						<button class={createClass('py-2 text-[1.05rem] ')}>
+							<IconChevronRight />
+						</button>
+					</div>
+				</div>
 			</div>
-		</div>
+		{/if}
 	</div>
 
 	<!-- Buttons -->
 	<div class="flex flex-col gap-2">
 		<button
 			onclick={handleCancel}
-			class="rounded-full bg-neutral-500 py-4 text-[1.05rem] font-semibold text-white transition-transform active:scale-[0.97]"
-			>Cancel</button
+			class="group flex items-center justify-center gap-2 rounded-full py-4 text-[1.05rem] font-semibold text-white transition-transform hover:bg-neutral-800/70 active:scale-[0.97]"
 		>
+			<IconArrowLeft />
+			Go Back
+		</button>
 	</div>
 </div>

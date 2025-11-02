@@ -177,7 +177,10 @@
 
 								<div class="flex items-center gap-3">
 									<div>
-										<button class="h-9 rounded-full bg-neutral-600 px-3 py-1">Add Passkey</button>
+										<button
+											class="h-9 rounded-full bg-linear-to-b from-neutral-600 to-neutral-600 px-3 py-1 text-neutral-100 shadow-[inset_0.5px_0.5px_0_rgba(255,255,255,0.2),inset_-0.5px_-0.5px_0_rgba(255,255,255,0.1)]"
+											>Add Passkey</button
+										>
 									</div>
 									<div
 										class="flex h-9 w-9 cursor-pointer items-center justify-center rounded-full bg-linear-to-b from-blue-vibrant to-sky-500 shadow-[inset_0.5px_0.5px_0_rgba(255,255,255,0.2)] transition-transform hover:scale-105 active:scale-95"
