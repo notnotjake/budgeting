@@ -1,8 +1,7 @@
 <script lang="ts">
 	import { onMount, onDestroy } from 'svelte'
 	import { goto } from '$app/navigation'
-	import { getUser } from './account-button.remote'
-
+	import { getUser } from '$remotes/auth/user.remote'
 	import { handleLogout } from '$ui/auth/logout'
 
 	import { createClass } from '@opensky/style'
@@ -15,7 +14,7 @@
 	let { settingsShown = $bindable() }: { settingsShown: boolean } = $props()
 
 	let user = {
-		email: 'Error',
+		identifier: 'Error',
 		name: 'Error'
 	}
 
@@ -111,7 +110,7 @@
 						{#if data === 'initial'}
 							<div class="flex items-center justify-center gap-1 px-4 py-2">
 								<h3 class="text-[0.95rem] font-medium text-white">Logged In</h3>
-								<p class="text-[0.93rem] text-neutral-300">{user.email}</p>
+								<p class="text-[0.93rem] text-neutral-300">{user.identifier}</p>
 							</div>
 						{:else if data === 'welcome'}
 							<div class="flex items-center justify-center gap-1 px-4 py-2">
@@ -121,7 +120,7 @@
 						{:else if data === 'menu'}
 							<div class="flex items-center justify-center gap-2 px-4 py-2" in:fade>
 								<h3 class="text-[0.95rem] font-medium text-white">{user.name}</h3>
-								<p class="text-[0.93rem] text-neutral-300">{user.email}</p>
+								<p class="text-[0.93rem] text-neutral-300">{user.identifier}</p>
 							</div>
 						{/if}
 					</div>
