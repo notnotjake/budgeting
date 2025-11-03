@@ -32,7 +32,7 @@
 		{
 			heading: 'Permanently Delete Account',
 			description:
-				'Are you sure you want to delete your account? This is permanent and irrevocable.',
+				'Are you sure you want to delete your account? This is permanent and irreversible.',
 			prominent: true
 		}
 	])

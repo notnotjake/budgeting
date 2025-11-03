@@ -42,11 +42,9 @@ export const updateUserName = form(
 )
 
 // startEmailChange
+
 // verifyEmailChange
-// getActiveEmailChangeAttempt
-// lockUserAccount
-// unlockUserAccount
-// deleteUserAccount
+
 export const deleteUserAccount = command(async () => {
 	const event = getRequestEvent()
 

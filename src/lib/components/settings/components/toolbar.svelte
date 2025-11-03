@@ -1,6 +1,5 @@
 <script lang="ts">
-	import { IconLogout, IconCircleCheck, IconX, IconHelp } from '@tabler/icons-svelte'
-	import LogoutButton from '$ui/auth/logout-button.svelte'
+	import { IconX, IconHelp } from '@tabler/icons-svelte'
 
 	let { settingsShown = $bindable() } = $props()
 
