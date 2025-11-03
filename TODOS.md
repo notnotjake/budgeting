@@ -3,10 +3,8 @@
 - move reauth to a component
 
 settings:
-	- list passkeys
 	- passkey list actions: remove, rename
 	- add new passkey
-	- list sessions
 	- invalidate all sessions
 	- invalidate specific session
 	- change email flow
