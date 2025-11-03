@@ -13,10 +13,10 @@
 
 	let { settingsShown = $bindable() }: { settingsShown: boolean } = $props()
 
-	let user = {
+	let user = $state({
 		identifier: 'Error',
 		name: 'Error'
-	}
+	})
 
 	function shouldWelcomeBack() {
 		let result = false
@@ -70,16 +70,19 @@
 
 	let menuOpen = $state(false)
 
-	$effect(() => {
-		if (menuOpen) {
+	function onOpenChange(open: boolean) {
+		console.log(open)
+		if (open) {
+			menuOpen = true
 			sequence.stop()
 			swapActive = true
 			swapData = 'menu'
 		} else {
+			menuOpen = false
 			swapActive = false
 			swapData = null
 		}
-	})
+	}
 
 	const handleSettings = () => {
 		settingsShown = true
@@ -90,7 +93,7 @@
 	}
 </script>
 
-<DropdownMenu.Root bind:open={menuOpen}>
+<DropdownMenu.Root {onOpenChange}>
 	<DropdownMenu.Trigger class="outline-none">
 		<div
 			class={createClass(

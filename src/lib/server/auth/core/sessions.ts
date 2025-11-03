@@ -218,9 +218,14 @@ export async function validateSessionToken(
 export async function listAllUserSessions(userId: string): Promise<Response<Session[]>> {
 	try {
 		const allSessions = await db
-			.select()
+			.select({
+				id: table.session.id,
+				ipAddress: table.session.ipAddress,
+				userAgent: table.session.userAgent,
+				lastSeenAt: table.session.lastSeenAt
+			})
 			.from(table.session)
-			.where(eq(table.session.userId, userId))
+			.where(and(eq(table.session.userId, userId), isNull(table.session.invalidatedAt)))
 			.orderBy(desc(table.session.lastSeenAt))
 
 		return Response.succeed(allSessions)

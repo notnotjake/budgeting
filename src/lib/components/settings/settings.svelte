@@ -14,6 +14,8 @@
 	import ChangeName from './change-name.svelte'
 	import ChangeEmail from './change-email.svelte'
 	import DeleteAccount from './delete-account.svelte'
+	import Passkeys from './passkeys.svelte'
+	import Sessions from './sessions.svelte'
 
 	let { settingsShown = $bindable() }: { settingsShown: boolean } = $props()
 
@@ -45,7 +47,7 @@
 		action: {
 			type: 'inline',
 			onclick: () => {
-				// TODO
+				openPasskeys = true
 			}
 		},
 		icon: IconKeyFilled
@@ -57,7 +59,7 @@
 		action: {
 			type: 'inline',
 			onclick: () => {
-				// TODO
+				openSessions = true
 			}
 		},
 		icon: IconDeviceIpadHorizontalPin
@@ -77,6 +79,8 @@
 
 	let openDelete = $state(false)
 	let openEmail = $state(false)
+	let openPasskeys = $state(false)
+	let openSessions = $state(false)
 
 	let detachedCard = $derived(openDelete || openEmail)
 </script>
@@ -92,6 +96,15 @@
 {#snippet dividerLine()}
 	<div class="w-full px-3">
 		<div class="h-px w-full bg-neutral-500/30"></div>
+	</div>
+{/snippet}
+
+<!-- Section Header -->
+{#snippet sectionHeader(text: string)}
+	<div class="flex w-full items-baseline gap-2 px-3">
+		<p class="text-[0.94rem] font-semibold whitespace-nowrap text-neutral-400 capitalize">
+			{text}
+		</p>
 	</div>
 {/snippet}
 
@@ -117,7 +130,7 @@
 {/snippet}
 
 <!-- Content -->
-<div class={createClass('relative flex w-xl')}>
+<div class={createClass('relatived flex w-xl')}>
 	{@render spacer()}
 
 	<div
@@ -136,20 +149,15 @@
 			<div class="sticky top-0 z-10 h-fit w-full">
 				<Toolbar bind:settingsShown />
 			</div>
-			<div class="relative min-h-50 w-full px-3 py-3">
+
+			<div class="relative min-h-50 w-full px-3 py-3 pb-8">
 				<div class="flex flex-col gap-1 pb-4">
 					<div class="flex w-full flex-col items-center gap-2 pb-5">
 						<div class="h-20 w-20 rounded-full bg-linear-to-b from-green-500 to-green-600"></div>
 						<ChangeName />
 					</div>
 
-					<div class="flex w-full items-center justify-center"></div>
-
-					<div class="flex w-full items-baseline gap-2 px-3">
-						<p class="text-[0.94rem] font-semibold whitespace-nowrap text-neutral-400">
-							Account Settings
-						</p>
-					</div>
+					{@render sectionHeader('Account Settings')}
 
 					{@render listItem(emailItem)}
 
@@ -157,65 +165,89 @@
 
 					{@render listItem(passkeyItem)}
 
+					{#if openPasskeys}
+						<div
+							class="min-h-40 w-full rounded-3xl bg-[#212121] shadow-[inset_0_1px_1.5px_rgba(255,255,255,0.09),inset_0_-1px_4px_rgba(255,255,255,0.03)]"
+						>
+							<div class="flex flex-col gap-4">
+								<div class="flex w-full flex-col gap-3 px-3 pt-4">
+									<div class="flex items-center justify-between">
+										<div class="flex items-center gap-2">
+											<div class="flex w-7 justify-start">
+												<IconKeyFilled class="text-neutral-500" size={24} />
+											</div>
+											<p class="text-xl font-semibold">Passkeys</p>
+										</div>
+
+										<div class="flex items-center gap-3">
+											<div>
+												<button
+													class="h-9 rounded-full bg-linear-to-b from-neutral-600 to-neutral-600 px-4 py-1 text-neutral-100 shadow-[inset_0.5px_0.5px_0_rgba(255,255,255,0.2),inset_-0.5px_-0.5px_0_rgba(255,255,255,0.1)]"
+													>Add Passkey</button
+												>
+											</div>
+											<button
+												onclick={() => (openPasskeys = false)}
+												class="flex h-9 w-9 cursor-pointer items-center justify-center rounded-full bg-linear-to-b from-blue-vibrant to-sky-500 shadow-[inset_0.5px_0.5px_0_rgba(255,255,255,0.2)] transition-transform hover:scale-105 active:scale-95"
+											>
+												<IconCheck />
+											</button>
+										</div>
+									</div>
+
+									<div class="h-px w-full bg-neutral-500/30"></div>
+								</div>
+
+								<Passkeys />
+							</div>
+						</div>
+					{/if}
+
 					{@render dividerLine()}
 
 					{@render listItem(sessionsItem)}
 
+					{#if openSessions}
+						<div
+							class="min-h-40 w-full rounded-3xl bg-[#212121] shadow-[inset_0_1px_1.5px_rgba(255,255,255,0.09),inset_0_-1px_4px_rgba(255,255,255,0.03)]"
+						>
+							<div class="flex flex-col gap-4">
+								<div class="flex w-full flex-col gap-3 px-3 pt-4">
+									<div class="flex items-center justify-between">
+										<div class="flex items-center gap-2">
+											<div class="flex w-7 justify-start">
+												<IconDeviceIpadHorizontalPin class="text-neutral-500" size={24} />
+											</div>
+											<p class="text-xl font-semibold">Sessions</p>
+										</div>
+
+										<div class="flex items-center gap-3">
+											<div>
+												<button
+													class="h-9 rounded-full bg-linear-to-b from-neutral-600 to-neutral-600 px-4 py-1 text-neutral-100 shadow-[inset_0.5px_0.5px_0_rgba(255,255,255,0.2),inset_-0.5px_-0.5px_0_rgba(255,255,255,0.1)]"
+													>Logout All</button
+												>
+											</div>
+											<button
+												onclick={() => (openSessions = false)}
+												class="flex h-9 w-9 cursor-pointer items-center justify-center rounded-full bg-linear-to-b from-blue-vibrant to-sky-500 shadow-[inset_0.5px_0.5px_0_rgba(255,255,255,0.2)] transition-transform hover:scale-105 active:scale-95"
+											>
+												<IconCheck />
+											</button>
+										</div>
+									</div>
+
+									<div class="h-px w-full bg-neutral-500/30"></div>
+								</div>
+
+								<Sessions />
+							</div>
+						</div>
+					{/if}
+
 					{@render dividerLine()}
 
 					{@render listItem(deleteAccountItem)}
-				</div>
-			</div>
-
-			<div class="h-full w-full p-3">
-				<div
-					class="min-h-40 w-full rounded-3xl bg-[#212121] shadow-[inset_0_1px_1.5px_rgba(255,255,255,0.09),inset_0_-1px_4px_rgba(255,255,255,0.03)]"
-				>
-					<div class="flex flex-col gap-4">
-						<div class="flex w-full flex-col gap-4 px-4 pt-4">
-							<div class="flex items-center justify-between">
-								<p class="text-xl font-semibold">Passkeys</p>
-
-								<div class="flex items-center gap-3">
-									<div>
-										<button
-											class="h-9 rounded-full bg-linear-to-b from-neutral-600 to-neutral-600 px-3 py-1 text-neutral-100 shadow-[inset_0.5px_0.5px_0_rgba(255,255,255,0.2),inset_-0.5px_-0.5px_0_rgba(255,255,255,0.1)]"
-											>Add Passkey</button
-										>
-									</div>
-									<div
-										class="flex h-9 w-9 cursor-pointer items-center justify-center rounded-full bg-linear-to-b from-blue-vibrant to-sky-500 shadow-[inset_0.5px_0.5px_0_rgba(255,255,255,0.2)] transition-transform hover:scale-105 active:scale-95"
-									>
-										<IconCheck />
-									</div>
-								</div>
-							</div>
-
-							<div class="h-px w-full bg-neutral-500/30"></div>
-						</div>
-
-						<div class="flex flex-col px-2 pb-4">
-							<div
-								class="flex items-center justify-between rounded-2xl px-2 py-4 transition-all hover:bg-neutral-700 hover:px-3"
-							>
-								<div class="flex items-baseline gap-2">
-									<p class="text-[1.08rem] font-medium">1Password</p>
-									<p class="text-[0.95rem] text-neutral-300">Added 1mo ago</p>
-								</div>
-								<IconDotsVertical class="text-neutral-300 hover:text-neutral-100" />
-							</div>
-
-							<div
-								class="flex items-center justify-between rounded-2xl px-2 py-4 transition-all hover:bg-neutral-700 hover:px-3"
-							>
-								<div class="flex items-baseline gap-2">
-									<p class="text-[1.08rem] font-medium">Chrome</p>
-									<p class="text-[0.95rem] text-neutral-300">Added 3mo ago</p>
-								</div>
-								<IconDotsVertical class="text-neutral-300 hover:text-neutral-100" />
-							</div>
-						</div>
-					</div>
 				</div>
 			</div>
 		{/if}

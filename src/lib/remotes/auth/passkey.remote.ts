@@ -99,5 +99,21 @@ export const verifyPasskeyRegistration = command(
 )
 
 // get all passkeys
+export const getUserPasskeys = query(async () => {
+	const { locals } = getRequestEvent()
+
+	if (!locals.session || !locals.user) {
+		throw error(401)
+	}
+
+	const keysResult = await AuthCore.listUserPasskeys({ userId: locals.user.id })
+
+	if (keysResult.success) {
+		return keysResult?.data
+	} else {
+		throw error(500)
+	}
+})
+
 // rename passkey
 // delete passkey
