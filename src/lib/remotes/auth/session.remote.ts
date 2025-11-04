@@ -14,7 +14,6 @@ export const getUserSessions = query(async () => {
 		throw error(401, 'Unauthorized')
 	}
 
-	const currentSession = locals.session
 	const result = await AuthCore.listAllUserSessions(locals.user.id)
 
 	if (!result.success) {
@@ -22,11 +21,46 @@ export const getUserSessions = query(async () => {
 	}
 
 	return {
-		currentSessionId: currentSession.id,
+		currentSessionId: locals.session.id,
 		allSessions: result.data
 	}
 })
 
-// invalidateSession
-// invalidateAllSessions
-// invalidateAllOtherSessions
+export const invalidateSession = command(z.string(), async (sessionId) => {
+	const { locals } = getRequestEvent()
+
+	if (!locals.session || !locals.user) {
+		throw error(401, 'Unauthorized')
+	}
+
+	const result = await AuthCore.invalidateSession(sessionId)
+
+	if (!result.success) {
+		throw error(500)
+	}
+
+	// Update the sessions list
+	await getUserSessions().refresh()
+})
+
+export const invalidateAllSessions = command(async () => {
+	const { locals } = getRequestEvent()
+
+	if (!locals.session || !locals.user) {
+		throw error(401)
+	}
+
+	const activeSessionId = locals.session.id
+
+	const result = await AuthCore.invalidateAllUserSessions({
+		userId: locals.session.id,
+		activeSessionId
+	})
+
+	if (!result.success) {
+		throw error(500)
+	}
+
+	// Update the sessions list
+	await getUserSessions().refresh()
+})

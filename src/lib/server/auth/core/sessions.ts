@@ -1,5 +1,5 @@
 import { db } from '$lib/server/db'
-import { and, or, eq, lt, gt, isNull, desc } from 'drizzle-orm'
+import { and, or, eq, lt, gt, isNull, desc, ne } from 'drizzle-orm'
 import * as table from '$lib/server/auth/schema'
 
 import type { RequestEvent } from '@sveltejs/kit'
@@ -257,18 +257,35 @@ export async function invalidateSession(sessionId: string): Promise<Response<nev
 }
 
 /**
- * Invalidates all active sessions for a specific user.
- * Useful for forced logout scenarios or security events.
+ * Invalidates all active sessions for a specific user, optionally excluding a specific session.
+ * Useful for "logout all other devices" functionality or forced logout scenarios.
  *
  * @param userId - The ID of the user whose sessions should be invalidated
+ * @param activeSessionId - Optional session ID to keep active (won't be invalidated)
  * @returns Response indicating success or failure
  */
-export async function invalidateAllUserSessions(userId: string): Promise<Response<never>> {
+export async function invalidateAllUserSessions({
+	userId,
+	activeSessionId
+}: {
+	userId: string
+	activeSessionId?: string
+}): Promise<Response<never>> {
 	try {
+		const conditions = []
+
+		conditions.push(eq(table.session.userId, userId))
+		conditions.push(isNull(table.session.invalidatedAt))
+
+		// If active session passed, invalidate all except that one
+		if (activeSessionId) {
+			conditions.push(ne(table.session.id, activeSessionId))
+		}
+
 		await db
 			.update(table.session)
 			.set({ invalidatedAt: new Date() })
-			.where(and(eq(table.session.userId, userId), isNull(table.session.invalidatedAt)))
+			.where(and(...conditions))
 
 		return Response.succeed()
 	} catch (e) {

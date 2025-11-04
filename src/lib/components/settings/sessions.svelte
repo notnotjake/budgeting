@@ -1,10 +1,11 @@
 <script lang="ts">
-	import { getUserSessions } from '$remotes/auth/session.remote'
+	import { getUserSessions, invalidateSession } from '$remotes/auth/session.remote'
+	import { handleLogout } from '$ui/auth/logout'
 	import { IconX, IconDeviceMobile, IconDeviceDesktop } from '@tabler/icons-svelte'
-	import { DropdownMenu } from 'bits-ui'
+	import { Tooltip } from 'bits-ui'
 	import { UAParser } from 'ua-parser-js'
 
-	let sessions = $state(await getUserSessions())
+	let sessions = $derived(await getUserSessions())
 
 	function relativeTimeString(date: Date): string {
 		const now = new Date()
@@ -61,52 +62,76 @@
 		}
 	}
 
-	const handleClick = () => {
-		console.log('clicked')
+	const removeSession = async (sessionId: string) => {
+		try {
+			await invalidateSession(sessionId).updates(getUserSessions())
+		} catch {
+			console.log('failed to remove session')
+		}
 	}
 </script>
 
-<div class="flex flex-col px-2 pb-3">
-	{#each sessions.allSessions as session (session.id)}
-		{@const parsedUserAgent = parseUserAgent(session.userAgent || '')}
-		<div class="flex items-baseline justify-between rounded-2xl px-2 py-2 transition-all">
-			<div class="flex w-full items-center">
-				<div class="flex w-7 justify-start">
-					{#if parsedUserAgent.deviceType === 'mobile'}
-						<IconDeviceMobile class="text-neutral-500" size={22} />
-					{:else}
-						<IconDeviceDesktop class="text-neutral-500" size={22} />
-					{/if}
-				</div>
-				<div class="flex grow items-baseline justify-start gap-1">
-					<p class="text-[1.08rem] font-medium">{parsedUserAgent.platform}</p>
-					<p class="font-medium text-neutral-300">{parsedUserAgent.browser}</p>
-					{#await resolveLocation(session.ipAddress) then location}
-						{#if location}
-							<p class="pl-1 text-neutral-400">
-								{location.city}, {location.region}, {location.country_code3}
-							</p>
+<div class="flex flex-col">
+	<Tooltip.Provider delayDuration={350}>
+		{#each sessions.allSessions as session (session.id)}
+			{@const parsedUserAgent = parseUserAgent(session.userAgent || '')}
+			{@const isCurrentSession = session.id === sessions.currentSessionId}
+			<div class="flex items-baseline justify-between rounded-2xl py-2 transition-all">
+				<div class="flex w-full items-center">
+					<div class="flex w-7 justify-start">
+						{#if parsedUserAgent.deviceType === 'mobile'}
+							<IconDeviceMobile class="text-neutral-500" size={22} />
+						{:else}
+							<IconDeviceDesktop class="text-neutral-500" size={22} />
 						{/if}
-					{/await}
+					</div>
+					<div class="flex grow items-baseline justify-start gap-1">
+						<p class="text-[1.08rem] font-medium">{parsedUserAgent.platform}</p>
+						<p class="font-medium text-neutral-300">{parsedUserAgent.browser}</p>
+						{#await resolveLocation(session.ipAddress) then location}
+							{#if location}
+								<p class="pl-1 text-neutral-400">
+									{location.city}, {location.region}, {location.country_code3}
+								</p>
+							{/if}
+						{/await}
+					</div>
+					{#if isCurrentSession}
+						<p
+							class="rounded-xl bg-neutral-700/60 px-2 py-1 text-[0.95rem] font-[450] text-neutral-300"
+						>
+							Current Device
+						</p>
+					{:else}
+						<p class="text-[0.95rem] font-[450] text-neutral-300">
+							Seen {relativeTimeString(session.lastSeenAt)}
+						</p>
+					{/if}
+					<Tooltip.Root>
+						<Tooltip.Trigger>
+							<button
+								onclick={() => {
+									if (isCurrentSession) {
+										handleLogout()
+									} else {
+										removeSession(session.id)
+									}
+								}}
+								class="ml-1 aspect-square rounded-xl p-1.5 text-neutral-400 hover:bg-neutral-500 hover:text-neutral-100 active:scale-95"
+							>
+								<IconX stroke={3} size={20} />
+							</button>
+						</Tooltip.Trigger>
+						<Tooltip.Content side="top" sideOffset={5} align="center">
+							<div
+								class="rounded-2xl bg-black px-3 py-2 text-[0.9rem] font-semibold text-neutral-50"
+							>
+								{isCurrentSession ? 'Logout' : 'Remove Device'}
+							</div>
+						</Tooltip.Content>
+					</Tooltip.Root>
 				</div>
-				{#if session.id === sessions.currentSessionId}
-					<p
-						class="rounded-xl bg-neutral-700/60 px-2 py-1 text-[0.95rem] font-[450] text-neutral-300"
-					>
-						Current Device
-					</p>
-				{:else}
-					<p class="text-[0.95rem] font-[450] text-neutral-300">
-						Seen {relativeTimeString(session.lastSeenAt)}
-					</p>
-				{/if}
-				<button
-					onclick={handleClick}
-					class="group ml-1 aspect-square rounded-xl p-1.5 hover:bg-neutral-500 active:scale-95"
-				>
-					<IconX class="text-neutral-400 group-hover:text-neutral-100" stroke={3} size={20} />
-				</button>
 			</div>
-		</div>
-	{/each}
+		{/each}
+	</Tooltip.Provider>
 </div>

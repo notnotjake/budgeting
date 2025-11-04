@@ -209,10 +209,10 @@
 
 					{#if openSessions}
 						<div
-							class="min-h-40 w-full rounded-3xl bg-[#212121] shadow-[inset_0_1px_1.5px_rgba(255,255,255,0.09),inset_0_-1px_4px_rgba(255,255,255,0.03)]"
+							class="w-full rounded-3xl bg-[#212121] shadow-[inset_0_1px_1.5px_rgba(255,255,255,0.09),inset_0_-1px_4px_rgba(255,255,255,0.03)]"
 						>
-							<div class="flex flex-col gap-4">
-								<div class="flex w-full flex-col gap-3 px-3 pt-4">
+							<div class="flex flex-col gap-4 px-3 py-4">
+								<div class="flex w-full flex-col gap-3">
 									<div class="flex items-center justify-between">
 										<div class="flex items-center gap-2">
 											<div class="flex w-7 justify-start">
