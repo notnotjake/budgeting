@@ -9,7 +9,13 @@ export const handleGlobalRatelimit: Handle = async ({ event, resolve }) => {
 	const ip = event.getClientAddress()
 	const result = await ratelimit.free.limit(ip)
 
-	console.log(result)
+	if (result.remaining < 3) {
+		console.log('RATELIMIT: Almost at limit')
+	}
+
+	if (result.remaining === 0) {
+		console.log('RATELIMIT: exceeded')
+	}
 
 	return resolve(event)
 }
