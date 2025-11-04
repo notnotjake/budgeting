@@ -58,7 +58,7 @@
 		try {
 			let e = ipAddress
 			if (ipAddress === '::1') {
-				e = '73.251.1.194'
+				e = '202.168.51.151'
 			}
 			const res = await fetch(`https://get.geojs.io/v1/ip/geo/${e}.json`)
 			const data = await res.json()
