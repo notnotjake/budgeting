@@ -16,6 +16,8 @@
 		damping?: number
 		/** Direction for container to adapt */
 		direction?: 'x' | 'y' | 'both'
+		/** CSS class for the inner content - use this to override behaviors */
+		innerClass?: string
 	}
 
 	let {
@@ -23,7 +25,8 @@
 		class: classProp,
 		stiffness = SPRING_DEFAULTS.stiffness,
 		damping = SPRING_DEFAULTS.damping,
-		direction = 'both'
+		direction = 'both',
+		innerClass
 	}: Props = $props()
 
 	let applyX = $derived(direction === 'x' || direction === 'both')
@@ -70,7 +73,10 @@
 	class={createClass(classProp, 'relative', initialized ? 'overflow-hidden' : '')}
 >
 	<div
-		class={createClass(initialized ? 'absolute inset-0 h-fit w-fit' : 'relative h-fit w-fit')}
+		class={createClass(
+			initialized ? 'absolute inset-0 h-fit w-fit' : 'relative h-fit w-fit',
+			innerClass
+		)}
 		bind:offsetHeight={innerHeight}
 		bind:offsetWidth={innerWidth}
 	>
