@@ -61,7 +61,7 @@
 			</div>
 		</div>
 	{:else}
-		<div class="bg-blue-400/10 rounded-4xl flex flex-col items-center py-4">
+		<div class="rounded-4xl flex flex-col items-center py-4">
 			<p class="font-semibold tracking-tight-sm text-lg">Secure Your Account</p>
 			<p class="max-w-80 tracking-tight-sm text-center text-neutral-300">
 				Passkeys are a secure and user-friedly alternative to passwords

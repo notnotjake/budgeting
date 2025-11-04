@@ -9,7 +9,6 @@
 	let { children } = $props()
 
 	let settingsShown = $state(false)
-	let detachedCard = $state(false)
 
 	const openSettings = () => {
 		settingsShown = true
@@ -43,13 +42,7 @@
 	</Dialog.Root>
 
 	<div class="pointer-events-none absolute inset-0 z-100 h-screen w-full">
-		{#if settingsShown}
-			<!-- <div class="flex h-screen w-full justify-center">
-				<div class="pointer-events-auto">
-					<SettingsPane bind:settingsShown />
-				</div>
-			</div> -->
-		{:else}
+		{#if !settingsShown}
 			<div
 				class="flex w-full justify-center pt-1.5"
 				out:fly={{ y: -100, duration: 200 }}

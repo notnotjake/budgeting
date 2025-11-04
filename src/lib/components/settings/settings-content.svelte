@@ -6,7 +6,10 @@
 		IconTrashFilled
 	} from '@tabler/icons-svelte'
 	import AccordionItem from './components/accordion-item.svelte'
+	import DialogItem from './components/dialog-item.svelte'
 	import SectionHeader from './components/section-header.svelte'
+	import Section from './components/section.svelte'
+	import Divider from './components/item-divider.svelte'
 
 	// import ChangeName from './account-settings/change-name.svelte'
 	// import ChangeEmail from './account-settings/change-email.svelte'
@@ -21,37 +24,46 @@
 
 <Profile />
 
-<SectionHeader>Account Settings</SectionHeader>
+<Section title="AccountSettings">
+	<DialogItem icon={IconUserCircle} title="Login Method">
+		{#snippet content()}
+			<p>Test</p>
+		{/snippet}
+	</DialogItem>
 
-<AccordionItem
-	id="account-sessions"
-	icon={IconDeviceIpadHorizontalPin}
-	title="Sessions"
-	hint="Signed in 3 places"
-	actionButtonText="Remove All"
->
-	{#snippet content({ registerAction })}
-		<Sessions {registerAction} />
-	{/snippet}
-</AccordionItem>
+	<Divider />
 
-{@render dividerLine()}
+	<AccordionItem
+		id="account-sessions"
+		icon={IconDeviceIpadHorizontalPin}
+		title="Sessions"
+		hint="Signed in 3 places"
+		actionButtonText="Remove All"
+	>
+		{#snippet content({ registerAction })}
+			<Sessions {registerAction} />
+		{/snippet}
+	</AccordionItem>
 
-<AccordionItem
-	id="account-passkeys"
-	icon={IconKeyFilled}
-	title="Passkeys"
-	hint="1 Passkey"
-	actionButtonText="Add Passkey"
->
-	{#snippet content({ registerAction })}
-		<Passkeys {registerAction} />
-	{/snippet}
-</AccordionItem>
+	<Divider />
 
-<!-- Snippets -->
-{#snippet dividerLine()}
-	<div class="w-full px-3">
-		<div class="h-px w-full bg-neutral-500/30"></div>
-	</div>
-{/snippet}
+	<AccordionItem
+		id="account-passkeys"
+		icon={IconKeyFilled}
+		title="Passkeys"
+		hint="1 Passkey"
+		actionButtonText="Add Passkey"
+	>
+		{#snippet content({ registerAction })}
+			<Passkeys {registerAction} />
+		{/snippet}
+	</AccordionItem>
+
+	<Divider />
+
+	<DialogItem icon={IconTrashFilled} title="Delete Account">
+		{#snippet content()}
+			<p>Test</p>
+		{/snippet}
+	</DialogItem>
+</Section>
