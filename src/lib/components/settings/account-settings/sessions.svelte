@@ -104,11 +104,11 @@
 						{/if}
 					</div>
 					<div class="flex grow items-baseline justify-start gap-1">
-						<p class="text-[1.08rem] font-medium">{parsedUserAgent.platform}</p>
-						<p class="font-medium text-neutral-300">{parsedUserAgent.browser}</p>
+						<p class="text-[1.08rem] font-medium whitespace-nowrap">{parsedUserAgent.platform}</p>
+						<p class="font-medium whitespace-nowrap text-neutral-300">{parsedUserAgent.browser}</p>
 						{#await resolveLocation(session.ipAddress) then location}
 							{#if location}
-								<p class="pl-1 text-neutral-400">
+								<p class="max-w-48 shrink truncate pl-1 text-neutral-400">
 									{location.city}, {location.region}, {location.country_code3}
 								</p>
 							{/if}
@@ -116,12 +116,12 @@
 					</div>
 					{#if isCurrentSession}
 						<p
-							class="rounded-xl bg-neutral-700/60 px-2 py-1 text-[0.95rem] font-[450] text-neutral-300"
+							class="rounded-xl bg-neutral-700/60 px-2 py-1 text-[0.95rem] font-[450] whitespace-nowrap text-neutral-300"
 						>
 							Current Device
 						</p>
 					{:else}
-						<p class="text-[0.95rem] font-[450] text-neutral-300">
+						<p class="text-[0.95rem] font-[450] whitespace-nowrap text-neutral-300">
 							Seen {relativeTimeString(session.lastSeenAt)}
 						</p>
 					{/if}
