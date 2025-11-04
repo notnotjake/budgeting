@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { getUserPasskeys } from '$remotes/auth/passkey.remote'
-	import { IconDotsVertical, IconTrash, IconPencil } from '@tabler/icons-svelte'
+	import { IconDotsVertical, IconCirclePlusFilled } from '@tabler/icons-svelte'
 	import { DropdownMenu } from 'bits-ui'
 
 	let { registerAction }: { registerAction: (fn: () => void) => void } = $props()
@@ -49,7 +49,7 @@
 	})
 </script>
 
-<div class="flex flex-col px-2 pb-3">
+<div class="flex flex-col pb-3">
 	{#each await getUserPasskeys() as passkey (passkey.id)}
 		<div class="flex items-baseline justify-between rounded-2xl px-2 py-2 transition-all">
 			<div class="flex w-full items-center">
@@ -59,6 +59,19 @@
 					<IconDotsVertical class="text-neutral-300 hover:text-neutral-100" />
 				</button>
 			</div>
+		</div>
+	{:else}
+		<div class="bg-blue-400/10 rounded-4xl flex flex-col items-center py-4">
+			<p class="font-semibold tracking-tight-sm text-lg">Secure Your Account</p>
+			<p class="max-w-80 tracking-tight-sm text-center text-neutral-300">
+				Passkeys are a secure and user-friedly alternative to passwords
+			</p>
+			<button
+				class="flex mt-5 gap-2 bg-linear-to-b from-sky-500 to-sky-500 w-fit rounded-full items-center py-2 pl-2 pr-4 active:scale-95 transition-transform"
+			>
+				<IconCirclePlusFilled />
+				<p class="text-lg font-medium">Add Passkey</p>
+			</button>
 		</div>
 	{/each}
 </div>
