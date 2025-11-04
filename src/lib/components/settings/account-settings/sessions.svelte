@@ -1,9 +1,15 @@
 <script lang="ts">
-	import { getUserSessions, invalidateSession } from '$remotes/auth/session.remote'
+	import {
+		getUserSessions,
+		invalidateSession,
+		invalidateAllSessions
+	} from '$remotes/auth/session.remote'
 	import { handleLogout } from '$ui/auth/logout'
 	import { IconX, IconDeviceMobile, IconDeviceDesktop } from '@tabler/icons-svelte'
 	import { Tooltip } from 'bits-ui'
 	import { UAParser } from 'ua-parser-js'
+
+	let { registerAction }: { registerAction: (fn: () => void) => void } = $props()
 
 	let sessions = $derived(await getUserSessions())
 
@@ -69,6 +75,18 @@
 			console.log('failed to remove session')
 		}
 	}
+
+	const removeAllSessions = async () => {
+		try {
+			await invalidateAllSessions()
+		} catch {
+			console.log('failed to remove session')
+		}
+	}
+
+	registerAction(async () => {
+		await removeAllSessions()
+	})
 </script>
 
 <div class="flex flex-col">

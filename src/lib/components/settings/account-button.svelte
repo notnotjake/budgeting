@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { onMount, onDestroy } from 'svelte'
-	import { goto } from '$app/navigation'
 	import { getUser } from '$remotes/auth/user.remote'
 	import { handleLogout } from '$ui/auth/logout'
 

@@ -3,6 +3,8 @@
 	import { IconDotsVertical, IconTrash, IconPencil } from '@tabler/icons-svelte'
 	import { DropdownMenu } from 'bits-ui'
 
+	let { registerAction }: { registerAction: (fn: () => void) => void } = $props()
+
 	let keys = $state(await getUserPasskeys())
 
 	function relativeTimeString(date: Date): string {
@@ -37,6 +39,14 @@
 	const handleClick = () => {
 		console.log('clicked')
 	}
+
+	const openAddPasskey = () => {
+		console.log('TOOD: updade to open passkey dialog')
+	}
+
+	registerAction(() => {
+		openAddPasskey()
+	})
 </script>
 
 <div class="flex flex-col px-2 pb-3">

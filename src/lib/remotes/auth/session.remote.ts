@@ -53,7 +53,7 @@ export const invalidateAllSessions = command(async () => {
 	const activeSessionId = locals.session.id
 
 	const result = await AuthCore.invalidateAllUserSessions({
-		userId: locals.session.id,
+		userId: locals.user.id,
 		activeSessionId
 	})
 

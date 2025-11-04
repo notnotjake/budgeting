@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { setContext } from 'svelte'
 	import { createClass } from '@opensky/style'
 	import { slide } from 'svelte/transition'
 	import {
@@ -10,14 +11,19 @@
 		IconTrashFilled,
 		IconUserCircle
 	} from '@tabler/icons-svelte'
-	import Toolbar from './components/toolbar.svelte'
-	import ChangeName from './change-name.svelte'
-	import ChangeEmail from './change-email.svelte'
-	import DeleteAccount from './delete-account.svelte'
-	import Passkeys from './passkeys.svelte'
-	import Sessions from './sessions.svelte'
+	import Title from './components/title.svelte'
+	import ChangeEmail from './account-settings/change-email.svelte'
+	import DeleteAccount from './account-settings/delete-account.svelte'
+	import Passkeys from './account-settings/passkeys.svelte'
+	import Sessions from './account-settings/sessions.svelte'
+	import { Accordion } from 'bits-ui'
+
+	import Content from './settings-content.svelte'
 
 	let { settingsShown = $bindable() }: { settingsShown: boolean } = $props()
+
+	let accordionValue = $state('')
+	setContext('accordion-value', () => accordionValue)
 
 	type ListItemButton = {
 		title: string
@@ -147,103 +153,19 @@
 			<ChangeEmail bind:open={openEmail} />
 		{:else}
 			<div class="sticky top-0 z-10 h-fit w-full">
-				<Toolbar bind:settingsShown />
+				<Title bind:settingsShown />
 			</div>
 
 			<div class="relative min-h-50 w-full px-3 py-3 pb-8">
 				<div class="flex flex-col gap-1 pb-4">
-					<div class="flex w-full flex-col items-center gap-2 pb-5">
-						<div class="h-20 w-20 rounded-full bg-linear-to-b from-green-500 to-green-600"></div>
-						<ChangeName />
-					</div>
+					<Accordion.Root type="single" bind:value={accordionValue}>
+						<Content />
+					</Accordion.Root>
 
-					{@render sectionHeader('Account Settings')}
+					{@render dividerLine()}
 
+					<!-- This should be 1st but will deal with later -->
 					{@render listItem(emailItem)}
-
-					{@render dividerLine()}
-
-					{@render listItem(passkeyItem)}
-
-					{#if openPasskeys}
-						<div
-							class="min-h-40 w-full rounded-3xl bg-[#212121] shadow-[inset_0_1px_1.5px_rgba(255,255,255,0.09),inset_0_-1px_4px_rgba(255,255,255,0.03)]"
-						>
-							<div class="flex flex-col gap-4">
-								<div class="flex w-full flex-col gap-3 px-3 pt-4">
-									<div class="flex items-center justify-between">
-										<div class="flex items-center gap-2">
-											<div class="flex w-7 justify-start">
-												<IconKeyFilled class="text-neutral-500" size={24} />
-											</div>
-											<p class="text-xl font-semibold">Passkeys</p>
-										</div>
-
-										<div class="flex items-center gap-3">
-											<div>
-												<button
-													class="h-9 rounded-full bg-linear-to-b from-neutral-600 to-neutral-600 px-4 py-1 text-neutral-100 shadow-[inset_0.5px_0.5px_0_rgba(255,255,255,0.2),inset_-0.5px_-0.5px_0_rgba(255,255,255,0.1)]"
-													>Add Passkey</button
-												>
-											</div>
-											<button
-												onclick={() => (openPasskeys = false)}
-												class="flex h-9 w-9 cursor-pointer items-center justify-center rounded-full bg-linear-to-b from-blue-vibrant to-sky-500 shadow-[inset_0.5px_0.5px_0_rgba(255,255,255,0.2)] transition-transform hover:scale-105 active:scale-95"
-											>
-												<IconCheck />
-											</button>
-										</div>
-									</div>
-
-									<div class="h-px w-full bg-neutral-500/30"></div>
-								</div>
-
-								<Passkeys />
-							</div>
-						</div>
-					{/if}
-
-					{@render dividerLine()}
-
-					{@render listItem(sessionsItem)}
-
-					{#if openSessions}
-						<div
-							class="w-full rounded-3xl bg-[#212121] shadow-[inset_0_1px_1.5px_rgba(255,255,255,0.09),inset_0_-1px_4px_rgba(255,255,255,0.03)]"
-						>
-							<div class="flex flex-col gap-4 px-3 py-4">
-								<div class="flex w-full flex-col gap-3">
-									<div class="flex items-center justify-between">
-										<div class="flex items-center gap-2">
-											<div class="flex w-7 justify-start">
-												<IconDeviceIpadHorizontalPin class="text-neutral-500" size={24} />
-											</div>
-											<p class="text-xl font-semibold">Sessions</p>
-										</div>
-
-										<div class="flex items-center gap-3">
-											<div>
-												<button
-													class="h-9 rounded-full bg-linear-to-b from-neutral-600 to-neutral-600 px-4 py-1 text-neutral-100 shadow-[inset_0.5px_0.5px_0_rgba(255,255,255,0.2),inset_-0.5px_-0.5px_0_rgba(255,255,255,0.1)]"
-													>Logout All</button
-												>
-											</div>
-											<button
-												onclick={() => (openSessions = false)}
-												class="flex h-9 w-9 cursor-pointer items-center justify-center rounded-full bg-linear-to-b from-blue-vibrant to-sky-500 shadow-[inset_0.5px_0.5px_0_rgba(255,255,255,0.2)] transition-transform hover:scale-105 active:scale-95"
-											>
-												<IconCheck />
-											</button>
-										</div>
-									</div>
-
-									<div class="h-px w-full bg-neutral-500/30"></div>
-								</div>
-
-								<Sessions />
-							</div>
-						</div>
-					{/if}
 
 					{@render dividerLine()}
 
