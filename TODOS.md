@@ -5,12 +5,9 @@
 settings:
 	- passkey list actions: remove, rename
 	- add new passkey
-	- invalidate all sessions
-	- invalidate specific session
 	- change email flow
 	- update name
 
-- lock account
 - rate limits
 - error handling
 - setup cron for cleanups
