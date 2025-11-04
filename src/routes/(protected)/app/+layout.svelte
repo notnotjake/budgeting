@@ -1,5 +1,7 @@
 <script lang="ts">
-	import { fly } from 'svelte/transition'
+	import { Dialog } from 'bits-ui'
+	import { fade, fly, slide } from 'svelte/transition'
+	import { createClass } from '@opensky/style'
 
 	import AccountButton from '$ui/settings/account-button.svelte'
 	import SettingsPane from '$ui/settings/settings.svelte'
@@ -7,6 +9,11 @@
 	let { children } = $props()
 
 	let settingsShown = $state(false)
+	let detachedCard = $state(false)
+
+	const openSettings = () => {
+		settingsShown = true
+	}
 </script>
 
 <!-- Overscroll Top -->
@@ -17,13 +24,31 @@
 ></div>
 
 <div class="min-h-screen w-full bg-neutral-50">
+	<Dialog.Root bind:open={settingsShown}>
+		<Dialog.Portal>
+			<Dialog.Overlay forceMount>
+				{#snippet child({ props, open })}
+					{#if open}
+						<div
+							{...props}
+							transition:fade={{ duration: 200 }}
+							class="absolute inset-0 z-50 h-screen w-full bg-neutral-100/30"
+						></div>
+					{/if}
+				{/snippet}
+			</Dialog.Overlay>
+			<!-- Content -->
+			<SettingsPane />
+		</Dialog.Portal>
+	</Dialog.Root>
+
 	<div class="pointer-events-none absolute inset-0 z-100 h-screen w-full">
 		{#if settingsShown}
-			<div class="flex h-screen w-full justify-center">
+			<!-- <div class="flex h-screen w-full justify-center">
 				<div class="pointer-events-auto">
 					<SettingsPane bind:settingsShown />
 				</div>
-			</div>
+			</div> -->
 		{:else}
 			<div
 				class="flex w-full justify-center pt-1.5"
@@ -31,7 +56,7 @@
 				in:fly={{ y: -100, duration: 400, delay: 375 }}
 			>
 				<div class="pointer-events-auto">
-					<AccountButton bind:settingsShown />
+					<AccountButton {openSettings} />
 				</div>
 			</div>
 		{/if}

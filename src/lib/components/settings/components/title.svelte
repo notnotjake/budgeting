@@ -1,7 +1,6 @@
 <script lang="ts">
+	import { Dialog } from 'bits-ui'
 	import { IconX, IconHelp } from '@tabler/icons-svelte'
-
-	let { settingsShown = $bindable() } = $props()
 
 	const getHelp = () => {
 		console.log('TODO: implement help feature')
@@ -11,12 +10,9 @@
 <div
 	class="flex w-full items-center justify-between bg-linear-to-b from-neutral-950 from-70% to-neutral-950/0 px-3 py-3 pb-6"
 >
-	<button
-		onclick={() => (settingsShown = false)}
-		class="flex items-center transition-transform active:scale-95"
-	>
+	<Dialog.Close class="flex items-center transition-transform active:scale-95">
 		<IconX size={30} stroke={2.5} />
-	</button>
+	</Dialog.Close>
 
 	<p class="text-[1.15rem] font-semibold">Settings</p>
 

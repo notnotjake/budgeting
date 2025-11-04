@@ -10,7 +10,7 @@
 	import { Adapt } from '$ui/adapt'
 	import { DropdownMenu } from 'bits-ui'
 
-	let { settingsShown = $bindable() }: { settingsShown: boolean } = $props()
+	let { openSettings }: { openSettings: () => void } = $props()
 
 	let user = $state({
 		identifier: 'Error',
@@ -84,7 +84,7 @@
 	}
 
 	const handleSettings = () => {
-		settingsShown = true
+		openSettings()
 	}
 
 	const selectLogout = async () => {

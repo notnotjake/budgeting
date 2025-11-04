@@ -1,26 +1,19 @@
 <script lang="ts">
 	import { setContext } from 'svelte'
+	import { Dialog, Accordion } from 'bits-ui'
 	import { createClass } from '@opensky/style'
 	import { slide } from 'svelte/transition'
 	import {
-		IconKeyFilled,
-		IconDeviceIpadHorizontalPin,
 		IconChevronRight,
-		IconCheck,
 		IconDotsVertical,
 		IconTrashFilled,
 		IconUserCircle
 	} from '@tabler/icons-svelte'
 	import Title from './components/title.svelte'
-	import ChangeEmail from './account-settings/change-email.svelte'
-	import DeleteAccount from './account-settings/delete-account.svelte'
-	import Passkeys from './account-settings/passkeys.svelte'
-	import Sessions from './account-settings/sessions.svelte'
-	import { Accordion } from 'bits-ui'
-
 	import Content from './settings-content.svelte'
 
-	let { settingsShown = $bindable() }: { settingsShown: boolean } = $props()
+	import ChangeEmail from './account-settings/change-email.svelte'
+	import DeleteAccount from './account-settings/delete-account.svelte'
 
 	let accordionValue = $state('')
 	setContext('accordion-value', () => accordionValue)
@@ -47,30 +40,6 @@
 		icon: IconUserCircle
 	}
 
-	const passkeyItem: ListItemButton = {
-		title: 'Passkeys',
-		hint: '2 Passkeys',
-		action: {
-			type: 'inline',
-			onclick: () => {
-				openPasskeys = true
-			}
-		},
-		icon: IconKeyFilled
-	}
-
-	const sessionsItem: ListItemButton = {
-		title: 'Sessions',
-		hint: 'Signed in 3 places',
-		action: {
-			type: 'inline',
-			onclick: () => {
-				openSessions = true
-			}
-		},
-		icon: IconDeviceIpadHorizontalPin
-	}
-
 	const deleteAccountItem: ListItemButton = {
 		title: 'Delete Account',
 		hint: '',
@@ -85,9 +54,6 @@
 
 	let openDelete = $state(false)
 	let openEmail = $state(false)
-	let openPasskeys = $state(false)
-	let openSessions = $state(false)
-
 	let detachedCard = $derived(openDelete || openEmail)
 </script>
 
@@ -102,15 +68,6 @@
 {#snippet dividerLine()}
 	<div class="w-full px-3">
 		<div class="h-px w-full bg-neutral-500/30"></div>
-	</div>
-{/snippet}
-
-<!-- Section Header -->
-{#snippet sectionHeader(text: string)}
-	<div class="flex w-full items-baseline gap-2 px-3">
-		<p class="text-[0.94rem] font-semibold whitespace-nowrap text-neutral-400 capitalize">
-			{text}
-		</p>
 	</div>
 {/snippet}
 
@@ -136,44 +93,66 @@
 {/snippet}
 
 <!-- Content -->
-<div class={createClass('relatived flex w-xl')}>
-	{@render spacer()}
+<Dialog.Content forceMount>
+	{#snippet child({ props, open })}
+		{#if open}
+			<div class="absolute inset-0 z-100 flex h-screen w-full justify-center">
+				<!-- Spacers that expand when nested dialog opens -->
+				<div
+					class="w-0 transition-all duration-200 ease-out data-[nested-open]:w-7"
+					data-nested-open={props['data-nested-open']}
+				></div>
 
-	<div
-		in:slide={{ axis: 'y', delay: 300, duration: 400 }}
-		out:slide={{ axis: 'y', duration: 300 }}
-		class={createClass(
-			'relative max-h-152 min-h-50 w-full overflow-y-scroll rounded-b-4xl bg-neutral-950 text-neutral-100 shadow-lg transition-all duration-200 ease-out',
-			detachedCard ? 'mt-5 rounded-t-4xl' : 'mt-0 rounded-t-none'
-		)}
-	>
-		{#if openDelete}
-			<DeleteAccount bind:open={openDelete} />
-		{:else if openEmail}
-			<ChangeEmail bind:open={openEmail} />
-		{:else}
-			<div class="sticky top-0 z-10 h-fit w-full">
-				<Title bind:settingsShown />
-			</div>
+				<div
+					{...props}
+					in:slide={{ axis: 'y', delay: 300, duration: 400 }}
+					out:slide={{ axis: 'y', duration: 300 }}
+					class={createClass(
+						'relative h-fit max-h-152 min-h-52 w-xl overflow-y-scroll rounded-b-4xl bg-neutral-950 text-neutral-100 shadow-lg transition-all duration-200 ease-out outline-none',
+						'w-xl data-nested-open:w-[calc(var(--container-xl)-3.5rem)]',
+						'mt-0  data-nested-open:mt-5',
+						'rounded-t-none data-nested-open:rounded-t-4xl'
+					)}
+				>
+					<div class="sticky top-0 z-10 h-fit w-full">
+						<Title />
+					</div>
 
-			<div class="relative min-h-50 w-full px-3 py-3 pb-8">
-				<div class="flex flex-col gap-1 pb-4">
-					<Accordion.Root type="single" bind:value={accordionValue}>
-						<Content />
-					</Accordion.Root>
+					<div class="relative min-h-50 w-full px-3 py-3 pb-8">
+						<div class="flex flex-col gap-1 pb-4">
+							<Accordion.Root type="single" bind:value={accordionValue}>
+								<Content />
+							</Accordion.Root>
 
-					{@render dividerLine()}
+							{@render dividerLine()}
 
-					<!-- This should be 1st but will deal with later -->
-					{@render listItem(emailItem)}
+							<!-- This should be 1st but will deal with later -->
+							{@render listItem(emailItem)}
 
-					{@render dividerLine()}
+							{@render dividerLine()}
 
-					{@render listItem(deleteAccountItem)}
+							{@render listItem(deleteAccountItem)}
+
+							<Dialog.Root>
+								<Dialog.Trigger>Open Second Dialog</Dialog.Trigger>
+								<Dialog.Content>
+									<Dialog.Title>Second Dialog</Dialog.Title>
+									<Dialog.Description>
+										This is the second dialog in the nested dialog stack.
+									</Dialog.Description>
+									<Dialog.Close>Close Second Dialog</Dialog.Close>
+								</Dialog.Content>
+							</Dialog.Root>
+						</div>
+					</div>
 				</div>
+
+				<!-- Spacers that expand when nested dialog opens -->
+				<div
+					class="w-0 transition-all duration-200 ease-out data-[nested-open]:w-7"
+					data-nested-open={props['data-nested-open']}
+				></div>
 			</div>
 		{/if}
-	</div>
-
-	{@render spacer()}
-</div>
+	{/snippet}
+</Dialog.Content>
