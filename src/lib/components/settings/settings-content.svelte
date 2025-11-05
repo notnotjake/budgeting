@@ -24,7 +24,7 @@
 
 <Profile />
 
-<Section title="AccountSettings">
+<Section title="Account Settings">
 	<DialogItem icon={IconUserCircle} title="Login Method">
 		{#snippet content()}
 			<ChangeEmail />
