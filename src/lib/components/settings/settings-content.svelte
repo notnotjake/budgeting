@@ -12,8 +12,8 @@
 	import Divider from './components/item-divider.svelte'
 
 	// import ChangeName from './account-settings/change-name.svelte'
-	// import ChangeEmail from './account-settings/change-email.svelte'
-	// import DeleteAccount from './account-settings/delete-account.svelte'
+	import ChangeEmail from './account-settings/change-email.svelte'
+	import DeleteAccount from './account-settings/delete-account.svelte'
 
 	import Profile from './profile/profile.svelte'
 	import Sessions from './account-settings/sessions.svelte'
@@ -27,7 +27,7 @@
 <Section title="AccountSettings">
 	<DialogItem icon={IconUserCircle} title="Login Method">
 		{#snippet content()}
-			<p>Test</p>
+			<ChangeEmail />
 		{/snippet}
 	</DialogItem>
 
@@ -63,7 +63,7 @@
 
 	<DialogItem icon={IconTrashFilled} title="Delete Account">
 		{#snippet content()}
-			<p>Test</p>
+			<DeleteAccount />
 		{/snippet}
 	</DialogItem>
 </Section>

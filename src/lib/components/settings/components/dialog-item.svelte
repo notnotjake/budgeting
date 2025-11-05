@@ -3,11 +3,8 @@
 	import { getContext } from 'svelte'
 	import type { Icon as TablerIcon } from '@tabler/icons-svelte'
 	import { Dialog } from 'bits-ui'
-	import { createClass } from '@opensky/style'
 	import { fade } from 'svelte/transition'
-	import { AdaptFit } from '$ui/adapt'
-
-	import { IconDotsVertical } from '@tabler/icons-svelte'
+	import { IconDotsVertical, IconChevronLeft } from '@tabler/icons-svelte'
 
 	type Props = {
 		content: Snippet
@@ -29,7 +26,9 @@
 				<Icon size={24} />
 			</div>
 			<h2 class="text-[1.2rem] font-medium tracking-tight text-neutral-50">{title}</h2>
-			<p transition:fade={{ duration: 150 }} class="text-neutral-400">{hint}</p>
+			{#if hint}
+				<p transition:fade={{ duration: 150 }} class="text-neutral-400">{hint}</p>
+			{/if}
 
 			<div class="grow"></div>
 
@@ -40,12 +39,19 @@
 			</div>
 		</div>
 	</Dialog.Trigger>
-	<Dialog.Content>
-		<Dialog.Title>Second Dialog</Dialog.Title>
-		<Dialog.Description>This is the second dialog in the nested dialog stack.</Dialog.Description>
-
-		{@render content?.()}
-
-		<Dialog.Close>Close Second Dialog</Dialog.Close>
+	<Dialog.Content forceMount preventScroll={false}>
+		{#snippet child({ props, open })}
+			{#if open}
+				<div
+					{...props}
+					transition:fade={{ duration: 150 }}
+					class="absolute inset-0 z-50 flex h-full w-full flex-col bg-neutral-950"
+				>
+					<div class="w-full flex-1 overflow-y-auto px-3 pt-4 pb-8">
+						{@render content()}
+					</div>
+				</div>
+			{/if}
+		{/snippet}
 	</Dialog.Content>
 </Dialog.Root>

@@ -20,7 +20,7 @@
 					out:slide={{ axis: 'y', duration: 300 }}
 					class={createClass(
 						'relative h-fit max-h-152 min-h-52 w-xl overflow-y-scroll rounded-b-4xl bg-neutral-950 text-neutral-100 shadow-lg transition-all duration-200 ease-out outline-none',
-						'w-xl data-nested-open:w-[calc(var(--container-xl)-3.5rem)]',
+						'w-xl data-nested-open:w-[calc(var(--container-xl)-4rem)]',
 						'mt-0  data-nested-open:mt-5',
 						'rounded-t-none data-nested-open:rounded-t-4xl'
 					)}

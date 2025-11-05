@@ -3,12 +3,12 @@
 	let { children, title }: { children: Snippet; title: string } = $props()
 </script>
 
-<div class="flex w-full items-baseline px-3 pb-3">
+<div class="flex w-full items-baseline px-3 pb-2">
 	<p class="text-[0.94rem] font-semibold whitespace-nowrap text-neutral-400 capitalize">
 		{title}
 	</p>
 </div>
 
-<div class="flex w-full flex-col gap-2">
+<div class="flex w-full flex-col gap-1">
 	{@render children?.()}
 </div>

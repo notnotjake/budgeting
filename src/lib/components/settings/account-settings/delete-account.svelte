@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { goto } from '$app/navigation'
+	import { Dialog } from 'bits-ui'
 	import {
 		IconTrashFilled,
 		IconCircle,
@@ -135,11 +136,11 @@
 			>
 				{currentStep >= steps.length ? 'Delete Account' : 'Yes, Continue'}
 			</button>
-			<button
-				onclick={handleCancel}
+			<Dialog.Close
 				class="rounded-full bg-neutral-500 py-4 text-[1.05rem] font-semibold text-white transition-transform active:scale-[0.97]"
-				>Cancel</button
 			>
+				Cancel
+			</Dialog.Close>
 		</div>
 	{/if}
 </div>

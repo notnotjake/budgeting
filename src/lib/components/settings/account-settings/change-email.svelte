@@ -7,6 +7,7 @@
 		IconArrowBackUp,
 		IconChevronRight
 	} from '@tabler/icons-svelte'
+	import { Dialog } from 'bits-ui'
 	import { onMount } from 'svelte'
 	import { scale, fade } from 'svelte/transition'
 	import { wipeVertical } from '$ui/transition'
@@ -147,12 +148,11 @@
 
 	<!-- Buttons -->
 	<div class="flex flex-col gap-2">
-		<button
-			onclick={handleCancel}
+		<Dialog.Close
 			class="group flex items-center justify-center gap-2 rounded-full py-4 text-[1.05rem] font-semibold text-white transition-transform hover:bg-neutral-800/70 active:scale-[0.97]"
 		>
 			<IconArrowLeft />
 			Go Back
-		</button>
+		</Dialog.Close>
 	</div>
 </div>
