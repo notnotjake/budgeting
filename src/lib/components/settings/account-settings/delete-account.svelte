@@ -57,10 +57,6 @@
 			}
 		}
 	}
-
-	const handleCancel = () => {
-		open = false
-	}
 </script>
 
 <div class="flex w-full flex-col justify-center p-3 text-neutral-200">
