@@ -1,7 +1,8 @@
 <script lang="ts">
 	import { getUserPasskeys } from '$remotes/auth/passkey.remote'
 	import { IconDotsVertical, IconCirclePlusFilled } from '@tabler/icons-svelte'
-	import { DropdownMenu } from 'bits-ui'
+	import DialogSubmenu from '$ui/settings/components/dialog-submenu.svelte'
+	import AddPasskeyMenu from './add-passkey.svelte'
 
 	let { registerAction }: { registerAction: (fn: () => void) => void } = $props()
 
@@ -34,8 +35,6 @@
 		return 'Just now'
 	}
 
-	let editing = $state('')
-
 	const handleClick = () => {
 		console.log('clicked')
 	}
@@ -66,12 +65,21 @@
 			<p class="max-w-80 tracking-tight-sm text-center text-neutral-300">
 				Passkeys are a secure and user-friedly alternative to passwords
 			</p>
-			<button
-				class="flex mt-5 gap-2 bg-linear-to-b from-sky-500 to-sky-500 w-fit rounded-full items-center py-2 pl-2 pr-4 active:scale-95 transition-transform"
-			>
-				<IconCirclePlusFilled />
-				<p class="text-lg font-medium">Add Passkey</p>
-			</button>
+
+			<DialogSubmenu>
+				{#snippet trigger()}
+					<div
+						class="flex mt-5 gap-2 bg-linear-to-b from-sky-500 to-sky-500 w-fit rounded-full items-center py-2 pl-2 pr-4 active:scale-95 transition-transform"
+					>
+						<IconCirclePlusFilled />
+						<p class="text-lg font-medium">Add Passkey</p>
+					</div>
+				{/snippet}
+
+				{#snippet content()}
+					<AddPasskeyMenu />
+				{/snippet}
+			</DialogSubmenu>
 		</div>
 	{/each}
 </div>

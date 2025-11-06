@@ -9,6 +9,10 @@
 	let accordionValue = $state('')
 	setContext('accordion-value', () => accordionValue)
 
+	let dialogContainer: HTMLDivElement | null = null
+	const getDialogContainer = () => dialogContainer
+	setContext('settings-dialog-container', getDialogContainer)
+
 	let scrollRegion: HTMLDivElement | null = null
 	const scrollSettingsToTop = () => {
 		if (scrollRegion) {
@@ -37,6 +41,7 @@
 			<div class="absolute inset-0 z-100 flex h-screen w-full justify-center">
 				<div
 					{...props}
+					bind:this={dialogContainer}
 					data-nested-open={isNestedDialogOpen ? '' : undefined}
 					in:slide={{ axis: 'y', delay: 300, duration: 400 }}
 					out:slide={{ axis: 'y', duration: 300 }}
