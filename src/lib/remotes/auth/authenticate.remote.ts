@@ -32,6 +32,26 @@ export const logout = command(async () => {
 	return { redirectUrl: Auth.redirects.afterLogout }
 })
 
+export const preauth = query(async () => {
+	const { locals } = getRequestEvent()
+
+	if (!locals.session || !locals.user) {
+		throw error(401)
+	}
+
+	const session = locals.session
+
+	const hasRecentAuth =
+		session?.lastAuthAt &&
+		Date.now() < session.lastAuthAt.getTime() + Auth.durations.recentAuthWindow
+
+	if (!hasRecentAuth) {
+		return { recentAuth: true }
+	} else {
+		return { recentAuth: false }
+	}
+})
+
 export const startLogin = form(
 	z.object({
 		identifier: z.string().email(),
