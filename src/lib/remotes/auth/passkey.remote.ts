@@ -91,10 +91,10 @@ export const verifyPasskeyRegistration = command(
 				identifier: user.identifier
 			})
 
+			await getUserPasskeys().refresh()
+
 			return { success: true }
 		}
-
-		await getUserPasskeys().refresh()
 
 		throw error(500)
 	}

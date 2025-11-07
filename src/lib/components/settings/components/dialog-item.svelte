@@ -11,10 +11,9 @@
 		icon: TablerIcon
 		title: string
 		hint?: string | null
-		actionButtonText?: string
 	}
 
-	let { content, icon: Icon, title, hint, actionButtonText }: Props = $props()
+	let { content, icon: Icon, title, hint }: Props = $props()
 
 	let open = $state(false)
 	let innerHeight = $state<number>(0)
@@ -67,7 +66,7 @@
 					{...props}
 					bind:offsetHeight={innerHeight}
 					transition:fade={{ duration: 150 }}
-					class="absolute left-0 right-0 top-0 z-50 flex w-full flex-col bg-neutral-950"
+					class="absolute top-0 right-0 left-0 z-50 flex w-full flex-col bg-neutral-950"
 				>
 					<div class="h-fit w-full overflow-y-auto px-3 pt-4 pb-8">
 						{@render content()}

@@ -1,11 +1,17 @@
 <script lang="ts">
 	import { getUserPasskeys } from '$remotes/auth/passkey.remote'
-	import { IconDotsVertical, IconCirclePlusFilled } from '@tabler/icons-svelte'
+
+	import { DropdownMenu } from 'bits-ui'
+	import {
+		IconDots,
+		IconCirclePlusFilled,
+		IconFingerprint,
+		IconTrash,
+		IconPencil
+	} from '@tabler/icons-svelte'
 	import AddPasskeyMenu from './add-passkey.svelte'
 
 	let { registerAction }: { registerAction: (fn: () => void) => void } = $props()
-
-	let keys = $state(await getUserPasskeys())
 
 	function relativeTimeString(date: Date): string {
 		const now = new Date()
@@ -34,36 +40,73 @@
 		return 'Just now'
 	}
 
-	const handleClick = () => {
-		console.log('clicked')
-	}
-
 	let addPasskeyShown = $state(false)
 
 	const openAddPasskey = () => {
 		addPasskeyShown = true
 	}
+	const dismissAddPasskey = () => {
+		addPasskeyShown = false
+	}
 
 	registerAction(() => {
 		openAddPasskey()
 	})
+
+	const noop = () => {
+		console.log('A')
+	}
 </script>
 
 <div class="flex flex-col pb-3">
 	{#if addPasskeyShown}
-		<AddPasskeyMenu />
+		<AddPasskeyMenu dismiss={dismissAddPasskey} />
 	{/if}
 
 	{#each await getUserPasskeys() as passkey (passkey.id)}
-		<div class="flex items-baseline justify-between rounded-2xl px-2 py-2 transition-all">
-			<div class="flex w-full items-center">
-				<p class="grow text-[1.08rem] font-medium">{passkey.name}</p>
-				<p class="text-[0.95rem] text-neutral-300">Added {relativeTimeString(passkey.createdAt)}</p>
-				<button onclick={handleClick} class="aspect-square rounded-full p-1.5 hover:bg-neutral-500">
-					<IconDotsVertical class="text-neutral-300 hover:text-neutral-100" />
-				</button>
+		<DropdownMenu.Root>
+			<div class="flex items-baseline justify-between rounded-2xl py-2 transition-all">
+				<div class="flex w-full items-center">
+					<div class="flex w-7 justify-start text-neutral-500">
+						<IconFingerprint size={22} />
+					</div>
+					<p class="grow text-[1.08rem] font-medium whitespace-nowrap">{passkey.name}</p>
+					<p class="text-[0.95rem] font-[450] whitespace-nowrap text-neutral-300">
+						Added {relativeTimeString(passkey.createdAt)}
+					</p>
+					<DropdownMenu.Trigger
+						class="ml-1 aspect-square rounded-xl p-1.5 text-neutral-400 hover:bg-neutral-500 hover:text-neutral-100 active:scale-95"
+					>
+						<IconDots size={20} />
+					</DropdownMenu.Trigger>
+				</div>
 			</div>
-		</div>
+
+			<DropdownMenu.Content
+				class="w-44 rounded-[1.15rem] bg-black p-[0.25rem] shadow-lg outline-none"
+				side="left"
+				align="center"
+				sideOffset={8}
+				collisionPadding={8}
+			>
+				<DropdownMenu.Item onSelect={noop} class="outline-none">
+					<div
+						class="flex cursor-pointer gap-2 rounded-[0.9rem] px-2 py-1.5 pr-3 text-white hover:bg-neutral-600/80"
+					>
+						<IconPencil class="text-neutral-200" />
+						<p class="px-1.5 font-medium text-neutral-200">Rename</p>
+					</div>
+				</DropdownMenu.Item>
+				<DropdownMenu.Item onSelect={noop} class="outline-none">
+					<div
+						class="flex cursor-pointer gap-2 rounded-[0.9rem] px-2 py-1.5 pr-3 text-rose-500 hover:bg-rose-600/50"
+					>
+						<IconTrash class="text-rose-500" />
+						<p class="px-1.5 font-medium text-rose-500">Remove</p>
+					</div>
+				</DropdownMenu.Item>
+			</DropdownMenu.Content>
+		</DropdownMenu.Root>
 	{:else}
 		<div class="rounded-4xl flex flex-col items-center py-4">
 			{#if !addPasskeyShown}

@@ -9,11 +9,11 @@
 	let accordionValue = $state('')
 	setContext('accordion-value', () => accordionValue)
 
-	let dialogContainer: HTMLDivElement | null = null
+	let dialogContainer = $state<HTMLDivElement | null>(null)
 	const getDialogContainer = () => dialogContainer
 	setContext('settings-dialog-container', getDialogContainer)
 
-	let scrollRegion: HTMLDivElement | null = null
+	let scrollRegion = $state<HTMLDivElement | null>(null)
 	const scrollSettingsToTop = () => {
 		if (scrollRegion) {
 			scrollRegion.scrollTo({ top: 0, behavior: 'auto' })
@@ -31,8 +31,6 @@
 		}
 	}
 	setContext('nested-dialog-height', setNestedDialogHeight)
-
-	$inspect(nestedDialogHeight)
 </script>
 
 <Dialog.Content forceMount>
@@ -48,7 +46,7 @@
 					class={createClass(
 						'relative flex flex-col overflow-hidden rounded-b-4xl bg-neutral-950 text-neutral-100 shadow-lg transition-all duration-200 ease-out outline-none',
 						'w-xl data-nested-open:w-[calc(var(--container-xl)-4rem)]',
-						'h-fit min-h-52 max-h-152 data-nested-open:max-h-none data-nested-open:overflow-hidden',
+						'h-fit max-h-152 min-h-52 data-nested-open:max-h-none data-nested-open:overflow-hidden',
 						'mt-0  data-nested-open:mt-5',
 						'rounded-t-none data-nested-open:rounded-t-4xl'
 					)}
@@ -57,7 +55,10 @@
 				>
 					<div
 						bind:this={scrollRegion}
-						class={createClass('flex-1 overflow-y-auto', isNestedDialogOpen ? 'overflow-hidden' : '')}
+						class={createClass(
+							'flex-1 overflow-y-auto',
+							isNestedDialogOpen ? 'overflow-hidden' : ''
+						)}
 					>
 						<div class="sticky top-0 z-10 h-fit w-full">
 							<Title />

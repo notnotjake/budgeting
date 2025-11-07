@@ -1,7 +1,6 @@
 <script lang="ts">
 	import { Dialog } from 'bits-ui'
-	import { fade, fly, slide } from 'svelte/transition'
-	import { createClass } from '@opensky/style'
+	import { fade, fly } from 'svelte/transition'
 
 	import AccountButton from '$ui/settings/account-button.svelte'
 	import SettingsPane from '$ui/settings/settings.svelte'

@@ -4,56 +4,100 @@
 
 	import { onMount } from 'svelte'
 	import { createClass } from '@opensky/style'
+	import { scale } from 'svelte/transition'
+	import { IconX, IconArrowRight } from '@tabler/icons-svelte'
+	import { AdaptSwap } from '$ui/adapt'
+	import { SuspenseSpinner } from '$ui/feedback'
+
+	let { dismiss }: { dismiss: () => void } = $props()
 
 	let name = $state('')
 	let nameInput = $state<HTMLElement>()
+
+	let pending = $state(false)
+	let error = $state(false)
 
 	onMount(() => {
 		nameInput?.focus()
 	})
 
 	async function addPasskey() {
-		console.log('test')
-		const optionsResult = await startPasskeyRegistration()
+		pending = true
+		error = false
 
-		const registrationResponse = await startRegistration({ optionsJSON: optionsResult.options })
+		try {
+			const optionsResult = await startPasskeyRegistration()
+			const registrationResponse = await startRegistration({ optionsJSON: optionsResult.options })
+			const result = await verifyPasskeyRegistration({ name, registration: registrationResponse })
 
-		const result = await verifyPasskeyRegistration({ name, registration: registrationResponse })
+			pending = false
 
-		console.log(result)
+			if (result.success) {
+				dismiss()
+			} else {
+				error = true
+			}
+		} catch {
+			pending = false
+			error = true
+		}
 	}
 </script>
 
-<div class="flex w-full flex-col px-5 py-1">
-	<div class="flex w-full items-baseline gap-2 px-5">
-		<p class="pb-1 text-[0.94rem] font-semibold whitespace-nowrap text-neutral-400">Name</p>
-	</div>
-
+<div class="flex w-full flex-col px-1 py-1">
 	<div
-		class="group flex w-full flex-col items-center rounded-3xl bg-neutral-900 px-5 pr-3 focus-within:outline-2 focus-within:outline-blue-vibrant"
+		class="group flex w-full flex-col items-center rounded-3xl bg-neutral-900 px-2 pr-3 shadow-[inset_0.5px_0.5px_0_rgba(255,255,255,0.15),inset_-0.5px_-0.5px_0_rgba(255,255,255,0.15)] focus-within:outline-2 focus-within:outline-blue-vibrant"
 	>
-		<div class="flex w-full items-center py-3">
+		<div class="flex w-full items-center gap-2 py-3">
+			<button
+				onclick={() => dismiss()}
+				class="ml-1 aspect-square rounded-full p-1.5 text-neutral-400 hover:bg-neutral-500 hover:text-neutral-100 active:scale-95"
+			>
+				<IconX />
+			</button>
+
 			<input
 				type="text"
 				bind:value={name}
 				maxlength="64"
 				bind:this={nameInput}
-				placeholder="1Password"
+				placeholder="Name Passkey"
 				class="grow border-none font-medium outline-none"
 			/>
 
-			<button
-				onclick={async () => await addPasskey()}
-				disabled={name.length < 3}
-				class={createClass(
-					'rounded-full bg-linear-to-b px-5 py-2 text-[1.05rem] transition-all active:scale-[0.97]',
-					name.length > 3
-						? 'from-sky-500 to-sky-500 text-white shadow-[inset_0.5px_0.5px_0_rgba(255,255,255,0.3),inset_-0.5px_-0.5px_0_rgba(255,255,255,0.15)]'
-						: 'from-neutral-600 to-neutral-600 text-neutral-400 shadow-[inset_0.5px_0.5px_0_rgba(255,255,255,0.2),inset_-0.5px_-0.5px_0_rgba(255,255,255,0.1)]'
-				)}
-			>
-				Add
-			</button>
+			{#if error}
+				<p class="pr-1.5 tracking-tight-md whitespace-nowrap text-rose-600">Error, try again</p>
+			{/if}
+
+			<AdaptSwap bind:isActive={pending}>
+				<button
+					onclick={async () => await addPasskey()}
+					disabled={name.length < 3}
+					class={createClass(
+						'rounded-full px-5 py-1.5 text-[1.05rem] transition-all active:scale-[0.97]',
+						name.length > 3
+							? 'bg-blue-vibrant-light text-white shadow-[inset_0.5px_0.5px_0_rgba(255,255,255,0.3),inset_-0.5px_-0.5px_0_rgba(255,255,255,0.15)]'
+							: 'bg-neutral-600 text-neutral-400 shadow-[inset_0.5px_0.5px_0_rgba(255,255,255,0.2),inset_-0.5px_-0.5px_0_rgba(255,255,255,0.1)]'
+					)}
+				>
+					<IconArrowRight stroke={3} size={26} />
+				</button>
+
+				{#snippet swapContent()}
+					<div
+						in:scale={{ start: 0.5, opacity: 0.3 }}
+						class="rounded-full bg-blue-vibrant-light px-5 py-2"
+					>
+						<SuspenseSpinner
+							size={14}
+							thickness={10}
+							speed="fast"
+							primaryColor="var(--color-neutral-100)"
+							backgroundColor="var(--color-blue-vibrant-light)"
+						/>
+					</div>
+				{/snippet}
+			</AdaptSwap>
 		</div>
 	</div>
 </div>

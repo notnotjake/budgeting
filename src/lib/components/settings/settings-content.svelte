@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { getUser } from '$remotes/auth/user.remote'
+
 	import {
 		IconUserCircle,
 		IconKeyFilled,
@@ -7,7 +9,6 @@
 	} from '@tabler/icons-svelte'
 	import AccordionItem from './components/accordion-item.svelte'
 	import DialogItem from './components/dialog-item.svelte'
-	import SectionHeader from './components/section-header.svelte'
 	import Section from './components/section.svelte'
 	import Divider from './components/item-divider.svelte'
 
@@ -19,13 +20,13 @@
 	import Sessions from './account-settings/sessions.svelte'
 	import Passkeys from './account-settings/passkeys.svelte'
 
-	// let { detached = $bindable() } = $props()
+	let user = $derived(await getUser())
 </script>
 
 <Profile />
 
 <Section title="Account Settings">
-	<DialogItem icon={IconUserCircle} title="Login Method">
+	<DialogItem icon={IconUserCircle} title="Login Method" hint={user.identifier ?? ''}>
 		{#snippet content()}
 			<ChangeEmail />
 		{/snippet}
