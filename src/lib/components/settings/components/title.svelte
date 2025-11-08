@@ -16,7 +16,7 @@
 
 	<p class="text-[1.15rem] font-semibold">Settings</p>
 
-	<button onclick={getHelp} class="flex items-center transition-transform active:scale-95">
+	<a href="/help" class="flex items-center transition-transform active:scale-95">
 		<IconHelp size={30} />
-	</button>
+	</a>
 </div>

@@ -35,20 +35,6 @@
 	<Divider />
 
 	<AccordionItem
-		id="account-sessions"
-		icon={IconDeviceIpadHorizontalPin}
-		title="Sessions"
-		hint="Signed in 3 places"
-		actionButtonText="Remove All"
-	>
-		{#snippet content({ registerAction })}
-			<Sessions {registerAction} />
-		{/snippet}
-	</AccordionItem>
-
-	<Divider />
-
-	<AccordionItem
 		id="account-passkeys"
 		icon={IconKeyFilled}
 		title="Passkeys"
@@ -57,6 +43,20 @@
 	>
 		{#snippet content({ registerAction })}
 			<Passkeys {registerAction} />
+		{/snippet}
+	</AccordionItem>
+
+	<Divider />
+
+	<AccordionItem
+		id="account-sessions"
+		icon={IconDeviceIpadHorizontalPin}
+		title="Sessions"
+		hint="Signed in 3 places"
+		actionButtonText="Remove All"
+	>
+		{#snippet content({ registerAction })}
+			<Sessions {registerAction} />
 		{/snippet}
 	</AccordionItem>
 

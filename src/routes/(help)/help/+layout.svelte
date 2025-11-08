@@ -16,7 +16,7 @@
 	></div>
 
 	<a
-		class="z-50 mx-auto block pt-2 text-center text-base font-medium tracking-tight-md text-black/55 no-underline transition-all duration-300 hover:text-black/85 dark:text-white/55"
+		class="z-50 mx-auto block pt-2 text-center text-base font-medium tracking-tight-md text-black/55 no-underline transition-all duration-300 hover:text-black/85 dark:text-white/55 dark:hover:text-white/85"
 		href="/">{site.name}</a
 	>
 
