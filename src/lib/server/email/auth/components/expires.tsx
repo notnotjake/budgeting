@@ -10,7 +10,7 @@ export const Expires = ({
 }) => {
 	return (
 		<Section>
-			<Text className="leading-1 m-0 text-left text-[14px] text-neutral-700 dark:text-neutral-200">
+			<Text className="m-0 text-left text-[14px] leading-5 text-neutral-700 dark:text-neutral-200">
 				This login will be available for {maxAgeMins} minutes
 			</Text>
 
