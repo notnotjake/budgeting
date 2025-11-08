@@ -1,19 +1,12 @@
-- move reauth to a component
-
-- use bitsui dialog (or another primitive) for the settings pane
-- use bitsui dialog (or similar) for detached setting views
-- create a dialog-item component similar to accordion-item for setting views that render detached
+- move reauth to a component and create nice DX for calling inside settings context
 
 settings:
 
     - passkeys:
-
-    	- list actions menu
     	- remove
     	- rename
-    	- add new passkey (dialog)
 
-    - change email flow (dialog)
+    - change email flow
 
 - rate limits
 - error handling

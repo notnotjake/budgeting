@@ -103,6 +103,10 @@ export async function verifyShortCodesMatch({
 	return await verify(savedCode, inputCode, HASHING_OPTIONS_SHORT_CODE)
 }
 
+export function normalizeIdentifierInput(identifier: string) {
+	return identifier.toLowerCase().trim()
+}
+
 /**
  * Generates a random friendly name for users or devices.
  * Combines a random adjective with a random animal name.
