@@ -1,12 +1,14 @@
+- support phone number identifier
+
 - move reauth to a component and create nice DX for calling inside settings context
 
 settings:
 
+    - change email flow
+
     - passkeys:
     	- remove
     	- rename
-
-    - change email flow
 
 - rate limits
 - error handling
