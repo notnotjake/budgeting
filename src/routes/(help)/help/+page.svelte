@@ -10,7 +10,7 @@
 
 <div class="mx-auto w-full max-w-4xl px-2 pt-28">
 	<p
-		class="text-center text-[clamp(1.1rem,4.4vw,3.3rem)] font-semibold tracking-tight selection:bg-sky-200 selection:text-blue-600"
+		class="text-center text-[clamp(1.6rem,4.4vw,3.3rem)] font-semibold tracking-tight selection:bg-sky-200 selection:text-blue-600 dark:text-white"
 	>
 		We're here to help
 	</p>
@@ -22,8 +22,8 @@
 
 	<div class="flex items-center justify-center gap-3 pt-16 pb-4">
 		<div class="h-8 w-8 rounded-full bg-linear-to-b from-neutral-500 to-neutral-400"></div>
-		<p class="text-neutral-600">
-			Chatting with <span class="font-medium text-blue-600">Thomas S.</span>
+		<p class="text-neutral-600 dark:text-neutral-400">
+			Chatting with <span class="font-medium text-blue-500">Thomas S.</span>
 		</p>
 	</div>
 
