@@ -70,12 +70,12 @@
 						</div>
 					{:else}
 						<div class="flex w-full items-center py-3">
-							<IconMail class="mr-2 text-neutral-500" />
+							<IconMail class="mr-2 shrink-0 text-neutral-500" />
 							<input
 								type="text"
 								bind:value={emailValue}
 								bind:this={emailInput}
-								class="grow border-none font-medium outline-none"
+								class="shrink grow border-none font-medium outline-none"
 							/>
 
 							{#if emailDiff}
