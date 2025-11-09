@@ -12,7 +12,6 @@ settings:
 
 - rate limits
 - error handling
-- setup cron for cleanups
 
 - welcome page
 
