@@ -8,17 +8,8 @@ import Auth from '$lib/server/auth'
 scheduledTasks()
 
 export const handleGlobalRatelimit: Handle = async ({ event, resolve }) => {
-	// Your hook code
 	const ip = event.getClientAddress()
 	const result = await ratelimit.free.limit(ip)
-
-	if (result.remaining < 3) {
-		console.log('RATELIMIT: Almost at limit')
-	}
-
-	if (result.remaining === 0) {
-		console.log('RATELIMIT: exceeded')
-	}
 
 	return resolve(event)
 }
