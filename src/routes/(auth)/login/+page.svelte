@@ -18,7 +18,7 @@
 	let { data } = $props()
 
 	const startLoginSchema = z.object({
-		identifier: z.string().email(),
+		identifier: z.email(),
 		timezone: z.string().optional()
 	})
 
@@ -37,6 +37,12 @@
 
 	const localTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone
 	let identifierInput = $state<HTMLInputElement>()
+
+	let showError = $derived(
+		!startLoginForm.result &&
+			(startLoginForm.error ||
+				(startLoginValid.issues('identifier') && startLogin.fields.identifier.value()?.length > 0))
+	)
 
 	let startButtonAvailable = $derived(
 		!startLoginForm.result &&
@@ -117,9 +123,7 @@
 			class={createClass(
 				'group relative z-10 flex h-12 w-full items-center overflow-hidden rounded-[1rem] focus-within:outline-2 focus-within:outline-blue-500',
 				startLoginForm.result ? 'bg-neutral-50' : 'bg-neutral-100',
-				!startLoginForm.result &&
-					(startLoginForm.error || startLoginValid.issues('identifier')) &&
-					'outline-[0.12rem] outline-rose-400'
+				showError && 'outline-[0.12rem] outline-rose-400'
 			)}
 		>
 			{#if !startLoginForm.result}
@@ -164,9 +168,7 @@
 					<div
 						class={createClass(
 							'pointer-events-none absolute top-0 right-0 z-0 h-full w-18 bg-linear-to-l from-rose-400/60 to-rose-300/0',
-							startLoginForm.error || startLoginValid.issues('identifier')
-								? 'w-18 opacity-25'
-								: 'w-0 opacity-0'
+							showError ? 'w-18 opacity-25' : 'w-0 opacity-0'
 						)}
 					></div>
 
@@ -209,13 +211,13 @@
 		</div>
 
 		<!-- Errors & Issues -->
-		{#if startLoginForm.error}
+		{#if showError && startLoginForm.error}
 			<div transition:wipeVertical={{ delay: 300 }} class="flex w-full justify-center py-2.5">
 				<button class="cursor-pointer font-[450] text-rose-500" onclick={focusInput}>
 					An error occured, try again
 				</button>
 			</div>
-		{:else if startLoginValid.issues('identifier')}
+		{:else if showError && startLoginValid.issues('identifier')}
 			<div transition:wipeVertical={{ delay: 300 }} class="flex w-full justify-center py-2.5">
 				{#each startLoginValid.issues('identifier') ?? [] as issue (issue)}
 					<button class="cursor-pointer font-[450] text-rose-500" onclick={focusInput}>
