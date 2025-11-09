@@ -10,7 +10,9 @@ const config = {
 		}
 	},
 	kit: {
-		adapter: adapter(),
+		adapter: adapter({
+			trustProxy: true
+		}),
 		experimental: {
 			remoteFunctions: true
 		},
