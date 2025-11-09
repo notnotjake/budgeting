@@ -45,7 +45,7 @@ export const preauth = query(async () => {
 		session?.lastAuthAt &&
 		Date.now() < session.lastAuthAt.getTime() + Auth.durations.recentAuthWindow
 
-	if (!hasRecentAuth) {
+	if (hasRecentAuth) {
 		return { recentAuth: true }
 	} else {
 		return { recentAuth: false }
