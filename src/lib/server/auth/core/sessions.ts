@@ -89,10 +89,7 @@ export async function authenticateSession({
 		const rawSessionToken = generateToken()
 		const authenticatedSessionId = hashToken(rawSessionToken)
 
-		const ipAddress = event.getClientAddress() || 'unknown'
-		console.log('SK IP', ipAddress)
-		const realIpAddress = event.request.headers.get('x-forwarded-for')
-		console.log('Req IP', realIpAddress)
+		const ipAddress = event.request.headers.get('x-forwarded-for')
 		const userAgent = event.request.headers.get('user-agent') || 'unknown'
 
 		const now = new Date()
