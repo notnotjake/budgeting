@@ -53,8 +53,12 @@
 		openAddPasskey()
 	})
 
-	const noop = () => {
-		console.log('A')
+	const renamePasskey = async (passkeyId: string) => {
+		console.log(passkeyId)
+	}
+
+	const deletePasskey = async (passkeyId: string) => {
+		console.log(passkeyId)
 	}
 </script>
 
@@ -89,7 +93,7 @@
 				sideOffset={8}
 				collisionPadding={8}
 			>
-				<DropdownMenu.Item onSelect={noop} class="outline-none">
+				<DropdownMenu.Item onSelect={() => renamePasskey(passkey.id)} class="outline-none">
 					<div
 						class="flex cursor-pointer gap-2 rounded-[0.9rem] px-2 py-1.5 pr-3 text-white hover:bg-neutral-600/80"
 					>
@@ -97,7 +101,7 @@
 						<p class="px-1.5 font-medium text-neutral-200">Rename</p>
 					</div>
 				</DropdownMenu.Item>
-				<DropdownMenu.Item onSelect={noop} class="outline-none">
+				<DropdownMenu.Item onSelect={() => deletePasskey(passkey.id)} class="outline-none">
 					<div
 						class="flex cursor-pointer gap-2 rounded-[0.9rem] px-2 py-1.5 pr-3 text-rose-500 hover:bg-rose-600/50"
 					>
