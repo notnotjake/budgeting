@@ -1,17 +1,5 @@
 import { sha256 } from '@oslojs/crypto/sha2'
 import { encodeBase64url } from '@oslojs/encoding'
-import { hash, verify } from '@node-rs/argon2'
-
-/**
- * Argon2 hashing options optimized for short verification codes.
- * Uses lower memory cost for faster hashing while maintaining security for 6-digit codes.
- */
-const HASHING_OPTIONS_SHORT_CODE = {
-	memoryCost: 4096,
-	timeCost: 1,
-	outputLen: 32,
-	parallelism: 1
-}
 
 /**
  * Generates a cryptographically secure random token.
@@ -73,7 +61,7 @@ export function generateShortCode(): string {
  * // Store hashed in database, send code to user via email
  */
 export async function hashShortCode(code: string): Promise<string> {
-	return await hash(code, HASHING_OPTIONS_SHORT_CODE)
+	return await Bun.password.hash(code)
 }
 
 /**
@@ -100,7 +88,7 @@ export async function verifyShortCodesMatch({
 	savedCode: string
 	inputCode: string
 }): Promise<boolean> {
-	return await verify(savedCode, inputCode, HASHING_OPTIONS_SHORT_CODE)
+	return await Bun.password.verify(inputCode, savedCode)
 }
 
 export function normalizeIdentifierInput(identifier: string) {
