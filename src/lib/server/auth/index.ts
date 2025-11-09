@@ -4,6 +4,7 @@ import userConfig from './config'
 import { handleAuthentication } from './hooks/authentication'
 import { handleProtected } from './hooks/protected'
 import { requireSession, requireAuthenticatedUser, requireRecentAuth } from './api/protect'
+import { cleanupChallenges, cleanupSessions } from './api/cleanup'
 
 const DAY_IN_MS = 24 * 60 * 60 * 1000
 const MIN_IN_MS = 60 * 1000
@@ -89,6 +90,10 @@ const Auth = {
 		requireSession,
 		requireAuthenticatedUser,
 		requireRecentAuth
+	},
+	cleanup: {
+		sessions: cleanupSessions,
+		challenges: cleanupChallenges
 	}
 }
 export default Auth
