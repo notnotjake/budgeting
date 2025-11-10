@@ -13,11 +13,13 @@
 	import { Suspense } from '$ui/feedback'
 	import ResendEmailButton from './resend-email-button.svelte'
 
-	let {
-		codeSent: codeSentInitially = false,
-		identifier,
-		timezone
-	}: { codeSent: boolean; identifier: string; timezone: string } = $props()
+	type Props = {
+		codeSent: boolean
+		identifier: string
+		timezone: string
+		dark?: boolean
+	}
+	let { codeSent: codeSentInitially = false, identifier, timezone, dark = false }: Props = $props()
 
 	// Send Button
 	//
@@ -105,7 +107,16 @@
 	</form>
 
 	<div class="flex flex-col items-center" in:scale={{ start: 0.7 }}>
-		<p class="pb-1 text-[1.02rem] group-data-dark/reauth:text-neutral-400">Enter Code</p>
+		<p
+			class={createClass(
+				'h-8 pb-2',
+				resultError
+					? 'text-[0.9rem] font-[450] text-rose-600'
+					: 'text-[1.02rem] group-data-dark/reauth:text-neutral-400'
+			)}
+		>
+			{resultError ? 'Code invalid, try again' : 'Enter Code'}
+		</p>
 
 		<div style:transform="translateX({$translateX}px)">
 			<PinInput.Root
@@ -199,12 +210,6 @@
 				</PinInput.Cell>
 			{/snippet}
 		</div>
-
-		<div class="h-4">
-			{#if resultError}
-				<p class="py-1 text-[0.9rem] font-[450] text-rose-600">Code invalid, try again</p>
-			{/if}
-		</div>
 	</div>
 {/if}
 
@@ -241,7 +246,13 @@
 		</div>
 	{:else if sendLoginCodeForm.delayed}
 		<div class="flex items-center gap-4" in:scale>
-			<Suspense.Text class="font-medium">Sending Email</Suspense.Text>
+			<Suspense.Text
+				class="font-medium"
+				backgroundColor={dark ? 'var(--color-neutral-600)' : undefined}
+				primaryColor={dark ? 'var(--color-neutral-200)' : undefined}
+			>
+				Sending Email
+			</Suspense.Text>
 		</div>
 	{:else if !codeSentInitially && !codeSent}
 		<button
@@ -258,6 +269,7 @@
 			<ResendEmailButton
 				cooldownMs={20 * 1000}
 				onclick={() => sendLoginCodeFormElement?.requestSubmit()}
+				{dark}
 			/>
 		</div>
 	{/if}

@@ -62,9 +62,10 @@
 	<button
 		onclick={handleClick}
 		class={createClass(
-			'bg-blue-vibrant-light flex cursor-pointer items-center justify-center gap-2 py-3 font-medium text-white outline-none transition-all',
+			'flex cursor-pointer items-center justify-center gap-2 bg-blue-vibrant-light py-3 font-medium text-white transition-all outline-none',
 			buttonState === 'idle' ? 'rounded-[1.2rem] px-10' : 'my-2 rounded-[2rem] px-4',
-			buttonState === 'error' && 'rounded-[1.2rem] bg-neutral-600 text-neutral-100'
+			buttonState === 'error' &&
+				'rounded-[1.2rem] bg-neutral-600 text-neutral-100 group-data-dark/reauth:bg-neutral-700'
 		)}
 	>
 		{#if buttonState === 'idle'}

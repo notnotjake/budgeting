@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { onDestroy } from 'svelte'
+	import { createClass } from '@opensky/style'
 	import { Timer, SEC } from '$lib/utils/timing'
 	import Radial from './radial.svelte'
 
@@ -7,6 +8,7 @@
 		totalTime?: number
 		currentTime?: number
 		size?: string
+		class?: string
 		backgroundColor?: string
 		primaryColor?: string
 		onComplete?: () => void
@@ -15,6 +17,7 @@
 		totalTime = 30,
 		currentTime = 0,
 		size = '0.8rem',
+		class: classProp,
 		backgroundColor = 'var(--color-neutral-200)',
 		primaryColor = 'var(--color-neutral-700)',
 		onComplete
@@ -46,7 +49,7 @@
 {#if timer.state !== 'completed'}
 	<div class="flex items-center">
 		<Radial value={displayProgress} {size} {backgroundColor} {primaryColor} tween={false} />
-		<div class="pl-1 text-[0.8rem] font-medium tabular-nums">
+		<div class={createClass('pl-1 text-[0.8rem] font-medium tabular-nums', classProp)}>
 			{timeRemaining}s
 		</div>
 	</div>
