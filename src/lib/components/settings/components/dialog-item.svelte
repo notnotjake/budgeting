@@ -68,7 +68,7 @@
 					transition:fade={{ duration: 150 }}
 					class="absolute top-0 right-0 left-0 z-50 flex w-full flex-col bg-neutral-950"
 				>
-					<div class="h-fit w-full overflow-y-auto px-3 pt-4 pb-8">
+					<div class="h-fit w-full overflow-y-auto p-3">
 						{@render content()}
 					</div>
 				</div>

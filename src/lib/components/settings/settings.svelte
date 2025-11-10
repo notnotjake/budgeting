@@ -48,7 +48,7 @@
 						'w-xl data-nested-open:w-[calc(var(--container-xl)-4rem)]',
 						'h-fit max-h-152 min-h-52 data-nested-open:max-h-none data-nested-open:overflow-hidden',
 						'mt-0  data-nested-open:mt-5',
-						'rounded-t-none data-nested-open:rounded-t-4xl'
+						'rounded-t-none data-nested-open:rounded-t-[2.25rem] data-nested-open:rounded-b-[2.25rem]'
 					)}
 					style:height={nestedDialogHeight ? `${nestedDialogHeight}px` : ''}
 					style:max-height={nestedDialogHeight ? `${nestedDialogHeight}px` : ''}
