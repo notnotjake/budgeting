@@ -1,5 +1,5 @@
 import { metaLoad } from '@opensky/seo'
 
 export const load = metaLoad.page({
-	title: 'Reauth'
+	title: 'Login'
 })
