@@ -16,6 +16,9 @@
 	import { createClass } from '@opensky/style'
 	import VerificationCodeInput from './verification-code-input.svelte'
 
+	import { getContext } from 'svelte'
+	const { showReauth } = getContext('reauth-prompt')
+
 	let { open = $bindable() } = $props()
 
 	const handleCancel = () => {
@@ -50,6 +53,8 @@
 			<h2 class="text-[1.2rem] font-semibold">Login Method</h2>
 			<p class="text-[1.05rem] text-neutral-300">Change how you login to your account</p>
 		</div>
+
+		<button onclick={showReauth} class="text-red-500">TEST ME</button>
 
 		<div class="flex w-full flex-col gap-5 py-1">
 			<div>

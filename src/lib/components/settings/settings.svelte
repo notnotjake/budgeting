@@ -3,8 +3,18 @@
 	import { Dialog, Accordion } from 'bits-ui'
 	import { createClass } from '@opensky/style'
 	import { slide } from 'svelte/transition'
+
 	import Title from './components/title.svelte'
 	import Content from './settings-content.svelte'
+	import ReauthDialog from './reauth-dialog.svelte'
+
+	let reauthShown = $state(false)
+	const showReauth = () => {
+		reauthShown = true
+	}
+	setContext('reauth-prompt', {
+		showReauth
+	})
 
 	let accordionValue = $state('')
 	setContext('accordion-value', () => accordionValue)
@@ -68,6 +78,8 @@
 							<Accordion.Root type="single" bind:value={accordionValue}>
 								<Content />
 							</Accordion.Root>
+
+							<ReauthDialog bind:open={reauthShown} />
 						</div>
 					</div>
 				</div>

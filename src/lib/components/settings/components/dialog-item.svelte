@@ -17,7 +17,6 @@
 
 	let open = $state(false)
 	let innerHeight = $state<number>(0)
-	$inspect(innerHeight)
 
 	const setNestedDialogHeight = getContext<(height: number) => void>('nested-dialog-height')
 	const scrollSettingsToTop = getContext<(() => void) | undefined>('settings-scroll-to-top')
