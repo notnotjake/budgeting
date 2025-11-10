@@ -105,7 +105,7 @@
 	</form>
 
 	<div class="flex flex-col items-center" in:scale={{ start: 0.7 }}>
-		<p class="pb-1 text-[1.02rem]">Enter Code</p>
+		<p class="pb-1 text-[1.02rem] group-data-dark/reauth:text-neutral-400">Enter Code</p>
 
 		<div style:transform="translateX({$translateX}px)">
 			<PinInput.Root
@@ -114,8 +114,8 @@
 				maxlength={6}
 				pattern={REGEXP_ONLY_DIGITS}
 				class={createClass(
-					'group flex w-fit cursor-pointer items-center overflow-hidden rounded-[1.2rem] bg-gray-100 px-5 py-1 has-disabled:opacity-70',
-					'focus-within:outline-2 focus-within:outline-blue-500',
+					'group flex w-fit cursor-pointer items-center overflow-hidden rounded-[1.2rem] bg-gray-100 px-5 py-1 group-data-dark/reauth:bg-neutral-800 has-disabled:opacity-70',
+					'focus-within:outline-2 focus-within:outline-blue-500 group-data-dark/reauth:focus-within:outline-blue-vibrant',
 					verifyLoginCodeForm.pending && 'bg-blue-200/30 focus-within:outline-none',
 					resultSuccess && 'outline-2 outline-green-500 focus-within:outline-green-500',
 					resultError && 'outline-2 outline-rose-500 focus-within:outline-rose-500'
@@ -182,7 +182,7 @@
 								`text-xl font-semibold transition-all duration-200`,
 								cell.hasFakeCaret
 									? 'text-blue-vibrant-light'
-									: 'text-neutral-400 group-hover:text-neutral-600 group-hover:group-focus-within:text-neutral-400'
+									: 'text-neutral-400 group-hover:text-neutral-600 group-hover:group-focus-within:text-neutral-400 group-data-dark/reauth:text-neutral-600 group-data-dark/reauth:group-hover:text-neutral-500 group-data-dark/reauth:group-hover:group-focus-within:text-neutral-600'
 							)}
 						>
 							0
@@ -246,9 +246,12 @@
 	{:else if !codeSentInitially && !codeSent}
 		<button
 			onclick={() => sendLoginCodeFormElement?.requestSubmit()}
-			class="rounded-full bg-none px-4 py-2 font-medium text-neutral-500 transition-all hover:bg-neutral-100 active:scale-95"
+			class="group rounded-full bg-none px-4 py-2 font-medium text-neutral-500 transition-all group-data-dark/reauth:text-neutral-400 hover:bg-neutral-100 group-data-dark/reauth:hover:bg-neutral-800 active:scale-95"
 		>
-			or <span class="text-neutral-700 hover:text-black">login with email</span>
+			or <span
+				class="text-neutral-700 group-data-dark/reauth:text-neutral-200 group-data-dark/reauth:group-hover:text-white hover:text-black"
+				>login with email</span
+			>
 		</button>
 	{:else}
 		<div in:scale={{ duration: 300 }}>
