@@ -7,7 +7,7 @@
 
 <div
 	class={createClass(
-		'fixed -z-2 h-[300px] w-full',
+		'fixed -z-10 h-[300px] w-full',
 		edge === 'top' && 'top-0 -translate-y-[299px]',
 		edge === 'bottom' && 'bottom-0 translate-y-[299px]',
 		classProp
