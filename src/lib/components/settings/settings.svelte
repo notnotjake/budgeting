@@ -68,25 +68,20 @@
 				<div
 					{...props}
 					bind:this={dialogContainer}
-					data-nested-open={isNestedDialogOpen ? '' : undefined}
 					in:slide={{ axis: 'y', delay: 300, duration: 400 }}
 					out:slide={{ axis: 'y', duration: 300 }}
 					class={createClass(
-						'relative flex flex-col overflow-hidden rounded-b-4xl bg-neutral-950 text-neutral-100 shadow-lg transition-all duration-200 ease-out outline-none',
-						'w-xl data-nested-open:w-[calc(var(--container-xl)-4rem)]',
-						'h-fit max-h-152 min-h-52 data-nested-open:max-h-none data-nested-open:overflow-hidden',
-						'mt-0  data-nested-open:mt-5',
-						'rounded-t-none data-nested-open:rounded-t-[2.25rem] data-nested-open:rounded-b-[2.25rem]'
+						'relative flex flex-col overflow-hidden bg-neutral-950 text-neutral-100 shadow-lg transition-all duration-200 ease-out outline-none',
+						isNestedDialogOpen ? 'mt-5 rounded-[2.25rem]' : 'mt-0 rounded-t-none rounded-b-4xl',
+						isNestedDialogOpen ? 'w-[calc(var(--container-xl)-4rem)]' : 'w-xl',
+						isNestedDialogOpen ? 'max-h-none' : 'h-fit max-h-152 min-h-52'
 					)}
 					style:height={nestedDialogHeight ? `${nestedDialogHeight}px` : ''}
 					style:max-height={nestedDialogHeight ? `${nestedDialogHeight}px` : ''}
 				>
 					<div
 						bind:this={scrollRegion}
-						class={createClass(
-							'flex-1 overflow-y-auto',
-							isNestedDialogOpen ? 'overflow-hidden' : ''
-						)}
+						class={createClass('flex-1 overflow-y-auto', isNestedDialogOpen && 'overflow-hidden')}
 					>
 						<div class="sticky top-0 z-10 h-fit w-full">
 							<Toolbar />

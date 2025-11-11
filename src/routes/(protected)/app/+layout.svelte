@@ -31,7 +31,7 @@
 						<div
 							{...props}
 							transition:fade={{ duration: 200 }}
-							class="absolute inset-0 z-50 h-screen w-full bg-neutral-100/30 data-nested-open:bg-neutral-200/40"
+							class="absolute inset-0 z-50 h-screen w-full bg-neutral-100/30 transition-colors data-nested-open:bg-neutral-300/50"
 						></div>
 					{/if}
 				{/snippet}
