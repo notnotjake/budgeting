@@ -1,7 +1,6 @@
 <script lang="ts">
 	import type { Snippet, Component } from 'svelte'
-	import { createClass } from '$utils/styles'
-	import { createVariants } from '$utils/styles'
+	import { createClass, createVariants } from '@opensky/style'
 	import { Suspense } from '$ui/feedback'
 
 	let {
@@ -86,7 +85,7 @@
 </script>
 
 {#if as}
-	<svelte:element this={as} class={createClass(variants.classes, classProp)} aria-role="button">
+	<svelte:element this={as} class={createClass(variants.classes, classProp)} role="button">
 		{#if suspense}
 			<div class="flex h-full items-center pr-1">
 				<Suspense.Spinner size={16} />

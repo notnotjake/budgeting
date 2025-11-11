@@ -1,37 +1,39 @@
-import { UPSTASH_REDIS_REST_URL, UPSTASH_REDIS_REST_TOKEN } from '$env/static/private'
+import { REDIS_URL } from '$env/static/private'
+import { RedisClient } from 'bun'
 
-import { Redis } from '@upstash/redis'
-import { Ratelimit } from '@upstash/ratelimit'
+// Initialize Redis connection
+const redis = new RedisClient(REDIS_URL)
 
-// const redis = Redis.fromEnv()
+// Test the connection
+try {
+	await redis.set('test:connection', 'connected')
+	const result = await redis.get('test:connection')
+	console.log('[Redis] Connection test successful:', result)
+} catch (error) {
+	console.error('[Redis] Connection test failed:', error)
+}
 
-const redis = new Redis({
-	url: UPSTASH_REDIS_REST_URL,
-	token: UPSTASH_REDIS_REST_TOKEN
-})
-
-const cache: Map<string, number> = new Map()
-
+// Dummy ratelimit implementation for now
+// TODO: Replace with proper rate limiting implementation
 export const ratelimit = {
-	free: new Ratelimit({
-		redis,
-		analytics: true,
-		prefix: 'ratelimit:free',
-		ephemeralCache: cache,
-		limiter: Ratelimit.slidingWindow(10, '10s')
-	}),
-	paid: new Ratelimit({
-		redis,
-		analytics: true,
-		prefix: 'ratelimit:paid',
-		limiter: Ratelimit.slidingWindow(60, '10s')
-	}),
-	auth: new Ratelimit({
-		redis,
-		analytics: true,
-		prefix: 'ratelimit:auth',
-		limiter: Ratelimit.slidingWindow(5, '10s')
-	})
+	free: {
+		limit: async (identifier: string) => {
+			console.log('[Ratelimit] Free tier check for:', identifier)
+			return { success: true, limit: 10, remaining: 10, reset: Date.now() + 10000 }
+		}
+	},
+	paid: {
+		limit: async (identifier: string) => {
+			console.log('[Ratelimit] Paid tier check for:', identifier)
+			return { success: true, limit: 60, remaining: 60, reset: Date.now() + 10000 }
+		}
+	},
+	auth: {
+		limit: async (identifier: string) => {
+			console.log('[Ratelimit] Auth check for:', identifier)
+			return { success: true, limit: 5, remaining: 5, reset: Date.now() + 10000 }
+		}
+	}
 }
 
 export default ratelimit

@@ -29,7 +29,7 @@
 {/if}
 
 {#if useButton}
-	<div onclick={toggle} aria-role="button" class="text-lg font-semibold text-neutral-300">
+	<div onclick={toggle} role="button" class="text-lg font-semibold text-neutral-300">
 		<Tooltip.Provider>
 			<Tooltip.Root delayDuration={350}>
 				<Tooltip.Trigger>

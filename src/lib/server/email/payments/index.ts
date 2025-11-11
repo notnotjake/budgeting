@@ -1,11 +1,13 @@
-import { sendEmail } from '../send-email'
+import { sendEmail } from '../send'
 
 import PaymentUpcoming from './templates/payment-upcoming'
+
+const SEND_FROM = 'LightDance <accounts@resend.notnotjake.com>'
 
 export async function paymentUpcoming({ email }: { email: string }) {
 	const result = await sendEmail(
 		{
-			from: 'LightDance <accounts@resend.notnotjake.com>',
+			from: SEND_FROM,
 			to: email,
 			subject: 'Test',
 			react: PaymentUpcoming()
@@ -13,9 +15,13 @@ export async function paymentUpcoming({ email }: { email: string }) {
 		`Payment upcoming.`
 	)
 
-	if (result?.success) {
-		return { id: result?.data?.id }
-	} else {
-		return { success: false }
+	if (!result?.success) {
+		throw Error()
 	}
+
+	return
+}
+
+export const sendPaymentEmail = {
+	paymentUpcoming
 }

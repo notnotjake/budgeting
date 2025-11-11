@@ -1,104 +1,103 @@
 <script lang="ts">
-	import { onMount } from 'svelte'
-	import { startAuthentication, type AuthenticationResponseJSON } from '@simplewebauthn/browser'
+	import { goto } from '$app/navigation'
+	import { onMount, tick } from 'svelte'
+	import { startLoginPasskey, verifyLoginPasskey } from '$remotes/auth/authenticate.remote'
+	import { startAuthentication } from '@simplewebauthn/browser'
 
 	import { createClass } from '@opensky/style'
-	import { Suspense } from '$ui/feedback'
-	import { IconReload, IconAlertTriangleFilled } from '@tabler/icons-svelte'
+	import { scale } from 'svelte/transition'
+
+	import { IconReload } from '@tabler/icons-svelte'
 	import IconPasskey from './passkey-icon.svelte'
+	import { Suspense } from '$ui/feedback'
 
-	let { identifier, supressAuto = false }: { identifier: string; supressAuto: boolean } = $props()
+	let { identifier, auto = true }: { identifier: string; auto: boolean } = $props()
 
-	let buttonState: 'idle' | 'pending' | 'error' = $state('idle')
+	type ButtonState = 'idle' | 'pending' | 'result' | 'error'
+	let buttonState = $state<ButtonState>('idle')
 
-	type ErrorTypes = 'generic' | 'cancelled' | 'timeout' | 'network' | null
-	let errorType: ErrorTypes = $state(null)
-	let errorMessage: string | null = $state(null)
-
-	const idle = $derived(buttonState === 'idle')
-	const pending = $derived(buttonState === 'pending')
-	const error = $derived(buttonState === 'error')
-
-	function setError(type: ErrorTypes, message: string | null) {
-		buttonState = 'error'
-		errorType = type
-		errorMessage = message
-	}
-
-	// Clear error fields when not in error state
-	$effect(() => {
-		if (buttonState !== 'error') {
-			errorType = null
-			errorMessage = null
-		}
-	})
-
-	// Helper to get the error type by string
-	function isErrorType(type: ErrorTypes) {
-		return errorType === type
-	}
-
-	function handleClick() {
+	async function handleClick() {
 		if (buttonState === 'idle') {
-			buttonState = 'pending'
-		} else if (buttonState === 'error') {
-			buttonState = 'pending'
+			await tryLoginPasskey()
 		} else if (buttonState === 'pending') {
 			buttonState = 'idle'
+			// cancel attempt?
+		} else if (buttonState === 'error') {
+			buttonState = 'idle'
+			await tryLoginPasskey()
 		}
 	}
 
-	function passkeyGetOptions() {}
-	function passkeyStartAuthentication() {}
-	function passkeyVerify() {}
+	async function tryLoginPasskey() {
+		buttonState = 'pending'
+
+		try {
+			const optionsResult = await startLoginPasskey({ identifier })
+
+			const authenticationResponse = await startAuthentication({
+				optionsJSON: optionsResult.options
+			})
+
+			const result = await verifyLoginPasskey({ attestation: authenticationResponse })
+
+			if (result.success && result.redirectUrl) {
+				buttonState = 'result'
+				goto(result.redirectUrl)
+			}
+		} catch (e) {
+			console.error(e)
+			buttonState = 'error'
+		}
+	}
+
+	onMount(async () => {
+		if (auto) {
+			await tick()
+			await tryLoginPasskey()
+		}
+	})
 </script>
 
-<button
-	onclick={handleClick}
-	class={createClass(
-		'bg-blue-vibrant-light flex cursor-pointer items-center justify-center gap-2 py-3 font-medium text-white outline-none transition-all',
-		idle ? 'rounded-[1.1rem] px-9' : 'my-2 rounded-[2rem] px-4',
-		pending && '',
-		error && 'border-3 border-rose-500 bg-rose-100 text-rose-500',
-		isErrorType('cancelled') && 'border-3 border-neutral-500 bg-neutral-100 text-neutral-600'
-	)}
->
-	{#if idle}
-		<IconPasskey />
-		<p>Use Passkey</p>
-	{:else if pending}
-		<Suspense.Spinner
-			size={14}
-			thickness={10}
-			speed="fast"
-			primaryColor="var(--color-neutral-100)"
-			backgroundColor="var(--color-blue-vibrant-light)"
-		/>
-		<Suspense.Text
-			class="text-md text-[1rem] font-[450]"
-			spread={13}
-			backgroundColor="var(--color-sky-200)"
-			primaryColor="var(--color-white)">Trying Passkey</Suspense.Text
-		>
-	{:else if error && isErrorType('cancelled')}
-		<IconReload stroke={2.5} />
-		<p class="whitespace-nowrap px-2 font-medium">Cancelled. Try again</p>
-	{:else}
-		<IconReload stroke={2.5} />
-		<p class="whitespace-nowrap px-2 font-medium">Something went wrong</p>
-	{/if}
-</button>
+<div class="flex w-full flex-col items-center justify-center">
+	<button
+		onclick={handleClick}
+		class={createClass(
+			'flex cursor-pointer items-center justify-center gap-2 bg-blue-vibrant-light py-3 font-medium text-white transition-all outline-none',
+			buttonState === 'idle' ? 'rounded-[1.2rem] px-10' : 'my-2 rounded-[2rem] px-4',
+			buttonState === 'error' &&
+				'rounded-[1.2rem] bg-neutral-600 text-neutral-100 group-data-dark/reauth:bg-neutral-700'
+		)}
+	>
+		{#if buttonState === 'idle'}
+			<IconPasskey />
+			<p>Use Passkey</p>
+		{:else if buttonState === 'pending' || buttonState === 'result'}
+			<Suspense.Spinner
+				size={14}
+				thickness={10}
+				speed="fast"
+				primaryColor="var(--color-neutral-100)"
+				backgroundColor="var(--color-blue-vibrant-light)"
+			/>
+			<Suspense.Text
+				class="text-md text-[1rem] font-[450]"
+				spread={13}
+				backgroundColor="var(--color-sky-200)"
+				primaryColor="var(--color-white)">Trying Passkey</Suspense.Text
+			>
+		{:else}
+			<IconReload stroke={2.5} size={19} />
+			<p>Retry Passkey</p>
+		{/if}
+	</button>
 
-{#if error && errorMessage}
-	<div class="px-6 pt-8">
-		<div class="flex flex-col items-start justify-start gap-1">
-			<div class="flex items-center gap-1">
-				<IconAlertTriangleFilled size={22} class="text-rose-600" />
-				<p class="font-semibold text-rose-600">Details:</p>
+	{#if buttonState === 'error'}
+		<div class="px-5" in:scale={{ start: 0.8, opacity: 0.7, duration: 300 }}>
+			<div class="flex max-w-56 flex-col items-start justify-start">
+				<div class="flex items-center gap-1">
+					<p class="font-medium text-rose-500">Error. Please try again</p>
+				</div>
 			</div>
-			<p class="font-[450] leading-6 tracking-tight text-neutral-700">
-				{errorMessage?.message}
-			</p>
 		</div>
-	</div>
-{/if}
+	{/if}
+</div>

@@ -1,0 +1,1 @@
+ALTER TABLE "auth_challenge" ALTER COLUMN "type" SET DATA TYPE text;

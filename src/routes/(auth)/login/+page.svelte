@@ -1,168 +1,245 @@
 <script lang="ts">
-	import { fade } from 'svelte/transition'
+	import { onMount } from 'svelte'
+	import { z } from 'zod'
+	import { startLogin } from '$remotes/auth/authenticate.remote'
+	import { createValidation, createEnhancedForm } from '@opensky/remotes'
+
 	import { createClass } from '@opensky/style'
+	import { createShake } from '$ui/adapt/shake-behavior'
 	import { wipeVertical } from '$ui/transition'
+	import { fade, fly } from 'svelte/transition'
 	import { IconChevronLeft, IconArrowRight } from '@tabler/icons-svelte'
 
-	import PinInput from '$ui/input/pin-code.svelte'
 	import { Suspense } from '$ui/feedback'
-
+	import PasskeyAuto from '$ui/auth/passkey-auto.svelte'
 	import PasskeyButton from '$ui/auth/passkey-button.svelte'
+	import CodeInput from '$ui/auth/code-input.svelte'
 
-	let loginRequestResponse = $state(false)
+	let { data } = $props()
 
-	let loginMethodsAvailable = $state({
-		code: null,
-		password: null,
-		passkey: null
+	const startLoginSchema = z.object({
+		identifier: z.email(),
+		timezone: z.string().optional()
 	})
 
-	let title = $state('Welcome to Spring')
+	const startLoginValid = createValidation(startLogin)
+	const startLoginForm = createEnhancedForm(startLogin, {
+		validation: startLoginValid,
+		delayMs: 100,
+		timeoutMs: 9000
+	})
 
-	let loginHadExpired = $state(false)
+	const { translateX, triggerShake: incorrectShake } = createShake({
+		amplitude: 7,
+		shakes: 2,
+		duration: 325
+	})
 
-	let emailValue = $state('')
+	const localTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone
+	let identifierInput = $state<HTMLInputElement>()
 
-	let errors = $state(false)
+	let showError = $derived(
+		!startLoginForm.result &&
+			(startLoginForm.error ||
+				(startLoginValid.issues('identifier') && startLogin.fields.identifier.value()?.length > 0))
+	)
+
+	let startButtonAvailable = $derived(
+		!startLoginForm.result &&
+			!startLoginValid.issues('identifier') &&
+			startLogin.fields.value()?.identifier &&
+			startLogin.fields.value()?.identifier.length >= 5
+	)
+
+	function focusInput() {
+		identifierInput?.focus()
+	}
+
+	function resetForm() {
+		const current = startLogin.result?.identifier
+		startLoginForm.reset()
+		startLogin.fields.identifier.set(current ?? '')
+	}
+
+	onMount(() => {
+		startLoginForm.reset()
+		startLogin.fields.identifier.set('')
+	})
 
 	let doAttentionAnimation = $state(false)
 </script>
 
-{#if loginRequestResponse}
+{#if !startLogin.result}
+	<PasskeyAuto />
+{/if}
+
+<!-- Apply gray background on second step -->
+{#if startLoginForm.result}
 	<div
-		transition:fade={{ duration: 150 }}
+		transition:fade={{ duration: 200 }}
 		class="pointer-events-none absolute inset-0 z-0 h-full w-full bg-neutral-400/10"
 	></div>
 {/if}
 
-<div class="z-10 flex h-full w-full max-w-[28rem] items-center justify-center px-2">
+<!-- Container inside the layout -->
+<div class="z-10 flex h-full w-full max-w-116 items-center justify-center px-2">
+	<!-- Login card container -->
 	<div
 		class={createClass(
-			'relative flex min-h-40 w-full flex-shrink-0 grow flex-col items-center p-2.5 transition-all duration-200 sm:px-5',
-			loginRequestResponse ? 'rounded-[1.8rem] bg-white pb-10 pt-4' : 'rounded-[1.9rem] bg-none'
+			'relative flex min-h-40 w-full shrink-0 grow flex-col items-center transition-all duration-200',
+			startLoginForm.result ? 'rounded-[1.8rem] bg-white p-4' : 'rounded-[1.9rem] bg-none p-3 px-5'
 		)}
 	>
+		<!-- Color gradient on first step -->
 		<div
 			class={createClass(
-				'h-18 left-0 top-0 -z-10 hidden w-full rounded-t-[1.7rem] bg-gradient-to-b from-[#DFF3FF] to-[#E8F9FF]/0 transition-colors duration-200 sm:absolute sm:z-auto sm:block',
-				loginRequestResponse ? 'opacity-0' : 'opacity-80'
+				'top-0 left-0 z-0 hidden h-18 w-full rounded-t-[1.8rem] bg-linear-to-b from-[#E3F4FF] to-[#E8F9FF]/0 transition-all duration-200 sm:absolute sm:z-auto sm:block',
+				startLoginForm.result ? 'opacity-0' : 'opacity-100'
 			)}
 		></div>
 
-		{#if !loginRequestResponse}
+		<!-- Message shown on first step -->
+		{#if !startLoginForm.result}
 			<div
 				transition:wipeVertical={{ duration: 400 }}
-				class="w-full flex-col items-center justify-center px-7 pb-6 pt-2 text-center"
+				class="z-10 mb-6 w-full flex-col items-center justify-center px-7 pt-2 text-center"
 			>
 				<h2
-					class="tracking-tight-md animate-fade-in-scale text-[1.33rem] font-[550] leading-loose text-black"
+					class="animate-fade-in-scale text-[1.33rem] leading-loose font-[550] tracking-tight-md text-black"
 				>
-					{title}
+					{data?.title}
 				</h2>
 				<p
-					class="animate-fade-in-scale text-[1.05rem] font-[430] leading-5 tracking-[-0.015em] text-neutral-500"
+					class="animate-fade-in-scale text-[1.05rem] leading-4 font-[430] tracking-[-0.015em] text-neutral-500"
 				>
-					Log in or sign up to get started
+					{data?.text}
 				</p>
 			</div>
 		{/if}
 
-		<form class="w-full">
-			<div
-				class={createClass(
-					'group relative flex h-12 w-full items-center overflow-hidden rounded-[1rem] border-2 border-red-500/0 focus-within:border-2 focus-within:border-blue-500',
-					loginRequestResponse ? 'bg-neutral-50' : 'bg-neutral-100'
-				)}
-			>
-				{#if loginRequestResponse}
-					<button
-						onclick={() => {
-							loginRequestResponse = false
-						}}
-						class="absolute inset-0 z-10 flex h-full w-full items-center justify-start"
-					>
-						<IconChevronLeft class="text-neutral-400 group-hover:text-neutral-700" />
-					</button>
-				{/if}
-
-				<input
-					type="email"
-					name="email"
-					autocomplete="username webauthn"
-					id="email"
-					placeholder="Continue with email"
-					aria-label="Enter your email"
-					bind:value={emailValue}
-					tabindex={loginRequestResponse ? '-1' : '1'}
-					onclick={() => {
-						if (loginRequestResponse) {
-							resetForm()
-						}
-					}}
-					onchange={() => {
-						if (loginRequestResponse) {
-							resetForm()
-						}
-					}}
-					onfocus={() => {
-						if (loginRequestResponse) {
-							identifierInput.blur()
-						}
-					}}
-					class:attention-animation={doAttentionAnimation}
-					class={createClass(
-						'flex-grow-1 h-full w-full translate-y-0 pl-4 font-[450] text-zinc-900 outline-none transition-all selection:bg-sky-200 selection:text-blue-600 placeholder:font-[450] placeholder:text-neutral-400',
-						loginRequestResponse
-							? 'cursor-pointer bg-none pr-4 text-center text-neutral-500'
-							: 'pr-1'
-					)}
-				/>
-
-				<!-- Hidden input to capture user's timezone -->
-				<input type="hidden" aria-hidden name="timezone" />
-
-				<!-- Hint -->
-				<!-- <div
-					class={createClass(
-						'pointer-events-none absolute right-0 top-0 z-0 h-full w-10 bg-gradient-to-l from-[#4496FF] to-[rgba(45,169,255,0.00)] transition-all duration-300',
-						errors.length > 0 || $emailForm.email.length < 5 ? 'w-0 opacity-0' : 'w-15 opacity-20',
-						$emailMessage && 'w-full opacity-10'
-					)}
-				></div> -->
-
-				<button
-					onclick={() => (loginRequestResponse = true)}
-					class={createClass(
-						'group z-10 flex h-full shrink-0 flex-nowrap items-center justify-end transition-all duration-200',
-						loginRequestResponse ? 'opacity-0' : 'opacity-100'
+		<!-- Email/Phone input field -->
+		<div
+			style:transform="translateX({$translateX}px)"
+			class={createClass(
+				'group relative z-10 flex h-12 w-full items-center overflow-hidden rounded-[1rem] focus-within:outline-2 focus-within:outline-blue-500',
+				startLoginForm.result ? 'bg-neutral-50' : 'bg-neutral-100',
+				showError && 'outline-[0.12rem] outline-rose-400'
+			)}
+		>
+			{#if !startLoginForm.result}
+				<form
+					class="flex h-full w-full items-center"
+					{...startLogin.preflight(startLoginSchema).enhance(async (opts) =>
+						startLoginForm.enhance(opts, {
+							onIssues: () => {
+								incorrectShake()
+							},
+							onError: () => {
+								incorrectShake()
+							}
+						})
 					)}
 				>
-					<IconArrowRight
-						stroke={3}
-						size={26}
-						class={createClass(
-							'animate-fade-in-scale-right mr-1 cursor-pointer transition-colors duration-300 ease-in-out group-disabled:text-neutral-500/80',
-							emailValue.length > 5 ? 'text-blue-vibrant' : 'text-neutral-400'
-						)}
+					<!-- Local timezone hidden input -->
+					{#if localTimezone}
+						<input {...startLogin.fields.timezone.as('hidden', localTimezone)} aria-hidden="true" />
+					{/if}
+
+					<!-- Identifier input -->
+					<input
+						{...startLogin.fields.identifier.as('email')}
+						{...startLoginValid.fields('identifier')}
+						bind:this={identifierInput}
+						autocomplete="username webauthn"
+						placeholder="Continue with email"
+						aria-label="Enter your email"
+						class="h-full w-full grow pl-4 font-[450] text-zinc-900 transition-all outline-none selection:bg-sky-200 selection:text-blue-600 placeholder:font-[450] placeholder:text-neutral-400"
 					/>
+
+					<!-- Gradient State Indicator -->
+					<!-- Button Available -->
+					<div
+						class={createClass(
+							'pointer-events-none absolute top-0 right-0 z-0 h-full w-18 bg-linear-to-l from-[#4496FF] to-[rgba(45,169,255,0.00)]',
+							startButtonAvailable ? 'w-18 opacity-20' : 'w-0 opacity-0'
+						)}
+					></div>
+					<!-- Errors/Issues Present -->
+					<div
+						class={createClass(
+							'pointer-events-none absolute top-0 right-0 z-0 h-full w-18 bg-linear-to-l from-rose-400/60 to-rose-300/0',
+							showError ? 'w-18 opacity-25' : 'w-0 opacity-0'
+						)}
+					></div>
+
+					<!-- Button: either continue or error alert -->
+					<div class="flex h-full shrink-0 items-center justify-end pr-2">
+						{#if startLoginForm.delayed}
+							<Suspense.Spinner />
+						{:else}
+							<button type="submit" class="group" disabled={!startButtonAvailable}>
+								<IconArrowRight
+									stroke={3}
+									size={26}
+									class={createClass(
+										'pointer-events-none transition-colors duration-300 group-disabled:text-neutral-500/80',
+										startButtonAvailable ? 'text-blue-vibrant' : 'text-neutral-400',
+										startLoginValid.issues('identifier') && 'text-neutral-400'
+									)}
+								/>
+							</button>
+						{/if}
+					</div>
+				</form>
+			{:else}
+				<!-- Second step shows back button -->
+				<button onclick={resetForm} class="flex h-full w-full items-center justify-center">
+					<div in:fade>
+						<IconChevronLeft
+							class="absolute inset-0 h-full text-neutral-400 group-hover:text-neutral-700"
+						/>
+					</div>
+					<p
+						in:fly={{ x: -100, opacity: 0.5, duration: 500 }}
+						class="flex h-full w-full items-center justify-center font-[450] text-neutral-500 group-hover:text-neutral-700"
+						class:attention-animation={doAttentionAnimation}
+					>
+						{startLogin.result?.identifier || 'Continue Login'}
+					</p>
+				</button>
+			{/if}
+		</div>
+
+		<!-- Errors & Issues -->
+		{#if showError && startLoginForm.error}
+			<div transition:wipeVertical={{ delay: 300 }} class="flex w-full justify-center py-2.5">
+				<button class="cursor-pointer font-[450] text-rose-500" onclick={focusInput}>
+					An error occured, try again
 				</button>
 			</div>
-		</form>
-
-		{#if loginRequestResponse}
-			<PasskeyButton />
+		{:else if showError && startLoginValid.issues('identifier')}
+			<div transition:wipeVertical={{ delay: 300 }} class="flex w-full justify-center py-2.5">
+				{#each startLoginValid.issues('identifier') ?? [] as issue (issue)}
+					<button class="cursor-pointer font-[450] text-rose-500" onclick={focusInput}>
+						{issue}
+					</button>
+				{/each}
+			</div>
 		{/if}
 
-		<!-- {#if loginRequestResponse}
-			<PinInput />
-		{/if} -->
+		<!-- Second step ui -->
+		{#if startLoginForm.result && startLogin.result}
+			<div transition:wipeVertical class="flex w-full flex-col items-center gap-7 pt-14 pb-3">
+				{#if startLogin.result.passkeyAvailable}
+					<PasskeyButton auto={true} identifier={startLogin.result.identifier} />
+				{/if}
 
-		{#if loginRequestResponse}
-			<button
-				class="rounded-full bg-none px-4 py-2 font-[500] text-neutral-500 hover:bg-neutral-100"
-			>
-				or <span class="text-neutral-700 hover:text-black">login with email</span>
-			</button>
+				<CodeInput
+					codeSent={startLogin.result.codeSent}
+					identifier={startLogin.result.identifier}
+					timezone={localTimezone}
+				/>
+			</div>
 		{/if}
 	</div>
 </div>
