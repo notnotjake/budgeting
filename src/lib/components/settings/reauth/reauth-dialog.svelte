@@ -18,7 +18,7 @@
 	// let open = $state(false)
 	let innerHeight = $state<number>(0)
 
-	const setNestedDialogHeight = getContext<(height: number) => void>('nested-dialog-height')
+	const setReauthDialogHeight = getContext<(height: number) => void>('reauth-dialog-height')
 	const scrollSettingsToTop = getContext<(() => void) | undefined>('settings-scroll-to-top')
 
 	$effect(() => {
@@ -29,9 +29,9 @@
 
 	$effect(() => {
 		if (innerHeight && open) {
-			setNestedDialogHeight(innerHeight)
+			setReauthDialogHeight(innerHeight)
 		} else {
-			setNestedDialogHeight(0)
+			setReauthDialogHeight(0)
 		}
 	})
 

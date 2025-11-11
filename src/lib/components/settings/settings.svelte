@@ -50,6 +50,8 @@
 	setContext('settings-scroll-to-top', scrollSettingsToTop)
 
 	let nestedDialogHeight = $state<null | number>(null)
+	let reauthDialogHeight = $state<null | number>(null)
+
 	const setNestedDialogHeight = (height: number) => {
 		if (height > 0) {
 			nestedDialogHeight = Math.ceil(height)
@@ -59,7 +61,18 @@
 	}
 	setContext('nested-dialog-height', setNestedDialogHeight)
 
-	const isNestedDialogOpen = $derived(!!nestedDialogHeight)
+	const setReauthDialogHeight = (height: number) => {
+		if (height > 0) {
+			reauthDialogHeight = Math.ceil(height)
+		} else {
+			reauthDialogHeight = null
+		}
+	}
+	setContext('reauth-dialog-height', setReauthDialogHeight)
+
+	// If reauth is showing, use its height; otherwise use nested dialog height
+	const activeDialogHeight = $derived(reauthDialogHeight ?? nestedDialogHeight)
+	const isNestedDialogOpen = $derived(!!activeDialogHeight)
 </script>
 
 <Dialog.Content forceMount>
@@ -77,8 +90,8 @@
 						isNestedDialogOpen ? 'w-[calc(var(--container-xl)-4rem)]' : 'w-xl',
 						isNestedDialogOpen ? 'max-h-none' : 'h-fit max-h-152 min-h-52'
 					)}
-					style:height={nestedDialogHeight ? `${nestedDialogHeight}px` : ''}
-					style:max-height={nestedDialogHeight ? `${nestedDialogHeight}px` : ''}
+					style:height={activeDialogHeight ? `${activeDialogHeight}px` : ''}
+					style:max-height={activeDialogHeight ? `${activeDialogHeight}px` : ''}
 				>
 					<div
 						bind:this={scrollRegion}
