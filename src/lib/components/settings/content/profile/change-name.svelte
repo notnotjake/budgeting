@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { onMount } from 'svelte'
 	import { z } from 'zod'
 	import { createValidation, createEnhancedForm } from '@opensky/remotes'
 	import { updateUserName, getUser } from '$remotes/auth/user.remote'

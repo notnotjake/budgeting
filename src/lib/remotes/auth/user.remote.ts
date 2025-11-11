@@ -1,5 +1,5 @@
 import { form, query, command, getRequestEvent } from '$app/server'
-import { error, redirect } from '@sveltejs/kit'
+import { error } from '@sveltejs/kit'
 import { z } from 'zod'
 import Auth from '$lib/server/auth'
 import AuthCore from '$lib/server/auth/core'
@@ -48,26 +48,17 @@ export const updateUserName = form(
 export const deleteUserAccount = command(async () => {
 	const event = getRequestEvent()
 
-	// ensure recent auth
 	const session = event.locals.session
 	const user = event.locals.user
 
-	if (!user || !session) {
-		throw error(401)
-	}
-
-	const hasRecentAuth =
-		session?.lastAuthAt &&
-		Date.now() < session.lastAuthAt.getTime() + Auth.durations.recentAuthWindow
-
-	if (!hasRecentAuth) {
-		AuthCore.setRedirectUrlCookie(event)
-		redirect(303, Auth.routes.reauth)
+	if (!session || !user || !hasRecentAuth()) {
+		return { requireReauth: true }
 	}
 
 	// delete user
 	const result = await AuthCore.deleteUser({ userId: user.id })
 
+	console.log(result)
 	if (!result.success) {
 		throw error(500)
 	}
@@ -84,3 +75,19 @@ export const deleteUserAccount = command(async () => {
 	// return success
 	return { success: true }
 })
+
+function hasRecentAuth() {
+	const { locals } = getRequestEvent()
+
+	if (!locals.session || !locals.user) {
+		throw error
+	}
+
+	const buffer = 3 * 60 * 1000 // 3 mins in ms
+
+	const r =
+		locals.session?.lastAuthAt &&
+		Date.now() < locals.session.lastAuthAt.getTime() + Auth.durations.recentAuthWindow - buffer
+
+	return r
+}

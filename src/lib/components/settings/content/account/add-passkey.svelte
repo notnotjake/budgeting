@@ -2,14 +2,16 @@
 	import { startRegistration } from '@simplewebauthn/browser'
 	import { startPasskeyRegistration, verifyPasskeyRegistration } from '$remotes/auth/passkey.remote'
 
-	import { onMount } from 'svelte'
+	import { onMount, getContext } from 'svelte'
 	import { createClass } from '@opensky/style'
 	import { scale } from 'svelte/transition'
 	import { IconX, IconArrowRight } from '@tabler/icons-svelte'
 	import { AdaptSwap } from '$ui/adapt'
 	import { SuspenseSpinner } from '$ui/feedback'
 
-	let { dismiss }: { dismiss: () => void } = $props()
+	let { close }: { close: () => void } = $props()
+
+	const { requireRecentAuth } = getContext('settings-reauth')
 
 	let name = $state('')
 	let nameInput = $state<HTMLElement>()
@@ -17,7 +19,13 @@
 	let pending = $state(false)
 	let error = $state(false)
 
-	onMount(() => {
+	onMount(async () => {
+		const authed = await requireRecentAuth()
+
+		if (!authed) {
+			close()
+		}
+
 		nameInput?.focus()
 	})
 
@@ -33,7 +41,7 @@
 			pending = false
 
 			if (result.success) {
-				dismiss()
+				close()
 			} else {
 				error = true
 			}
@@ -50,7 +58,7 @@
 	>
 		<div class="flex w-full items-center gap-2 py-3">
 			<button
-				onclick={() => dismiss()}
+				onclick={() => close()}
 				class="ml-1 aspect-square rounded-full p-1.5 text-neutral-400 hover:bg-neutral-500 hover:text-neutral-100 active:scale-95"
 			>
 				<IconX />

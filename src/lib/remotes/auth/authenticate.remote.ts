@@ -32,23 +32,21 @@ export const logout = command(async () => {
 	return { redirectUrl: Auth.redirects.afterLogout }
 })
 
-export const preauth = query(async () => {
+export const preauth = query(z.object({ buffer: z.number() }), async ({ buffer }) => {
 	const { locals } = getRequestEvent()
 
 	if (!locals.session || !locals.user) {
 		throw error(401)
 	}
 
-	const session = locals.session
-
 	const hasRecentAuth =
-		session?.lastAuthAt &&
-		Date.now() < session.lastAuthAt.getTime() + Auth.durations.recentAuthWindow
+		locals.session?.lastAuthAt &&
+		Date.now() < locals.session.lastAuthAt.getTime() + Auth.durations.recentAuthWindow - buffer
 
 	if (hasRecentAuth) {
-		return { recentAuth: true }
+		return { requiresReauth: false }
 	} else {
-		return { recentAuth: false }
+		return { requiresReauth: true }
 	}
 })
 

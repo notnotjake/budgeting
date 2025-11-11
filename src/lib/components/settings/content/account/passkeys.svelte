@@ -64,7 +64,7 @@
 
 <div class="flex flex-col pb-3">
 	{#if addPasskeyShown}
-		<AddPasskeyMenu dismiss={dismissAddPasskey} />
+		<AddPasskeyMenu close={dismissAddPasskey} />
 	{/if}
 
 	{#each await getUserPasskeys() as passkey (passkey.id)}

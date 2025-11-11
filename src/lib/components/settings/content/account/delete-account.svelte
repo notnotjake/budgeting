@@ -46,12 +46,18 @@
 		if (currentStep > steps.length) {
 			currentState = 'pending'
 
-			const result = await deleteUserAccount()
+			try {
+				const result = await deleteUserAccount()
 
-			if (result.success) {
-				currentState = 'success'
-				goto('/')
-			} else {
+				if (result.success) {
+					currentState = 'success'
+					goto('/')
+				} else {
+					currentStep = steps.length
+					currentState = 'error'
+				}
+			} catch (e) {
+				console.error(e)
 				currentStep = steps.length
 				currentState = 'error'
 			}

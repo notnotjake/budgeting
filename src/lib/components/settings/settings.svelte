@@ -4,16 +4,34 @@
 	import { createClass } from '@opensky/style'
 	import { slide } from 'svelte/transition'
 
-	import Title from './components/title.svelte'
-	import Content from './settings-content.svelte'
-	import ReauthDialog from './reauth-dialog.svelte'
+	import Toolbar from './components/toolbar.svelte'
+	import Content from './content/index.svelte'
+	import ReauthDialog from './reauth/reauth-dialog.svelte'
 
-	let reauthShown = $state(false)
-	const showReauth = () => {
-		reauthShown = true
+	let showReauthDialog = $state(false)
+	let reauthResolve = $state<((success: boolean) => void) | null>(null)
+
+	const requireRecentAuth = (): Promise<boolean> => {
+		return new Promise((resolve) => {
+			reauthResolve = resolve
+			showReauthDialog = true
+		})
 	}
-	setContext('reauth-prompt', {
-		showReauth
+
+	const handleReauthSuccess = () => {
+		showReauthDialog = false
+		reauthResolve?.(true)
+		reauthResolve = null
+	}
+
+	const handleReauthCancel = () => {
+		showReauthDialog = false
+		reauthResolve?.(false)
+		reauthResolve = null
+	}
+
+	setContext('settings-reauth', {
+		requireRecentAuth
 	})
 
 	let accordionValue = $state('')
@@ -71,7 +89,7 @@
 						)}
 					>
 						<div class="sticky top-0 z-10 h-fit w-full">
-							<Title />
+							<Toolbar />
 						</div>
 
 						<div class="w-full px-3 pb-8">
@@ -79,7 +97,11 @@
 								<Content />
 							</Accordion.Root>
 
-							<ReauthDialog bind:open={reauthShown} />
+							<ReauthDialog
+								bind:open={showReauthDialog}
+								onSuccess={handleReauthSuccess}
+								onCancel={handleReauthCancel}
+							/>
 						</div>
 					</div>
 				</div>

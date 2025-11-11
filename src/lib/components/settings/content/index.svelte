@@ -7,28 +7,33 @@
 		IconDeviceIpadHorizontalPin,
 		IconTrashFilled
 	} from '@tabler/icons-svelte'
-	import AccordionItem from './components/accordion-item.svelte'
-	import DialogItem from './components/dialog-item.svelte'
-	import Section from './components/section.svelte'
-	import Divider from './components/item-divider.svelte'
+	import AccordionItem from '$ui/settings/components/accordion-item.svelte'
+	import DialogItem from '$ui/settings/components/dialog-item.svelte'
+	import Section from '$ui/settings/components/section.svelte'
+	import Divider from '$ui/settings/components/item-divider.svelte'
 
-	// import ChangeName from './account-settings/change-name.svelte'
-	import ChangeEmail from './account-settings/change-email.svelte'
-	import DeleteAccount from './account-settings/delete-account.svelte'
+	import Avatar from './profile/avatar.svelte'
+	import ChangeName from './profile/change-name.svelte'
 
-	import Profile from './profile/profile.svelte'
-	import Sessions from './account-settings/sessions.svelte'
-	import Passkeys from './account-settings/passkeys.svelte'
+	import LoginMethod from './account/login-method.svelte'
+	import Passkeys from './account/passkeys.svelte'
+	import Sessions from './account/sessions.svelte'
+	import DeleteAccount from './account/delete-account.svelte'
 
 	let user = $derived(await getUser())
 </script>
 
-<Profile />
+<!-- Profile -->
+<div class="flex w-full flex-col items-center gap-2 pb-5">
+	<Avatar />
+	<ChangeName />
+</div>
 
+<!-- Account -->
 <Section title="Account Settings">
 	<DialogItem icon={IconUserCircle} title="Login Method" hint={user.identifier ?? ''}>
-		{#snippet content()}
-			<ChangeEmail />
+		{#snippet content({ close })}
+			<LoginMethod {close} />
 		{/snippet}
 	</DialogItem>
 

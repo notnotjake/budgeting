@@ -8,22 +8,15 @@
 		IconChevronRight
 	} from '@tabler/icons-svelte'
 	import { Dialog } from 'bits-ui'
-	import { onMount } from 'svelte'
-	import { scale, fade } from 'svelte/transition'
+	import { onMount, getContext } from 'svelte'
+	import { fade } from 'svelte/transition'
 	import { wipeVertical } from '$ui/transition'
-	import { AdaptSwap, AdaptFit } from '$ui/adapt'
-	import { SuspenseText } from '$ui/feedback'
 	import { createClass } from '@opensky/style'
 	import VerificationCodeInput from './verification-code-input.svelte'
 
-	import { getContext } from 'svelte'
-	const { showReauth } = getContext('reauth-prompt')
+	let { close }: { close: () => void } = $props()
 
-	let { open = $bindable() } = $props()
-
-	const handleCancel = () => {
-		open = false
-	}
+	const { requireRecentAuth } = getContext('settings-reauth')
 
 	const revert = () => {
 		emailValue = currentEmail
@@ -31,16 +24,19 @@
 
 	const currentEmail = 'jake@notnotjake.com'
 	let emailValue = $state('jake@notnotjake.com')
+	let emailDiff = $derived(emailValue !== currentEmail)
 	let emailInput = $state<HTMLFormElement>()
 
-	let emailDiff = $derived(emailValue !== currentEmail)
-
-	const localTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone
 	let verificationStep = $state(false)
-
 	let emailCode = $state('')
 
-	onMount(() => {
+	onMount(async () => {
+		const authed = await requireRecentAuth()
+
+		if (!authed) {
+			close()
+		}
+
 		emailInput?.focus()
 	})
 </script>
@@ -53,8 +49,6 @@
 			<h2 class="text-[1.2rem] font-semibold">Login Method</h2>
 			<p class="text-[1.05rem] text-neutral-300">Change how you login to your account</p>
 		</div>
-
-		<button onclick={showReauth} class="text-red-500">TEST ME</button>
 
 		<div class="flex w-full flex-col gap-5 py-1">
 			<div>

@@ -1,10 +1,6 @@
 <script lang="ts">
 	import { Dialog } from 'bits-ui'
 	import { IconX, IconHelp } from '@tabler/icons-svelte'
-
-	const getHelp = () => {
-		console.log('TODO: implement help feature')
-	}
 </script>
 
 <div

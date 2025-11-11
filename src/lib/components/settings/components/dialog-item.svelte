@@ -7,7 +7,7 @@
 	import { IconDotsVertical } from '@tabler/icons-svelte'
 
 	type Props = {
-		content: Snippet
+		content: Snippet<[{ close: () => void }]>
 		icon: TablerIcon
 		title: string
 		hint?: string | null
@@ -17,6 +17,10 @@
 
 	let open = $state(false)
 	let innerHeight = $state<number>(0)
+
+	const close = () => {
+		open = false
+	}
 
 	const setNestedDialogHeight = getContext<(height: number) => void>('nested-dialog-height')
 	const scrollSettingsToTop = getContext<(() => void) | undefined>('settings-scroll-to-top')
@@ -68,7 +72,7 @@
 					class="absolute top-0 right-0 left-0 z-50 flex w-full flex-col bg-neutral-950"
 				>
 					<div class="h-fit w-full overflow-y-auto p-3">
-						{@render content()}
+						{@render content({ close })}
 					</div>
 				</div>
 			{/if}

@@ -5,7 +5,11 @@
 	import PasskeyButton from '$ui/auth/passkey-button.svelte'
 	import CodeInput from '$ui/auth/code-input.svelte'
 
-	let { open = $bindable() } = $props()
+	type Props = {
+		onReauthSuccess: () => void
+		onReauthCancelled: () => void
+	}
+	let { onReauthSuccess, onReauthCancelled }: Props = $props()
 
 	let passkeyAvailable = $state(false)
 	let identifier = $state('jake@notnotjake.com')
@@ -21,6 +25,9 @@
 			<h2 class="text-[1.2rem] font-semibold">Reauth</h2>
 			<p class="text-[1.05rem] text-neutral-300">This action requires reauthentication</p>
 		</div>
+
+		<button onclick={onReauthSuccess}>Success</button>
+		<button onclick={onReauthCancelled}>Cancel</button>
 
 		<div class="flex w-full flex-col gap-5 py-1">
 			<div>
