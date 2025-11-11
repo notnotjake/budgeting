@@ -50,7 +50,6 @@
 	setContext('settings-scroll-to-top', scrollSettingsToTop)
 
 	let nestedDialogHeight = $state<null | number>(null)
-	const isNestedDialogOpen = $derived(Boolean(nestedDialogHeight))
 	const setNestedDialogHeight = (height: number) => {
 		if (height > 0) {
 			nestedDialogHeight = Math.ceil(height)
@@ -59,6 +58,8 @@
 		}
 	}
 	setContext('nested-dialog-height', setNestedDialogHeight)
+
+	const isNestedDialogOpen = $derived(!!nestedDialogHeight)
 </script>
 
 <Dialog.Content forceMount>
