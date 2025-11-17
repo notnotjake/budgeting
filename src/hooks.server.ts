@@ -8,8 +8,12 @@ import Auth from '$lib/server/auth'
 scheduledTasks()
 
 export const handleGlobalRatelimit: Handle = async ({ event, resolve }) => {
-	const ip = event.getClientAddress()
+	const ip = event.request.headers.get('x-forwarded-for') || ''
+
 	const result = await ratelimit.free.limit(ip)
+
+	const test = await ratelimit.test.limit(ip)
+	console.log(test)
 
 	return resolve(event)
 }
