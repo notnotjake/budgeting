@@ -1,8 +1,12 @@
 import { REDIS_URL } from '$env/static/private'
 import { RedisClient } from 'bun'
+import { BunRedisAdapter } from './adapter-bun'
+import { Ratelimit } from '@upstash/ratelimit'
 
 // Initialize Redis connection
 const redis = new RedisClient(REDIS_URL)
+
+const bunRedis = new BunRedisAdapter(redis)
 
 // Test the connection
 try {
@@ -33,7 +37,13 @@ export const ratelimit = {
 			console.log('[Ratelimit] Auth check for:', identifier)
 			return { success: true, limit: 5, remaining: 5, reset: Date.now() + 10000 }
 		}
-	}
+	},
+	test: new Ratelimit({
+		redis: bunRedis,
+		analytics: false,
+		prefix: 'ratelimit:test',
+		limiter: Ratelimit.fixedWindow(100, '10s')
+	})
 }
 
 export default ratelimit
