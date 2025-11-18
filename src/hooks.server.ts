@@ -1,4 +1,4 @@
-import type { Handle } from '@sveltejs/kit'
+import { error, type Handle } from '@sveltejs/kit'
 import { sequence } from '@sveltejs/kit/hooks'
 
 import { scheduledTasks } from '$lib/server/scheduled'
@@ -10,12 +10,20 @@ scheduledTasks()
 export const handleGlobalRatelimit: Handle = async ({ event, resolve }) => {
 	const ip = event.request.headers.get('x-forwarded-for') || ''
 
-	const result = await ratelimit.free.limit(ip)
+	const rate = await ratelimit.free.limit(ip)
 
-	const test = await ratelimit.test.limit(ip)
-	console.log(test)
+	// If rate limit exceeded, send back error
+	if (!rate.success) {
+		error(429, `Rate limit exceeded. Try again at ${rate.reset}`)
+	}
 
-	return resolve(event)
+	const result = await resolve(event)
+	// Add rate limit headers
+	result.headers.set('X-RateLimit-Limit', rate.limit.toString())
+	result.headers.set('X-RateLimit-Remaining', rate.remaining.toString())
+	result.headers.set('X-RateLimit-Reset', rate.reset.toString())
+
+	return result
 }
 
 export const handle: Handle = sequence(
