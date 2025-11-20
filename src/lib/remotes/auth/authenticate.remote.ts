@@ -196,16 +196,17 @@ export const sendReauthCode = form(
 		timezone: z.string().optional()
 	}),
 	async ({ timezone }) => {
+		await delay(300)
+
 		const { locals } = getRequestEvent()
 
 		if (!locals.session || !locals.user) {
-			throw error(400)
+			throw error(401)
 		}
 
-		// Normalize input
-		const identifier = locals.user.identifier.toLowerCase().trim()
+		const identifier = locals.user.identifier
 
-		// Send login code
+		// Send reauth code
 		await AuthCore.sendReauthCode({
 			sessionId: locals.session.id,
 			identifier,
