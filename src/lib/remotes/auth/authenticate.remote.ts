@@ -163,7 +163,7 @@ export const sendLoginCode = form(
 		timezone: z.string().optional()
 	}),
 	async ({ identifier: identifierRaw, timezone }) => {
-		await delay(750)
+		await delay(300)
 
 		const { locals } = getRequestEvent()
 
@@ -184,6 +184,31 @@ export const sendLoginCode = form(
 			sessionId: locals.session.id,
 			identifier,
 			existingUser: !!user,
+			timezone: timezone
+		})
+
+		return { success: true }
+	}
+)
+
+export const sendReauthCode = form(
+	z.object({
+		timezone: z.string().optional()
+	}),
+	async ({ timezone }) => {
+		const { locals } = getRequestEvent()
+
+		if (!locals.session || !locals.user) {
+			throw error(400)
+		}
+
+		// Normalize input
+		const identifier = locals.user.identifier.toLowerCase().trim()
+
+		// Send login code
+		await AuthCore.sendReauthCode({
+			sessionId: locals.session.id,
+			identifier,
 			timezone: timezone
 		})
 
