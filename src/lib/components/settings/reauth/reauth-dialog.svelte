@@ -35,7 +35,7 @@
 		}
 	})
 
-	let passkeyAvailable = $state(false)
+	let passkeyAvailable = $state(true)
 	let identifier = $state('jake@notnotjake.com')
 	let codeSent = $state(false)
 	const localTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone
@@ -53,7 +53,7 @@
 				>
 					<div class="h-fit w-full overflow-y-auto p-3">
 						<div class="flex w-full flex-col justify-center p-3 text-neutral-200">
-							<div class="flex w-full flex-col px-5 pt-7 pb-12">
+							<div class="flex w-full flex-col px-5 pt-7 pb-10">
 								<!-- Heading -->
 								<div class="mb-8 flex flex-col">
 									<IconShieldLockFilled size={35} class="mb-2 text-sky-500" />
@@ -63,19 +63,14 @@
 									</p>
 								</div>
 
-								<button onclick={onSuccess}>Success</button>
-								<button onclick={onCancel}>Cancel</button>
+								<div class="flex w-full flex-col gap-5 pt-10">
+									<div data-dark class="group/reauth flex w-full flex-col items-center gap-7">
+										{#if passkeyAvailable}
+											<PasskeyButton auto={false} {identifier} />
+										{/if}
 
-								<div class="flex w-full flex-col gap-5 py-1">
-									<div>
-										<div data-dark class="group/reauth flex w-full flex-col items-center p-3">
-											<div class="flex w-full flex-col items-center gap-7 pt-14 pb-3">
-												{#if passkeyAvailable}
-													<PasskeyButton auto={true} {identifier} />
-												{/if}
-
-												<CodeInput {codeSent} {identifier} timezone={localTimezone} dark={true} />
-											</div>
+										<div class="flex w-full flex-col items-center gap-1">
+											<CodeInput {codeSent} {identifier} timezone={localTimezone} dark={true} />
 										</div>
 									</div>
 								</div>
