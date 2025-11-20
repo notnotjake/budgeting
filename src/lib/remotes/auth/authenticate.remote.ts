@@ -50,9 +50,55 @@ export const preauth = query(z.object({ buffer: z.number() }), async ({ buffer }
 	}
 })
 
+export const startReauth = query(
+	z.object({
+		timezone: z.string().optional()
+	}),
+	async ({ timezone }) => {
+		const { locals } = getRequestEvent()
+
+		// Require session
+		if (!locals.session || !locals.user) {
+			throw error(400)
+		}
+
+		const { user, session } = locals
+
+		// Check if a user has passkey
+		const passkeyAvailable = unwrap(
+			await AuthCore.userHasPasskeyAvailable({ userId: user.id }),
+			() => {
+				throw error(500, 'Failed to check for passkey')
+			}
+		)
+
+		if (passkeyAvailable) {
+			return {
+				identifier: user.identifier,
+				codeSent: false,
+				passkeyAvailable: true
+			}
+		}
+
+		// Send login code
+		await AuthCore.sendLoginCode({
+			sessionId: session.id,
+			identifier: user.identifier,
+			existingUser: !!user,
+			timezone: timezone
+		})
+
+		return {
+			identifier: user.identifier,
+			codeSent: true,
+			passkeyAvailable: false
+		}
+	}
+)
+
 export const startLogin = form(
 	z.object({
-		identifier: z.string().email(),
+		identifier: z.email(),
 		timezone: z.string().optional()
 	}),
 	async ({ identifier: identifierRaw, timezone }) => {
@@ -113,7 +159,7 @@ export const startLogin = form(
 
 export const sendLoginCode = form(
 	z.object({
-		identifier: z.string().email(),
+		identifier: z.email(),
 		timezone: z.string().optional()
 	}),
 	async ({ identifier: identifierRaw, timezone }) => {
@@ -237,7 +283,7 @@ export const verifyLoginCode = form(
 
 export const startLoginPasskey = query(
 	z.object({
-		identifier: z.string().email().optional()
+		identifier: z.email().optional()
 	}),
 	async ({ identifier }) => {
 		const { locals } = getRequestEvent()
