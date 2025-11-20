@@ -10,20 +10,22 @@ export const ratelimit = {
 		prefix: 'ratelimit:paid',
 		limiter: Ratelimit.fixedWindow(300, '60 s')
 	}),
-	authEmails: {
-		short: createRatelimit({
+	auth: {
+		all: createRatelimit({
 			prefix: 'ratelimit:auth-short',
-			limiter: Ratelimit.fixedWindow(1, '20 s')
+			limiter: Ratelimit.fixedWindow(100, '60 s')
 		}),
-		long: createRatelimit({
-			prefix: 'ratelimit:auth-long',
-			limiter: Ratelimit.tokenBucket(10, '6 h', 20)
-		})
-	},
-	test: createRatelimit({
-		prefix: 'ratelimit:test',
-		limiter: Ratelimit.fixedWindow(100, '60 s')
-	})
+		sensitive: {
+			short: createRatelimit({
+				prefix: 'ratelimit:auth-sensitive-short',
+				limiter: Ratelimit.fixedWindow(1, '20 s')
+			}),
+			long: createRatelimit({
+				prefix: 'ratelimit:auth-sensitive-long',
+				limiter: Ratelimit.tokenBucket(10, '6 h', 20)
+			})
+		}
+	}
 }
 
 export default ratelimit
