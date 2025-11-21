@@ -5,14 +5,10 @@
 </script>
 
 <!-- Overscroll Top -->
-<div
-	class="fixed top-0 -z-10 h-[300px] w-full -translate-y-[299px] bg-blue-200 dark:bg-blue-900"
-></div>
+<div class="overscroll-top bg-blue-200 dark:bg-blue-900"></div>
 
 <!-- Overscroll Bottom -->
-<div
-	class="fixed bottom-0 -z-10 h-[300px] w-full translate-y-[299px] bg-[#EDEBED] dark:bg-neutral-950"
-></div>
+<div class="overscroll-bottom bg-[#EDEBED] dark:bg-neutral-950"></div>
 
 <div
 	class="relative flex min-h-screen flex-col bg-linear-to-b from-[#F1F1F3] to-[#EDEBED] dark:bg-neutral-950 dark:from-neutral-950 dark:to-neutral-950"
