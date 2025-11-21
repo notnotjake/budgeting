@@ -5,7 +5,7 @@
 
 	import { createClass } from '@opensky/style'
 	import { delay } from '$utils/timing'
-	import { IconCheck, IconArrowBackUp } from '@tabler/icons-svelte'
+	import { IconCheck, IconArrowBackUp, IconX } from '@tabler/icons-svelte'
 	import { AdaptFit } from '$ui/adapt'
 
 	const updateUserNameSchema = z.object({
@@ -26,8 +26,14 @@
 	let editNameField = $state<HTMLInputElement>()
 
 	const reset = () => {
-		updateUserName.fields.name.set(user.name)
+		if (nameDiff) {
+			updateUserName.fields.name.set(user.name)
+		} else {
+			editingName = false
+		}
 	}
+
+	let nameDiff = $derived(user.name !== updateUserName.fields.name.value())
 </script>
 
 <AdaptFit
@@ -66,7 +72,11 @@
 				onclick={reset}
 				class="flex h-9 w-9 items-center justify-center rounded-full bg-neutral-600 active:scale-95"
 			>
-				<IconArrowBackUp class="text-neutral-300" />
+				{#if nameDiff}
+					<IconArrowBackUp class="text-neutral-300" />
+				{:else}
+					<IconX class="text-neutral-300" stroke={2} />
+				{/if}
 			</button>
 			<div class="flex flex-col items-center justify-center py-2">
 				<p

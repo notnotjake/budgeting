@@ -18,7 +18,7 @@
 	// To avoid waterfall issue, we have to "access the user"
 	$effect(() => {
 		if (user) {
-			// Do nothing
+			// Noop
 		}
 	})
 
