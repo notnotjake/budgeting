@@ -32,24 +32,6 @@ export const logout = command(async () => {
 	return { redirectUrl: Auth.redirects.afterLogout }
 })
 
-export const preauth = query(z.object({ buffer: z.number() }), async ({ buffer }) => {
-	const { locals } = getRequestEvent()
-
-	if (!locals.session || !locals.user) {
-		throw error(401)
-	}
-
-	const hasRecentAuth =
-		locals.session?.lastAuthAt &&
-		Date.now() < locals.session.lastAuthAt.getTime() + Auth.durations.recentAuthWindow - buffer
-
-	if (hasRecentAuth) {
-		return { requiresReauth: false }
-	} else {
-		return { requiresReauth: true }
-	}
-})
-
 export const startReauth = query(
 	z.object({
 		timezone: z.string().optional()
@@ -57,12 +39,21 @@ export const startReauth = query(
 	async ({ timezone }) => {
 		const { locals } = getRequestEvent()
 
-		// Require session
+		// Require session and user
 		if (!locals.session || !locals.user) {
-			throw error(400)
+			throw error(401)
 		}
 
 		const { user, session } = locals
+
+		const hasRecentAuth =
+			locals.session?.lastAuthAt &&
+			Date.now() - locals.session.lastAuthAt.getTime() <
+				Auth.durations.recentAuthWindow - Auth.durations.recentAuthBuffer
+
+		if (hasRecentAuth) {
+			return { recentAuth: true as const }
+		}
 
 		// Check if a user has passkey
 		const passkeyAvailable = unwrap(
@@ -74,6 +65,7 @@ export const startReauth = query(
 
 		if (passkeyAvailable) {
 			return {
+				recentAuth: false as const,
 				identifier: user.identifier,
 				codeSent: false,
 				passkeyAvailable: true
@@ -89,6 +81,7 @@ export const startReauth = query(
 		})
 
 		return {
+			recentAuth: false as const,
 			identifier: user.identifier,
 			codeSent: true,
 			passkeyAvailable: false

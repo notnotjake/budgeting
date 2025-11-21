@@ -9,8 +9,8 @@ export const user = pgTable('auth_user', {
 	name: text('name').notNull(),
 	identifier: text('identifier').notNull().unique(),
 	locked: boolean('locked').notNull(),
-	lastSeenAt: timestamp('last_seen_at').notNull(),
-	createdAt: timestamp('created_at').notNull().defaultNow()
+	lastSeenAt: timestamp('last_seen_at', { mode: 'date', withTimezone: true }).notNull(),
+	createdAt: timestamp('created_at', { mode: 'date', withTimezone: true }).notNull().defaultNow()
 })
 
 export const session = pgTable(
@@ -20,11 +20,11 @@ export const session = pgTable(
 		userId: text('user_id').references(() => user.id, { onDelete: 'cascade' }),
 		ipAddress: text('ip_address'),
 		userAgent: text('user_agent'),
-		createdAt: timestamp('created_at').notNull().defaultNow(),
-		lastSeenAt: timestamp('last_seen_at').notNull(),
-		lastAuthAt: timestamp('last_auth_at'),
-		expiresAt: timestamp('expires_at').notNull(),
-		invalidatedAt: timestamp('invalidated_at')
+		createdAt: timestamp('created_at', { mode: 'date', withTimezone: true }).notNull().defaultNow(),
+		lastSeenAt: timestamp('last_seen_at', { mode: 'date', withTimezone: true }).notNull(),
+		lastAuthAt: timestamp('last_auth_at', { mode: 'date', withTimezone: true }),
+		expiresAt: timestamp('expires_at', { mode: 'date', withTimezone: true }).notNull(),
+		invalidatedAt: timestamp('invalidated_at', { mode: 'date', withTimezone: true })
 	},
 	(table) => [
 		index('session_user_id_idx').on(table.userId), // For listAllUserSessions and invalidateAllUserSessions queries
@@ -44,7 +44,7 @@ export const key = pgTable(
 		type: text('type').notNull(),
 		name: text('name'),
 		credential: text('credential'),
-		createdAt: timestamp('created_at').notNull().defaultNow()
+		createdAt: timestamp('created_at', { mode: 'date', withTimezone: true }).notNull().defaultNow()
 	},
 	(table) => [
 		index('key_user_id_idx').on(table.userId) // listUserPasskeys query
@@ -63,8 +63,8 @@ export const challenge = pgTable(
 			enum: ['code', 'passkey', 'passkey_register', 'code_email_change', 'lock_account']
 		}).notNull(),
 		credential: text('credential'),
-		createdAt: timestamp('created_at').notNull().defaultNow(),
-		expiresAt: timestamp('expires_at').notNull()
+		createdAt: timestamp('created_at', { mode: 'date', withTimezone: true }).notNull().defaultNow(),
+		expiresAt: timestamp('expires_at', { mode: 'date', withTimezone: true }).notNull()
 	},
 	(table) => [
 		index('challenge_type_credential_idx').on(table.type, table.credential), // For getChallenge by credential

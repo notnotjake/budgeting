@@ -13,6 +13,7 @@ export type AuthConfig = {
 	}
 	durations: {
 		recentAuthWindow: number
+		recentAuthBuffer: number
 		redirectCookieMaxAge: number
 		// Challenges
 		challengeCodeMaxAge: number
@@ -84,6 +85,7 @@ export type AuthConfigInput = {
 	}
 	durations?: {
 		recentAuthWindow?: number
+		recentAuthBuffer?: number
 		redirectCookieMaxAge?: number
 		// Challenges
 		challengeCodeMaxAge?: number

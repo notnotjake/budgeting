@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { onMount, getContext } from 'svelte'
 	import { goto } from '$app/navigation'
 	import { Dialog } from 'bits-ui'
 	import {
@@ -12,7 +13,17 @@
 	import { SuspenseText } from '$ui/feedback'
 	import { deleteUserAccount } from '$remotes/auth/user.remote'
 
-	let { open = $bindable() } = $props()
+	let { close }: { close: () => void } = $props()
+
+	const { requireRecentAuth } = getContext('settings-reauth')
+
+	onMount(async () => {
+		const authed = await requireRecentAuth()
+
+		if (!authed) {
+			close()
+		}
+	})
 
 	type Step = {
 		heading: string
@@ -133,14 +144,14 @@
 		<!-- Buttons -->
 		<div class="flex w-full gap-2">
 			<Dialog.Close
-				class="grow rounded-full bg-neutral-500 py-4 text-[1.05rem] font-semibold text-white transition-transform active:scale-[0.97]"
+				class="flex-1 grow rounded-full bg-neutral-500 py-4 text-[1.05rem] font-semibold text-white transition-transform active:scale-[0.97]"
 			>
 				Cancel
 			</Dialog.Close>
 
 			<button
 				onclick={handleProceed}
-				class="grow rounded-full bg-linear-to-b from-rose-600 to-rose-500 py-4 text-[1.05rem] text-white shadow-[inset_0.5px_0.5px_0_rgba(255,255,255,0.4),inset_-0.5px_-0.5px_0_rgba(255,255,255,0.2)] transition-transform active:scale-[0.97]"
+				class="flex-1 grow rounded-full bg-linear-to-b from-rose-600 to-rose-500 py-4 text-[1.05rem] text-white shadow-[inset_0.5px_0.5px_0_rgba(255,255,255,0.4),inset_-0.5px_-0.5px_0_rgba(255,255,255,0.2)] transition-transform active:scale-[0.97]"
 			>
 				{currentStep >= steps.length ? 'Delete Account' : 'Confirm'}
 			</button>

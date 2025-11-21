@@ -68,8 +68,8 @@
 	<Divider />
 
 	<DialogItem icon={IconTrashFilled} title="Delete Account">
-		{#snippet content()}
-			<DeleteAccount />
+		{#snippet content({ close })}
+			<DeleteAccount {close} />
 		{/snippet}
 	</DialogItem>
 </Section>

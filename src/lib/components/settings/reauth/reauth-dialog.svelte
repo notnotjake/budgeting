@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { getContext } from 'svelte'
+	import { onMount, getContext } from 'svelte'
 
 	import { IconShieldLockFilled, IconArrowLeft } from '@tabler/icons-svelte'
 	import { fade } from 'svelte/transition'
@@ -22,17 +22,19 @@
 	const scrollSettingsToTop = getContext<(() => void) | undefined>('settings-scroll-to-top')
 
 	// Reauth state
-	let passkeyAvailable = $state(false)
-	let identifier = $state('')
-	let codeSent = $state(false)
-	let loading = $state(false)
 	const localTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone
+
+	let loading = $state(false)
+	let requireReauth = $state(false)
+
+	let identifier = $state('')
+	let passkeyAvailable = $state(false)
+	let codeSent = $state(false)
 
 	// Initialize reauth options when dialog opens
 	$effect(() => {
 		if (open) {
-			scrollSettingsToTop?.()
-			initializeReauth()
+			requestStartReauth()
 		}
 	})
 
@@ -44,23 +46,34 @@
 		}
 	})
 
-	async function initializeReauth() {
+	function handleReauthSuccess() {
+		open = false
+		requireReauth = false
+		onSuccess()
+	}
+
+	async function requestStartReauth() {
 		loading = true
 		try {
 			const result = await startReauth({ timezone: localTimezone })
-			identifier = result.identifier
-			passkeyAvailable = result.passkeyAvailable
-			codeSent = result.codeSent
-		} catch (error) {
-			console.error('Failed to initialize reauth:', error)
-		} finally {
-			loading = false
-		}
-	}
 
-	function handleReauthSuccess() {
-		open = false
-		onSuccess()
+			if (result.recentAuth) {
+				handleReauthSuccess()
+				requireReauth = false
+			} else {
+				requireReauth = true
+				scrollSettingsToTop?.()
+
+				identifier = result.identifier
+				passkeyAvailable = result.passkeyAvailable
+				codeSent = result.codeSent
+			}
+			loading = false
+		} catch (e) {
+			console.error('Failed to start reauth', e)
+			open = false
+			onCancel()
+		}
 	}
 </script>
 
@@ -87,16 +100,12 @@
 								</div>
 
 								<div class="flex w-full flex-col gap-5 pt-10">
-									{#if loading}
-										<div class="flex w-full items-center justify-center py-10">
-											<p class="text-neutral-400">Loading...</p>
-										</div>
-									{:else}
+									{#if !loading && requireReauth}
 										<div data-dark class="group/reauth flex w-full flex-col items-center gap-7">
 											{#if passkeyAvailable}
 												<PasskeyButton
-													auto={false}
 													{identifier}
+													auto={true}
 													reauth={true}
 													onSuccess={handleReauthSuccess}
 												/>
@@ -107,8 +116,8 @@
 													{codeSent}
 													{identifier}
 													timezone={localTimezone}
-													dark={true}
 													reauth={true}
+													dark={true}
 													onSuccess={handleReauthSuccess}
 												/>
 											</div>

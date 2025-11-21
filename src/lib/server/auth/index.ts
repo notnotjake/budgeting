@@ -24,6 +24,7 @@ const DEFAULT_CONFIG: AuthConfig = {
 	},
 	durations: {
 		recentAuthWindow: 10 * MIN_IN_MS,
+		recentAuthBuffer: 3 * MIN_IN_MS,
 		redirectCookieMaxAge: 10 * MIN_IN_MS,
 		// Challenges
 		challengeCodeMaxAge: 5 * MIN_IN_MS,
