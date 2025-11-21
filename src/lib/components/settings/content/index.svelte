@@ -20,7 +20,8 @@
 	import Sessions from './account/sessions.svelte'
 	import DeleteAccount from './account/delete-account.svelte'
 
-	let user = $derived(await getUser())
+	let getUserPromise = $derived(getUser())
+	let user = $derived(await getUserPromise)
 </script>
 
 <!-- Profile -->

@@ -19,7 +19,8 @@
 		timeoutMs: 9000
 	})
 
-	let user = $state(await getUser())
+	let getUserPromise = $derived(getUser())
+	let user = $derived(await getUserPromise)
 
 	let editingName = $state(false)
 	let editNameField = $state<HTMLInputElement>()
@@ -54,7 +55,6 @@
 					onReturn: ({ result }) => {
 						if (result.success) {
 							editingName = false
-							user.name = result.name
 						}
 					}
 				})

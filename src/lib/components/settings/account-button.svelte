@@ -12,9 +12,14 @@
 
 	let { openSettings }: { openSettings: () => void } = $props()
 
-	let user = $state({
-		identifier: 'Error',
-		name: 'Error'
+	let getUserPromise = $derived(getUser())
+	let user = $derived(await getUserPromise)
+
+	// To avoid waterfall issue, we have to "access the user"
+	$effect(() => {
+		if (user) {
+			// Do nothing
+		}
 	})
 
 	function shouldWelcomeBack() {
@@ -53,9 +58,7 @@
 		})
 
 	onMount(async () => {
-		// Get user info
-		const res = await getUser()
-		user = res
+		await getUser().refresh()
 
 		// Show welcome message if returning after 45 mins
 		if (shouldWelcomeBack()) {
@@ -70,7 +73,6 @@
 	let menuOpen = $state(false)
 
 	function onOpenChange(open: boolean) {
-		console.log(open)
 		if (open) {
 			menuOpen = true
 			sequence.stop()

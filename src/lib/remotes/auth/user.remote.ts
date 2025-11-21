@@ -37,6 +37,8 @@ export const updateUserName = form(
 			}
 		)
 
+		await getUser().refresh()
+
 		return { success: true, name: updatedUser.name }
 	}
 )
