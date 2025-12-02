@@ -70,12 +70,12 @@
 			<button
 				type="button"
 				onclick={reset}
-				class="flex h-9 w-9 items-center justify-center rounded-full bg-neutral-600 active:scale-95"
+				class="flex h-9 w-9 items-center justify-center rounded-full bg-neutral-600 text-neutral-300 active:scale-95"
 			>
 				{#if nameDiff}
-					<IconArrowBackUp class="text-neutral-300" />
+					<IconArrowBackUp />
 				{:else}
-					<IconX class="text-neutral-300" stroke={2} />
+					<IconX stroke={2} />
 				{/if}
 			</button>
 			<div class="flex flex-col items-center justify-center py-2">
