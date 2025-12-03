@@ -7,6 +7,7 @@ export const user = pgTable('auth_user', {
 		.primaryKey()
 		.$defaultFn(() => randomUUID()),
 	name: text('name').notNull(),
+	profilePic: text('profile_pic'),
 	identifier: text('identifier').notNull().unique(),
 	locked: boolean('locked').notNull(),
 	lastSeenAt: timestamp('last_seen_at', { mode: 'date', withTimezone: true }).notNull(),
