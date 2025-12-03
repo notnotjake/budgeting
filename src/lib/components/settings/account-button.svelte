@@ -13,13 +13,15 @@
 	let { openSettings }: { openSettings: () => void } = $props()
 
 	let getUserPromise = $derived(getUser())
-	let user = $derived(await getUserPromise)
+	let lazyUser = $derived(await getUserPromise)
 
-	// To avoid waterfall issue, we have to "access the user"
+	let user = $derived({
+		identifier: lazyUser.identifier || 'Error',
+		name: lazyUser.name || 'Error'
+	})
+
 	$effect(() => {
-		if (user) {
-			// Noop
-		}
+		console.log(user)
 	})
 
 	function shouldWelcomeBack() {
