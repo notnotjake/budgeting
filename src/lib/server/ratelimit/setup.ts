@@ -7,8 +7,8 @@
  * - Provide type-safe API
  */
 
-import { REDIS_URL } from '$env/static/private'
 import { RedisClient } from 'bun'
+import { REDIS_URL } from '$env/static/private'
 import { BunRedisAdapter } from './adapter-bun'
 import { Ratelimit, type Algorithm } from '@upstash/ratelimit'
 
