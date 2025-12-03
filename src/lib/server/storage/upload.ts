@@ -1,10 +1,8 @@
 import { S3Client, RedisClient } from 'bun'
 import { REDIS_URL } from '$env/static/private'
+import type { ZodType, infer as ZodInfer } from 'zod'
 
-const s3 = new S3Client({
-	virtualHostedStyle: true
-})
-
+const s3 = new S3Client()
 const redis = new RedisClient(REDIS_URL)
 
 // ============================================================================
@@ -17,13 +15,10 @@ type FileSize = `${number}${FileSizeUnit}`
 const SIZE_MULTIPLIERS: Record<FileSizeUnit, number> = {
 	B: 1,
 	KB: 1024,
-	MB: 1024 * 1024,
-	GB: 1024 * 1024 * 1024
+	MB: 1024 ** 2,
+	GB: 1024 ** 3
 }
 
-/**
- * Parse a file size string like "2MB" or "500KB" to bytes
- */
 function parseFileSize(size: FileSize): number {
 	const match = size.match(/^(\d+(?:\.\d+)?)(B|KB|MB|GB)$/i)
 	if (!match) {
@@ -34,13 +29,10 @@ function parseFileSize(size: FileSize): number {
 }
 
 // ============================================================================
-// File Type / MIME Type Handling
+// File Type Handling (MIME Types)
 // ============================================================================
 
-/**
- * Supported file type shortcuts (like UploadThing)
- * Maps to arrays of MIME types
- */
+/** Shortcut mappings for common file type groups */
 const FILE_TYPE_MAP: Record<string, string[]> = {
 	image: ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/svg+xml'],
 	video: ['video/mp4', 'video/webm', 'video/ogg', 'video/quicktime'],
@@ -50,238 +42,349 @@ const FILE_TYPE_MAP: Record<string, string[]> = {
 	blob: ['application/octet-stream']
 }
 
-/**
- * File type can be:
- * - A shortcut like "image", "video", "pdf"
- * - A specific MIME type like "image/jpeg"
- * - An array of MIME types
- */
 type FileType = keyof typeof FILE_TYPE_MAP | string | string[]
 
 /**
- * Resolve file type to array of MIME types
+ * Resolve file type config to an array of allowed MIME types
+ * - 'image' -> ['image/jpeg', 'image/png', ...]
+ * - 'image/jpeg' -> ['image/jpeg']
+ * - ['image/jpeg', 'image/png'] -> ['image/jpeg', 'image/png']
  */
-function resolveFileType(fileType: FileType): string[] {
+function resolveAllowedTypes(fileType: FileType): string[] {
 	if (Array.isArray(fileType)) {
 		return fileType
 	}
 	if (fileType in FILE_TYPE_MAP) {
 		return FILE_TYPE_MAP[fileType as keyof typeof FILE_TYPE_MAP]
 	}
-	// Assume it's a specific MIME type
 	return [fileType]
 }
 
-/**
- * Get the primary MIME type (first in array) for presigning
- */
-function getPrimaryMimeType(fileType: FileType): string {
-	const types = resolveFileType(fileType)
-	return types[0]
-}
-
 // ============================================================================
-// Utility Functions
+// Unique Identifiers
 // ============================================================================
 
-/**
- * Generate a short random ID using crypto.randomUUID
- * Takes first 8 characters for brevity while maintaining uniqueness
- */
-export function generateShortId(): string {
-	return crypto.randomUUID().slice(0, 8)
-}
-
-/**
- * Generate a secure upload token
- */
-function generateUploadToken(): string {
-	return crypto.randomUUID()
+function generateDefaultKey(): string {
+	return `uploads/${crypto.randomUUID()}`
 }
 
 // ============================================================================
 // Types
 // ============================================================================
 
-/** Context passed to keyGenerate function */
-export interface KeyGenerateContext {
-	/** User ID from start options */
-	userId: string
-	/** Metadata from start options */
-	metadata: Record<string, unknown>
-}
-
-/** Function to generate a custom file key */
-export type KeyGenerateFunction = (context: KeyGenerateContext) => string
-
-export interface UploadConfig {
+interface BaseConfig {
 	/**
-	 * Function to generate the S3 key for uploads.
-	 * Receives userId and metadata, should return the full key path.
+	 * Maximum allowed file size.
 	 *
-	 * @example
-	 * ```typescript
-	 * keyGenerate: ({ userId }) => {
-	 *   const timestamp = Date.now()
-	 *   const shortId = generateShortId()
-	 *   return `profile-pics/${userId}/${timestamp}-${shortId}.jpg`
-	 * }
-	 * ```
-	 */
-	keyGenerate: KeyGenerateFunction
-
-	/**
-	 * Maximum file size.
-	 * Can be a number (bytes) or a string like "2MB", "500KB", "1GB"
+	 * Can be specified as:
+	 * - A number (bytes): `5242880`
+	 * - A string with unit: `'5MB'`, `'500KB'`, `'1GB'`
+	 *
+	 * Files exceeding this size will be deleted and an error thrown in `complete()`.
 	 */
 	maxSize: FileSize | number
 
 	/**
-	 * Allowed file type(s).
-	 * Can be:
-	 * - A shortcut: "image", "video", "audio", "pdf", "text", "blob"
-	 * - A specific MIME type: "image/jpeg", "application/pdf"
-	 * - An array of MIME types: ["image/jpeg", "image/png"]
+	 * Allowed file type(s) for upload.
+	 *
+	 * Can be specified as:
+	 * - A shortcut: `'image'`, `'video'`, `'audio'`, `'pdf'`, `'text'`, `'blob'`
+	 * - A specific MIME type: `'image/jpeg'`, `'application/pdf'`
+	 * - An array of MIME types: `['image/jpeg', 'image/png']`
+	 *
+	 * When calling `start()`, the client must specify which content type they're
+	 * uploading, and it will be validated against this list.
 	 */
 	fileType: FileType
 
 	/**
-	 * How long the presigned URL is valid (in seconds).
+	 * How long the presigned upload URL is valid, in seconds.
+	 *
 	 * @default 300 (5 minutes)
 	 */
 	expiresIn?: number
 }
 
-export interface StartUploadOptions {
-	/** User ID - passed to keyGenerate function */
-	userId: string
-	/** Optional metadata to pass to keyGenerate and complete function */
-	metadata?: Record<string, unknown>
+interface ConfigWithKey<TKeyInput> extends BaseConfig {
+	/**
+	 * Function to generate a custom S3 key for the upload.
+	 *
+	 * Receives typed input that must be provided when calling `start()`.
+	 * If not specified, a UUID-based key will be generated automatically.
+	 *
+	 * @example
+	 * ```typescript
+	 * customKey: (input: { userId: string }) =>
+	 *   `profile-pic/${input.userId}/${Date.now()}.jpg`
+	 * ```
+	 */
+	customKey: (input: TKeyInput) => string
 }
 
-export interface StartUploadResult {
+interface ConfigWithMetadata<TMetadata extends ZodType> extends BaseConfig {
+	/**
+	 * Zod schema for typed metadata to associate with the upload.
+	 *
+	 * Metadata is passed in `start()` and returned in `complete()`,
+	 * useful for passing context through the upload flow.
+	 *
+	 * @example
+	 * ```typescript
+	 * metadata: z.object({
+	 *   uploadedBy: z.string(),
+	 *   description: z.string().optional()
+	 * })
+	 * ```
+	 */
+	metadata: TMetadata
+}
+
+interface ConfigWithKeyAndMetadata<TKeyInput, TMetadata extends ZodType> extends BaseConfig {
+	/**
+	 * Function to generate a custom S3 key for the upload.
+	 *
+	 * Receives typed input that must be provided when calling `start()`.
+	 * If not specified, a UUID-based key will be generated automatically.
+	 *
+	 * @example
+	 * ```typescript
+	 * customKey: (input: { userId: string }) =>
+	 *   `profile-pic/${input.userId}/${Date.now()}.jpg`
+	 * ```
+	 */
+	customKey: (input: TKeyInput) => string
+
+	/**
+	 * Zod schema for typed metadata to associate with the upload.
+	 *
+	 * Metadata is passed in `start()` and returned in `complete()`,
+	 * useful for passing context through the upload flow.
+	 *
+	 * @example
+	 * ```typescript
+	 * metadata: z.object({
+	 *   uploadedBy: z.string(),
+	 *   description: z.string().optional()
+	 * })
+	 * ```
+	 */
+	metadata: TMetadata
+}
+
+/** Forces TypeScript to expand type definitions on hover */
+type Expand<T> = T extends infer O ? { [K in keyof O]: O[K] } : never
+
+export type StartResult = Expand<{
 	/** Presigned URL for uploading directly to S3 */
 	uploadUrl: string
 	/** The S3 key where the file will be stored */
 	fileKey: string
-	/** Token to pass to complete() after upload finishes */
+	/** Token to pass to `complete()` after upload finishes */
 	uploadToken: string
-}
+	/** Headers to include in the upload fetch request */
+	uploadHeaders: {
+		'Content-Type': string
+	}
+}>
 
-export interface CompleteUploadResult {
-	/** User ID from the original start request */
-	userId: string
-	/** The S3 key where the file was uploaded */
+export type CompleteResult<TMetadata> = Expand<{
+	/** The S3 key where the file was stored */
 	fileKey: string
-	/** Metadata passed in the start request */
-	metadata: Record<string, unknown>
+	/** Metadata passed in `start()`, typed per your Zod schema */
+	metadata: TMetadata
+}>
+
+// Base options that always include contentType
+interface StartOptionsBase {
+	contentType: string
 }
 
-export interface UploadRoute {
-	/**
-	 * Start an upload - generates presigned URL and stores metadata in Redis
-	 */
-	start(options: StartUploadOptions): Promise<StartUploadResult>
+// Upload route interface with conditional start() signature
+interface UploadRoute<TKeyInput, TMetadata> {
+	start: TKeyInput extends void
+		? TMetadata extends void
+			? (options: StartOptionsBase) => Promise<StartResult>
+			: (options: StartOptionsBase & { metadata: TMetadata }) => Promise<StartResult>
+		: TMetadata extends void
+			? (options: StartOptionsBase & { key: TKeyInput }) => Promise<StartResult>
+			: (
+					options: StartOptionsBase & { key: TKeyInput; metadata: TMetadata }
+				) => Promise<StartResult>
 
-	/**
-	 * Complete an upload - retrieves metadata from Redis and deletes the token
-	 */
-	complete(uploadToken: string): Promise<CompleteUploadResult>
+	complete: (uploadToken: string) => Promise<CompleteResult<TMetadata>>
 }
 
 // ============================================================================
-// Main Export
+// Function Overloads
 // ============================================================================
 
 /**
- * Define an upload route with specific configuration
+ * Define an upload route for secure direct-to-S3 uploads.
+ *
+ * **Config options:**
+ * - `maxSize` (required) - Max file size: `'5MB'`, `'500KB'`, or bytes
+ * - `fileType` (required) - Allowed types: `'image'`, `'image/jpeg'`, or `['image/jpeg', 'image/png']`
+ * - `expiresIn` (optional) - Presigned URL validity in seconds (default: 300)
+ * - `customKey` (optional) - Function to generate S3 key from typed input
+ * - `metadata` (optional) - Zod schema for typed metadata passed through upload flow
+ *
+ * **Returns an upload route with:**
+ * - `start({ contentType, key?, metadata? })` - Returns `{ uploadUrl, fileKey, uploadToken }`
+ * - `complete(uploadToken)` - Validates upload, returns `{ fileKey, metadata }`
  *
  * @example
  * ```typescript
- * const avatarUpload = defineUpload({
- *   keyGenerate: ({ userId }) => {
- *     const timestamp = Date.now()
- *     const shortId = generateShortId()
- *     return `profile-pics/${userId}/${timestamp}-${shortId}.jpg`
- *   },
- *   maxSize: '2MB',
+ * const upload = defineUpload({
+ *   customKey: (input: { userId: string }) => `pics/${input.userId}/${Date.now()}.jpg`,
+ *   metadata: z.object({ source: z.string() }),
+ *   maxSize: '5MB',
  *   fileType: 'image/jpeg'
  * })
  * ```
  */
-export function defineUpload(config: UploadConfig): UploadRoute {
-	const { keyGenerate, fileType, expiresIn = 300 } = config
+export function defineUpload(config: BaseConfig): UploadRoute<void, void>
 
-	// Parse maxSize if it's a string
+export function defineUpload<TKeyInput>(
+	config: ConfigWithKey<TKeyInput>
+): UploadRoute<TKeyInput, void>
+
+export function defineUpload<TMetadata extends ZodType>(
+	config: ConfigWithMetadata<TMetadata>
+): UploadRoute<void, ZodInfer<TMetadata>>
+
+export function defineUpload<TKeyInput, TMetadata extends ZodType>(
+	config: ConfigWithKeyAndMetadata<TKeyInput, TMetadata>
+): UploadRoute<TKeyInput, ZodInfer<TMetadata>>
+
+// ============================================================================
+// Implementation
+// ============================================================================
+
+export function defineUpload<TKeyInput = void, TMetadata extends ZodType | void = void>(
+	config: BaseConfig & {
+		customKey?: (input: TKeyInput) => string
+		metadata?: TMetadata
+	}
+): UploadRoute<TKeyInput, TMetadata extends ZodType ? ZodInfer<TMetadata> : void> {
+	const { customKey, metadata: metadataSchema, fileType, expiresIn = 300 } = config
+
 	const maxSizeBytes =
 		typeof config.maxSize === 'string' ? parseFileSize(config.maxSize) : config.maxSize
 
-	// Get primary MIME type for presigning
-	const contentType = getPrimaryMimeType(fileType)
+	const allowedTypes = resolveAllowedTypes(fileType)
+
+	type InferredMetadata = TMetadata extends ZodType ? ZodInfer<TMetadata> : void
 
 	return {
-		async start(options: StartUploadOptions): Promise<StartUploadResult> {
-			const { userId, metadata = {} } = options
+		async start(options?: {
+			key?: TKeyInput
+			metadata?: InferredMetadata
+			contentType?: string
+		}): Promise<StartResult> {
+			const keyInput = options?.key
+			const metadata = options?.metadata
+			const contentType = options?.contentType ?? allowedTypes[0]
 
-			// Generate file key using the provided function
-			const fileKey = keyGenerate({ userId, metadata })
-			const uploadToken = generateUploadToken()
+			// Validate content type is allowed
+			if (!allowedTypes.includes(contentType)) {
+				throw new Error(
+					`Content type "${contentType}" is not allowed. Allowed types: ${allowedTypes.join(', ')}`
+				)
+			}
 
-			// Generate presigned PUT URL
+			// Validate metadata if schema provided
+			if (metadataSchema && metadata !== undefined) {
+				const schema = metadataSchema as ZodType
+				schema.parse(metadata)
+			}
+
+			// Generate file key
+			const fileKey =
+				customKey && keyInput !== undefined ? customKey(keyInput) : generateDefaultKey()
+
+			// Create uuid for upload token
+			const uploadToken = crypto.randomUUID()
+
+			// Generate presigned PUT URL for the specific content type
 			const uploadUrl = s3.presign(fileKey, {
 				method: 'PUT',
 				expiresIn,
 				type: contentType
 			})
 
-			// Store upload metadata in Redis with TTL
+			// Store upload data in Redis for validation in complete()
 			const uploadData = JSON.stringify({
-				userId,
+				metadata: metadata ?? null,
 				fileKey,
-				metadata,
 				contentType,
-				maxSize: maxSizeBytes,
+				maxSizeBytes,
 				createdAt: Date.now()
 			})
 
-			await redis.send('SET', [
-				`upload:${uploadToken}`,
-				uploadData,
-				'EX',
-				String(expiresIn + 60) // Give a little extra time beyond URL expiry
-			])
+			await redis.send('SET', [`upload:${uploadToken}`, uploadData, 'EX', String(expiresIn + 60)])
 
-			return { uploadUrl, fileKey, uploadToken }
+			return {
+				uploadUrl,
+				fileKey,
+				uploadToken,
+				uploadHeaders: {
+					'Content-Type': contentType
+				}
+			}
 		},
 
-		async complete(uploadToken: string): Promise<CompleteUploadResult> {
-			// Get metadata from Redis
-			const uploadData = await redis.get(`upload:${uploadToken}`)
+		async complete(uploadToken: string): Promise<CompleteResult<InferredMetadata>> {
+			const rawUploadData = await redis.get(`upload:${uploadToken}`)
 
-			if (!uploadData) {
+			if (!rawUploadData) {
 				throw new Error('Upload token expired or invalid')
 			}
 
-			const { userId, fileKey, metadata } = JSON.parse(uploadData) as {
-				userId: string
+			const uploadData = JSON.parse(rawUploadData) as {
+				metadata: InferredMetadata | null
 				fileKey: string
-				metadata: Record<string, unknown>
+				contentType: string
+				maxSizeBytes: number
 			}
 
-			// Verify file exists in S3
-			const stat = await s3.stat(fileKey)
+			const { metadata, fileKey, contentType, maxSizeBytes: maxSize } = uploadData
 
+			// Verify file exists in S3 and get its info
+			const stat = await s3.stat(fileKey)
 			if (!stat) {
 				throw new Error('File not found in storage')
+			}
+
+			// Validate file size
+			if (stat.size > maxSize) {
+				// Delete the oversized file
+				await s3.delete(fileKey)
+				await redis.send('DEL', [`upload:${uploadToken}`])
+				throw new Error(
+					`File size ${stat.size} bytes exceeds maximum allowed size of ${maxSize} bytes`
+				)
+			}
+
+			// Validate content type matches what was declared
+			if (stat.type && stat.type !== contentType) {
+				// Delete the file with wrong content type
+				await s3.delete(fileKey)
+				await redis.send('DEL', [`upload:${uploadToken}`])
+				throw new Error(
+					`File content type "${stat.type}" does not match declared type "${contentType}"`
+				)
 			}
 
 			// Delete token from Redis (one-time use)
 			await redis.send('DEL', [`upload:${uploadToken}`])
 
-			return { userId, fileKey, metadata }
+			return {
+				fileKey,
+				metadata: metadata as InferredMetadata
+			}
 		}
-	}
+	} as UploadRoute<TKeyInput, InferredMetadata>
 }
 
-// Export S3 client for direct operations (like listing, deleting)
+// Export S3 client for direct operations
 export { s3 }

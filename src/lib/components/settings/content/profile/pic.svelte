@@ -14,11 +14,17 @@
 	import { type OnCropCompleteEvent } from 'svelte-easy-crop'
 	import Cropper from 'svelte-easy-crop'
 	import ZoomSlider from './zoom-slider.svelte'
+	import {
+		startProfilePicUpload,
+		completeProfilePicUpload
+	} from '$lib/remotes/storage/profile-pic.remote'
 
 	let uploadedImageUrl = $state<string>()
 	let croppedImageUrl = $state<string | null>(null)
 
 	let isEditingPic = $state(false)
+	let isUploading = $state(false)
+	let uploadError = $state<string | null>(null)
 	let image = $derived(uploadedImageUrl ?? null)
 
 	let crop = $state({ x: 0, y: 0 })
@@ -78,11 +84,11 @@
 		})
 	}
 
-	// Main function to resize image
+	// Main function to resize image - returns a Blob for upload
 	async function getCroppedImg(
 		imageUrl: string,
 		pixelCrop: { x: number; y: number; width: number; height: number }
-	): Promise<string> {
+	): Promise<Blob> {
 		const image = await getImage(imageUrl)
 		const canvas = document.createElement('canvas')
 		const ctx = canvas.getContext('2d')
@@ -120,13 +126,14 @@
 		)
 
 		// Convert to JPEG with 85% quality
-		return new Promise((resolve) => {
+		return new Promise((resolve, reject) => {
 			canvas.toBlob(
 				(blob) => {
 					if (!blob) {
-						throw new Error('Canvas is empty')
+						reject(new Error('Canvas is empty'))
+						return
 					}
-					resolve(URL.createObjectURL(blob))
+					resolve(blob)
 				},
 				'image/jpeg',
 				0.85
@@ -146,11 +153,44 @@
 			return
 		}
 
+		isUploading = true
+		uploadError = null
+
 		try {
-			const croppedImage = await getCroppedImg(uploadedImageUrl, finalCrop.pixels)
-			croppedImageUrl = croppedImage
+			// 1. Get the cropped image as a Blob
+			const imageBlob = await getCroppedImg(uploadedImageUrl, finalCrop.pixels)
+
+			// 2. Request presigned URL from server
+			const { uploadUrl, uploadToken, uploadHeaders } = await startProfilePicUpload()
+
+			// 3. Upload directly to S3 using the presigned URL
+			const uploadResponse = await fetch(uploadUrl, {
+				method: 'PUT',
+				body: imageBlob,
+				headers: uploadHeaders
+			})
+
+			if (!uploadResponse.ok) {
+				throw new Error(`Upload failed: ${uploadResponse.status} ${uploadResponse.statusText}`)
+			}
+
+			// 4. Complete the upload (saves to database)
+			await completeProfilePicUpload({ uploadToken })
+
+			// 5. Success - show preview and close editor
+			croppedImageUrl = URL.createObjectURL(imageBlob)
+			isEditingPic = false
+
+			// Reset state for next time
+			uploadedImageUrl = undefined
+			crop = { x: 0, y: 0 }
+			zoom = 1.0
+			finalCrop = null
 		} catch (error) {
-			console.error('Error cropping image:', error)
+			console.error('Error uploading image:', error)
+			uploadError = error instanceof Error ? error.message : 'Upload failed'
+		} finally {
+			isUploading = false
 		}
 	}
 
@@ -295,6 +335,14 @@
 							<IconZoomIn />
 						</button>
 					</div>
+
+					{#if isUploading}
+						<p>Uploading...</p>
+					{/if}
+
+					{#if uploadError}
+						<p>Upload Error</p>
+					{/if}
 				</div>
 			{/if}
 		</div>
