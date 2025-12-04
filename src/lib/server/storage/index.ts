@@ -1,1 +1,1 @@
-export { defineUpload, s3 } from './upload'
+export { defineUpload, s3, cleanupExpiredUploads } from './upload'

@@ -20,7 +20,6 @@
 	} from '$lib/remotes/storage/profile-pic.remote'
 
 	let uploadedImageUrl = $state<string>()
-	let croppedImageUrl = $state<string | null>(null)
 
 	let isEditingPic = $state(false)
 	let isUploading = $state(false)
@@ -30,6 +29,13 @@
 	let crop = $state({ x: 0, y: 0 })
 	let zoom = $state(1.0)
 	let finalCrop = $state<null | OnCropCompleteEvent>(null)
+
+	function reset() {
+		uploadedImageUrl = undefined
+		crop = { x: 0, y: 0 }
+		zoom = 1.0
+		finalCrop = null
+	}
 
 	// File Select Behaviors
 	let fileInputEl = $state<HTMLInputElement>()
@@ -70,7 +76,6 @@
 	function processFile(file: File) {
 		if (file && file.type.startsWith('image/')) {
 			uploadedImageUrl = URL.createObjectURL(file)
-			croppedImageUrl = null // Reset cropped image when selecting new file
 		}
 	}
 
@@ -175,17 +180,13 @@
 			}
 
 			// 4. Complete the upload (saves to database)
-			await completeProfilePicUpload({ uploadToken })
+			// await completeProfilePicUpload({ uploadToken })
 
 			// 5. Success - show preview and close editor
-			croppedImageUrl = URL.createObjectURL(imageBlob)
 			isEditingPic = false
 
 			// Reset state for next time
-			uploadedImageUrl = undefined
-			crop = { x: 0, y: 0 }
-			zoom = 1.0
-			finalCrop = null
+			reset()
 		} catch (error) {
 			console.error('Error uploading image:', error)
 			uploadError = error instanceof Error ? error.message : 'Upload failed'
@@ -198,11 +199,7 @@
 		const hasImage = !!image
 
 		// Reset all image-related state
-		uploadedImageUrl = undefined
-		croppedImageUrl = null
-		crop = { x: 0, y: 0 }
-		zoom = 1.0
-		finalCrop = null
+		reset()
 
 		// Close the editing UI if we were on the upload screen (no image loaded)
 		if (!hasImage) {

@@ -61,14 +61,6 @@ function resolveAllowedTypes(fileType: FileType): string[] {
 }
 
 // ============================================================================
-// Unique Identifiers
-// ============================================================================
-
-function generateDefaultKey(): string {
-	return `uploads/${crypto.randomUUID()}`
-}
-
-// ============================================================================
 // Types
 // ============================================================================
 
@@ -298,30 +290,33 @@ export function defineUpload<TKeyInput = void, TMetadata extends ZodType | void 
 				schema.parse(metadata)
 			}
 
-			// Generate file key
-			const fileKey =
-				customKey && keyInput !== undefined ? customKey(keyInput) : generateDefaultKey()
-
-			// Create uuid for upload token
+			// Single UUID used for upload token and default file key
 			const uploadToken = crypto.randomUUID()
 
-			// Generate presigned PUT URL for the specific content type
+			// Final destination key - from customKey() or default to uploads/{token}
+			const fileKey =
+				customKey && keyInput !== undefined ? customKey(keyInput) : `uploads/${uploadToken}`
+
+			// Generate presigned PUT URL for the final location
 			const uploadUrl = s3.presign(fileKey, {
 				method: 'PUT',
 				expiresIn,
 				type: contentType
 			})
 
-			// Store upload data in Redis for validation in complete()
+			// Calculate when this upload expires (for cleanup job)
+			const expiresAt = Date.now() + expiresIn * 1000
+
+			// Store upload data in Redis (no TTL - cleanup job handles expiry)
 			const uploadData = JSON.stringify({
 				metadata: metadata ?? null,
 				fileKey,
 				contentType,
 				maxSizeBytes,
-				createdAt: Date.now()
+				expiresAt
 			})
 
-			await redis.send('SET', [`upload:${uploadToken}`, uploadData, 'EX', String(expiresIn + 60)])
+			await redis.send('SET', [`upload:${uploadToken}`, uploadData])
 
 			return {
 				uploadUrl,
@@ -345,6 +340,7 @@ export function defineUpload<TKeyInput = void, TMetadata extends ZodType | void 
 				fileKey: string
 				contentType: string
 				maxSizeBytes: number
+				expiresAt: number
 			}
 
 			const { metadata, fileKey, contentType, maxSizeBytes: maxSize } = uploadData
@@ -357,7 +353,6 @@ export function defineUpload<TKeyInput = void, TMetadata extends ZodType | void 
 
 			// Validate file size
 			if (stat.size > maxSize) {
-				// Delete the oversized file
 				await s3.delete(fileKey)
 				await redis.send('DEL', [`upload:${uploadToken}`])
 				throw new Error(
@@ -367,7 +362,6 @@ export function defineUpload<TKeyInput = void, TMetadata extends ZodType | void 
 
 			// Validate content type matches what was declared
 			if (stat.type && stat.type !== contentType) {
-				// Delete the file with wrong content type
 				await s3.delete(fileKey)
 				await redis.send('DEL', [`upload:${uploadToken}`])
 				throw new Error(
@@ -375,7 +369,7 @@ export function defineUpload<TKeyInput = void, TMetadata extends ZodType | void 
 				)
 			}
 
-			// Delete token from Redis (one-time use)
+			// Delete token from Redis - upload is now complete
 			await redis.send('DEL', [`upload:${uploadToken}`])
 
 			return {
@@ -384,6 +378,66 @@ export function defineUpload<TKeyInput = void, TMetadata extends ZodType | void 
 			}
 		}
 	} as UploadRoute<TKeyInput, InferredMetadata>
+}
+
+/** Shape of upload data stored in Redis */
+interface PendingUpload {
+	metadata: unknown
+	fileKey: string
+	contentType: string
+	maxSizeBytes: number
+	expiresAt: number
+}
+
+/**
+ * Clean up expired pending uploads.
+ *
+ * Scans all `upload:*` keys in Redis, and for any where `expiresAt + 30s < now`:
+ * - Deletes the S3 file
+ * - Deletes the Redis key
+ *
+ * This handles orphaned uploads where the client never called `complete()`.
+ */
+export async function cleanupExpiredUploads(): Promise<{ deleted: number; errors: number }> {
+	/** Buffer time before cleaning up expired uploads (in ms) */
+	const CLEANUP_BUFFER_MS = 30 * 1000 // 30 seconds
+
+	let deleted = 0
+	let errors = 0
+
+	// Scan for all upload:* keys
+	const keys = (await redis.send('KEYS', ['upload:*'])) as string[]
+
+	if (!keys || keys.length === 0) {
+		return { deleted, errors }
+	}
+
+	const now = Date.now()
+
+	for (const key of keys) {
+		try {
+			const rawData = await redis.get(key)
+			if (!rawData) continue
+
+			const data = JSON.parse(rawData) as PendingUpload
+
+			// Check if expired (with 30s buffer to avoid race conditions)
+			if (data.expiresAt + CLEANUP_BUFFER_MS < now) {
+				// Delete the S3 file
+				await s3.delete(data.fileKey)
+
+				// Delete the Redis key
+				await redis.send('DEL', [key])
+
+				deleted++
+			}
+		} catch (err) {
+			console.error(`Failed to cleanup upload ${key}:`, err)
+			errors++
+		}
+	}
+
+	return { deleted, errors }
 }
 
 // Export S3 client for direct operations
