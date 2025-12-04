@@ -1,9 +1,5 @@
-import { S3Client, RedisClient } from 'bun'
-import { REDIS_URL } from '$env/static/private'
 import type { ZodType, infer as ZodInfer } from 'zod'
-
-const s3 = new S3Client()
-const redis = new RedisClient(REDIS_URL)
+import { s3, redis } from './setup'
 
 // ============================================================================
 // File Size Parsing
@@ -439,6 +435,3 @@ export async function cleanupExpiredUploads(): Promise<{ deleted: number; errors
 
 	return { deleted, errors }
 }
-
-// Export S3 client for direct operations
-export { s3 }
