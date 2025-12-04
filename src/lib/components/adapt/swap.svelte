@@ -180,7 +180,7 @@
 				class={createClass(
 					innerClass,
 					'h-fit w-fit whitespace-nowrap',
-					initialized ? 'absolute inset-0' : 'relative'
+					initialized ? 'absolute top-0 left-0' : 'relative'
 				)}
 				bind:offsetWidth={activeContentWidth}
 				bind:offsetHeight={activeContentHeight}
@@ -192,7 +192,7 @@
 				class={createClass(
 					innerClass,
 					'h-fit w-fit',
-					initialized ? 'absolute inset-0' : 'relative'
+					initialized ? 'absolute top-0 left-0' : 'relative'
 				)}
 				bind:offsetHeight={defaultContentHeight}
 				bind:offsetWidth={defaultContentWidth}

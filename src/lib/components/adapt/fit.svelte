@@ -74,7 +74,7 @@
 >
 	<div
 		class={createClass(
-			initialized ? 'absolute inset-0 h-fit w-fit' : 'relative h-fit w-fit',
+			initialized ? 'absolute top-0 left-0 h-fit w-fit' : 'relative h-fit w-fit',
 			innerClass
 		)}
 		bind:offsetHeight={innerHeight}

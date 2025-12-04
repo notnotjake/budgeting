@@ -103,7 +103,13 @@
 
 	// Create springs once we have dimensions
 	$effect(() => {
-		if (adaptSize && currentDimensions?.width && currentDimensions?.height && !containerWidth && !containerHeight) {
+		if (
+			adaptSize &&
+			currentDimensions?.width &&
+			currentDimensions?.height &&
+			!containerWidth &&
+			!containerHeight
+		) {
 			containerWidth = new Spring(currentDimensions.width, { stiffness, damping })
 			containerHeight = new Spring(currentDimensions.height, { stiffness, damping })
 			initialized = true
@@ -205,7 +211,7 @@
 	>
 		{#each Array.from(visibleStates) as stateName (stateName)}
 			<div
-				class={createClass(innerClass, initialized ? 'absolute inset-0' : '', 'h-fit w-fit')}
+				class={createClass(innerClass, initialized ? 'absolute top-0 left-0' : '', 'h-fit w-fit')}
 				use:measureState={stateName}
 				in:transitionIn={transitionInConfig}
 				out:transitionOut={transitionOutConfig}
