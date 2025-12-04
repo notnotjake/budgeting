@@ -18,12 +18,16 @@
 		startProfilePicUpload,
 		completeProfilePicUpload
 	} from '$lib/remotes/storage/profile-pic.remote'
+	import { createUpload } from '$utils/storage-upload.svelte'
+
+	const upload = createUpload({
+		start: () => startProfilePicUpload(),
+		complete: (token) => completeProfilePicUpload({ uploadToken: token })
+	})
 
 	let uploadedImageUrl = $state<string>()
 
 	let isEditingPic = $state(false)
-	let isUploading = $state(false)
-	let uploadError = $state<string | null>(null)
 	let image = $derived(uploadedImageUrl ?? null)
 
 	let crop = $state({ x: 0, y: 0 })
@@ -158,40 +162,16 @@
 			return
 		}
 
-		isUploading = true
-		uploadError = null
-
 		try {
-			// 1. Get the cropped image as a Blob
+			// Get the cropped image as a Blob
 			const imageBlob = await getCroppedImg(uploadedImageUrl, finalCrop.pixels)
 
-			// 2. Request presigned URL from server
-			const { uploadUrl, uploadToken, uploadHeaders } = await startProfilePicUpload()
+			await upload.send(imageBlob)
 
-			// 3. Upload directly to S3 using the presigned URL
-			const uploadResponse = await fetch(uploadUrl, {
-				method: 'PUT',
-				body: imageBlob,
-				headers: uploadHeaders
-			})
-
-			if (!uploadResponse.ok) {
-				throw new Error(`Upload failed: ${uploadResponse.status} ${uploadResponse.statusText}`)
-			}
-
-			// 4. Complete the upload (saves to database)
-			// await completeProfilePicUpload({ uploadToken })
-
-			// 5. Success - show preview and close editor
 			isEditingPic = false
-
-			// Reset state for next time
 			reset()
 		} catch (error) {
 			console.error('Error uploading image:', error)
-			uploadError = error instanceof Error ? error.message : 'Upload failed'
-		} finally {
-			isUploading = false
 		}
 	}
 
@@ -333,11 +313,11 @@
 						</button>
 					</div>
 
-					{#if isUploading}
+					{#if upload.isUploading}
 						<p>Uploading...</p>
 					{/if}
 
-					{#if uploadError}
+					{#if upload.error}
 						<p>Upload Error</p>
 					{/if}
 				</div>
