@@ -88,38 +88,45 @@ interface ServeProtectedOptions {
 	}) => Promise<void> | void
 }
 
+/** Base path for content routes */
+const CONTENT_BASE = '/content/'
+
 /**
  * Serve protected content with authorization check.
  *
  * Returns a SvelteKit RequestHandler that:
- * 1. Runs the authorize callback (throws if unauthorized)
- * 2. Verifies file exists in S3
- * 3. Generates presigned URL (not cached)
- * 4. Redirects to the presigned URL
+ * 1. Extracts the full S3 key from the URL path (everything after /content/)
+ * 2. Runs the authorize callback (throws if unauthorized)
+ * 3. Verifies file exists in S3
+ * 4. Generates presigned URL (not cached)
+ * 5. Redirects to the presigned URL
  *
  * @example
  * ```typescript
- * // In +server.ts
+ * // In +server.ts for route /content/profile-pic/[...resource]
  * import { serveProtected } from '$lib/server/storage'
  *
  * export const GET = serveProtected({
  *   authorize: ({ locals, fileKey }) => {
+ *     // fileKey = "profile-pic/user-123/file.jpg" (full S3 key)
  *     if (!locals.user) throw error(401, 'Unauthorized')
  *   }
  * })
  * ```
  */
 export function serveProtected(options: ServeProtectedOptions): RequestHandler {
-	return async ({ params, locals }) => {
-		const fileKey = params.path
-		const path = params.path ?? ''
+	return async ({ params, locals, url }) => {
+		// Extract full path after /content/ to get the S3 key
+		const fileKey = url.pathname.startsWith(CONTENT_BASE)
+			? url.pathname.slice(CONTENT_BASE.length)
+			: params.path
 
 		if (!fileKey) {
 			throw error(404, 'Not found')
 		}
 
 		// Run authorization check
-		await options.authorize({ fileKey, path, locals })
+		await options.authorize({ fileKey, path: params.path ?? '', locals })
 
 		// Verify file exists in S3
 		try {
