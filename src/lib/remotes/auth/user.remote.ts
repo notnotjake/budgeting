@@ -11,7 +11,8 @@ export const getUser = query(async () => {
 
 	return {
 		identifier: locals.user?.identifier || '',
-		name: locals.user?.name || ''
+		name: locals.user?.name || '',
+		profilePic: locals.user?.profilePic || null
 	}
 })
 

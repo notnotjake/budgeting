@@ -19,6 +19,16 @@
 		completeProfilePicUpload
 	} from '$lib/remotes/storage/profile-pic.remote'
 	import { createUpload } from '$utils/storage-upload.svelte'
+	import { getUser } from '$remotes/auth/user.remote'
+
+	interface Props {
+		profilePic: string | null
+	}
+
+	let { profilePic }: Props = $props()
+
+	// Build the content URL from the S3 key
+	let profilePicUrl = $derived(profilePic ? `/content/${profilePic}` : null)
 
 	const upload = createUpload({
 		start: () => startProfilePicUpload(),
@@ -168,6 +178,9 @@
 
 			await upload.send(imageBlob)
 
+			// Refresh user data to get new profile pic
+			await getUser().refresh()
+
 			isEditingPic = false
 			reset()
 		} catch (error) {
@@ -216,9 +229,11 @@
 					class="absolute inset-0 z-30 h-full w-full bg-black/0 transition-colors delay-75 group-hover:bg-black/50"
 				></div>
 				<!-- Profile image -->
-				<div class="absolute inset-0 z-20">
-					<img src="https://large-assets.notnotjake.com/test.jpg" alt="" />
-				</div>
+				{#if profilePicUrl}
+					<div class="absolute inset-0 z-20">
+						<img src={profilePicUrl} alt="" />
+					</div>
+				{/if}
 				<!-- Placeholder/background -->
 				<div
 					class="absolute inset-0 z-10 h-full w-full bg-linear-to-b from-neutral-300 to-sky-200"

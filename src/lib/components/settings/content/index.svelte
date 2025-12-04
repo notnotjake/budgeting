@@ -26,7 +26,7 @@
 
 <!-- Profile -->
 <div class="flex w-full flex-col items-center gap-2.5 pb-5">
-	<ProfilePic />
+	<ProfilePic profilePic={user.profilePic} />
 	<ProfileName />
 </div>
 
