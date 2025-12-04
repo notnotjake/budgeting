@@ -1,1 +1,3 @@
-export { defineUpload, s3, cleanupExpiredUploads } from './upload'
+export { s3, redis } from './setup'
+export { defineUpload, cleanupExpiredUploads } from './upload'
+export { servePublic, serveProtected } from './serve'
