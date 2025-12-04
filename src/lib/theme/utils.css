@@ -18,6 +18,23 @@
 	margin-right: calc(--value([length]) * -1);
 }
 
+@utility overscroll-top {
+	position: fixed;
+	top: 0;
+	z-index: -10;
+	height: 300px;
+	width: 100%;
+	translate: 0 -299px;
+}
+@utility overscroll-bottom {
+	position: fixed;
+	bottom: 0;
+	z-index: -10;
+	height: 300px;
+	width: 100%;
+	translate: 0 299px;
+}
+
 @utility debug {
 	@apply border-1 border-red-500;
 }

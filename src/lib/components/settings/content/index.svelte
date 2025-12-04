@@ -12,21 +12,22 @@
 	import Section from '$ui/settings/components/section.svelte'
 	import Divider from '$ui/settings/components/item-divider.svelte'
 
-	import Avatar from './profile/avatar.svelte'
-	import ChangeName from './profile/change-name.svelte'
+	import ProfilePic from './profile/pic.svelte'
+	import ProfileName from './profile/name.svelte'
 
 	import LoginMethod from './account/login-method.svelte'
 	import Passkeys from './account/passkeys.svelte'
 	import Sessions from './account/sessions.svelte'
 	import DeleteAccount from './account/delete-account.svelte'
 
-	let user = $derived(await getUser())
+	let getUserPromise = $derived(getUser())
+	let user = $derived(await getUserPromise)
 </script>
 
 <!-- Profile -->
-<div class="flex w-full flex-col items-center gap-2 pb-5">
-	<Avatar />
-	<ChangeName />
+<div class="flex w-full flex-col items-center gap-2.5 pb-5">
+	<ProfilePic profilePic={user.profilePic} />
+	<ProfileName />
 </div>
 
 <!-- Account -->
@@ -68,8 +69,8 @@
 	<Divider />
 
 	<DialogItem icon={IconTrashFilled} title="Delete Account">
-		{#snippet content()}
-			<DeleteAccount />
+		{#snippet content({ close })}
+			<DeleteAccount {close} />
 		{/snippet}
 	</DialogItem>
 </Section>

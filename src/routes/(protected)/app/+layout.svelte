@@ -2,7 +2,6 @@
 	import { Dialog } from 'bits-ui'
 	import { fade, fly } from 'svelte/transition'
 
-	import Overscroll from '$ui/color/overscroll.svelte'
 	import AccountButton from '$ui/settings/account-button.svelte'
 	import SettingsPane from '$ui/settings/settings.svelte'
 
@@ -17,7 +16,7 @@
 
 <!-- Overscroll Top -->
 <div
-	class="fixed top-0 -z-10 h-[300px] w-full -translate-y-[299px]"
+	class="overscroll-top"
 	class:bg-neutral-950={settingsShown}
 	class:bg-neutral-50={!settingsShown}
 ></div>

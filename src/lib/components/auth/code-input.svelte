@@ -1,6 +1,7 @@
 <script lang="ts">
+	import { goto } from '$app/navigation'
 	import { onMount, tick } from 'svelte'
-	import { sendLoginCode, verifyLoginCode } from '$remotes/auth/authenticate.remote'
+	import { sendLoginCode, sendReauthCode, verifyLoginCode } from '$remotes/auth/authenticate.remote'
 	import { createEnhancedForm } from '@opensky/remotes'
 
 	import { delay } from '$utils/timing'
@@ -18,16 +19,31 @@
 		identifier: string
 		timezone: string
 		dark?: boolean
+		reauth?: boolean
+		onSuccess?: () => void
 	}
-	let { codeSent: codeSentInitially = false, identifier, timezone, dark = false }: Props = $props()
+	let {
+		codeSent: codeSentInitially = false,
+		identifier,
+		timezone,
+		dark = false,
+		reauth = false,
+		onSuccess
+	}: Props = $props()
 
-	// Send Button
+	// Send Code Forms
 	//
 	const sendLoginCodeForm = createEnhancedForm(sendLoginCode, {
 		delayMs: 50,
 		timeoutMs: 5000
 	})
+	const sendReauthCodeForm = createEnhancedForm(sendReauthCode, {
+		delayMs: 50,
+		timeoutMs: 5000
+	})
+	const sendCodeForm = reauth ? sendReauthCodeForm : sendLoginCodeForm
 	let sendLoginCodeFormElement = $state<HTMLFormElement>()
+	let sendReauthCodeFormElement = $state<HTMLFormElement>()
 
 	let codeSent = $state(codeSentInitially)
 	let emailSentSuccessToast = $state(false)
@@ -86,6 +102,12 @@
 						triggerShake()
 						await delay(1300)
 						verifyLoginCodeForm.reset()
+					} else if (result.success === true) {
+						if (reauth && onSuccess) {
+							onSuccess()
+						} else if (result.redirectUrl) {
+							goto(result.redirectUrl)
+						}
 					}
 				},
 				onError: async () => {
@@ -213,28 +235,49 @@
 	</div>
 {/if}
 
-<!-- Hidden form element for requesting to sending login code -->
-<form
-	bind:this={sendLoginCodeFormElement}
-	class="hidden"
-	aria-hidden="true"
-	{...sendLoginCode.enhance((opts) =>
-		sendLoginCodeForm.enhance(opts, {
-			onReturn: async () => {
-				codeSent = true
-				await triggerSuccessToast()
-			},
-			onError: () => {
-				console.log('error')
-			}
-		})
-	)}
->
-	<input {...sendLoginCode.fields.identifier.as('hidden', identifier)} />
-	<input {...sendLoginCode.fields.timezone.as('hidden', timezone)} />
-</form>
+<!-- Hidden form element for requesting to send login code -->
+{#if reauth}
+	<form
+		bind:this={sendReauthCodeFormElement}
+		class="hidden"
+		aria-hidden="true"
+		{...sendReauthCode.enhance((opts) =>
+			sendReauthCodeForm.enhance(opts, {
+				onReturn: async () => {
+					codeSent = true
+					await triggerSuccessToast()
+				},
+				onError: () => {
+					console.log('error')
+				}
+			})
+		)}
+	>
+		<input {...sendReauthCode.fields.timezone.as('hidden', timezone)} />
+	</form>
+{:else}
+	<form
+		bind:this={sendLoginCodeFormElement}
+		class="hidden"
+		aria-hidden="true"
+		{...sendLoginCode.enhance((opts) =>
+			sendLoginCodeForm.enhance(opts, {
+				onReturn: async () => {
+					codeSent = true
+					await triggerSuccessToast()
+				},
+				onError: () => {
+					console.log('error')
+				}
+			})
+		)}
+	>
+		<input {...sendLoginCode.fields.identifier.as('hidden', identifier)} />
+		<input {...sendLoginCode.fields.timezone.as('hidden', timezone)} />
+	</form>
+{/if}
 
-{#if sendLoginCodeForm.error || sendLoginCodeForm.issues || sendLoginCodeForm.timeout}
+{#if sendCodeForm.error || sendCodeForm.issues || sendCodeForm.timeout}
 	<p class="font-[450] text-rose-500">Failed sending email. Try again</p>
 {/if}
 
@@ -244,7 +287,7 @@
 			<IconCircleCheckFilled size={19} class="text-green-600" />
 			<p class="font-medium tracking-tight text-green-600">Email Sent</p>
 		</div>
-	{:else if sendLoginCodeForm.delayed}
+	{:else if sendCodeForm.delayed}
 		<div class="flex items-center gap-4" in:scale>
 			<Suspense.Text
 				class="font-medium"
@@ -256,7 +299,13 @@
 		</div>
 	{:else if !codeSentInitially && !codeSent}
 		<button
-			onclick={() => sendLoginCodeFormElement?.requestSubmit()}
+			onclick={() => {
+				if (reauth) {
+					sendReauthCodeFormElement?.requestSubmit()
+				} else {
+					sendLoginCodeFormElement?.requestSubmit()
+				}
+			}}
 			class="group rounded-full bg-none px-4 py-2 font-medium text-neutral-500 transition-all group-data-dark/reauth:text-neutral-400 hover:bg-neutral-100 group-data-dark/reauth:hover:bg-neutral-800 active:scale-95"
 		>
 			or <span
@@ -268,7 +317,13 @@
 		<div in:scale={{ duration: 300 }}>
 			<ResendEmailButton
 				cooldownMs={20 * 1000}
-				onclick={() => sendLoginCodeFormElement?.requestSubmit()}
+				onclick={() => {
+					if (reauth) {
+						sendReauthCodeFormElement?.requestSubmit()
+					} else {
+						sendLoginCodeFormElement?.requestSubmit()
+					}
+				}}
 				{dark}
 			/>
 		</div>

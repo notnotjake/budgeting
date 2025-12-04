@@ -5,7 +5,7 @@
 
 	import { createClass } from '@opensky/style'
 	import { delay } from '$utils/timing'
-	import { IconCheck, IconArrowBackUp } from '@tabler/icons-svelte'
+	import { IconCheck, IconArrowBackUp, IconX } from '@tabler/icons-svelte'
 	import { AdaptFit } from '$ui/adapt'
 
 	const updateUserNameSchema = z.object({
@@ -19,14 +19,21 @@
 		timeoutMs: 9000
 	})
 
-	let user = $state(await getUser())
+	let getUserPromise = $derived(getUser())
+	let user = $derived(await getUserPromise)
 
 	let editingName = $state(false)
 	let editNameField = $state<HTMLInputElement>()
 
 	const reset = () => {
-		updateUserName.fields.name.set(user.name)
+		if (nameDiff) {
+			updateUserName.fields.name.set(user.name)
+		} else {
+			editingName = false
+		}
 	}
+
+	let nameDiff = $derived(user.name !== updateUserName.fields.name.value())
 </script>
 
 <AdaptFit
@@ -54,7 +61,6 @@
 					onReturn: ({ result }) => {
 						if (result.success) {
 							editingName = false
-							user.name = result.name
 						}
 					}
 				})
@@ -64,9 +70,13 @@
 			<button
 				type="button"
 				onclick={reset}
-				class="flex h-9 w-9 items-center justify-center rounded-full bg-neutral-600 active:scale-95"
+				class="flex h-9 w-9 items-center justify-center rounded-full bg-neutral-600 text-neutral-300 active:scale-95"
 			>
-				<IconArrowBackUp class="text-neutral-300" />
+				{#if nameDiff}
+					<IconArrowBackUp />
+				{:else}
+					<IconX stroke={2} />
+				{/if}
 			</button>
 			<div class="flex flex-col items-center justify-center py-2">
 				<p

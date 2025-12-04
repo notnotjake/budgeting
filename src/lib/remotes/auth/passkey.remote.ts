@@ -100,7 +100,6 @@ export const verifyPasskeyRegistration = command(
 	}
 )
 
-// get all passkeys
 export const getUserPasskeys = query(async () => {
 	const { locals } = getRequestEvent()
 
@@ -117,5 +116,41 @@ export const getUserPasskeys = query(async () => {
 	}
 })
 
-// rename passkey
+export const renamePasskey = query(
+	z.object({
+		passkeyId: z.string(),
+		newName: z.string().min(2).max(32)
+	}),
+	async ({ passkeyId, newName }) => {
+		const result = await AuthCore.updatePasskeyName({ passkeyId, name: newName })
+
+		if (!result.success) {
+			return error(500)
+		}
+
+		await getUserPasskeys().refresh()
+
+		return { success: true }
+	}
+)
+
 // delete passkey
+export const deletePasskey = command(
+	z.object({
+		passkeyId: z.string()
+	}),
+	async ({ passkeyId }) => {
+		// delete passkey
+		console.log(passkeyId)
+
+		const result = await AuthCore.deletePasskey({ passkeyId })
+
+		if (!result.success) {
+			return error(500)
+		}
+
+		await getUserPasskeys().refresh()
+
+		return { success: true }
+	}
+)

@@ -11,7 +11,13 @@
 	import IconPasskey from './passkey-icon.svelte'
 	import { Suspense } from '$ui/feedback'
 
-	let { identifier, auto = true }: { identifier: string; auto: boolean } = $props()
+	type Props = {
+		identifier: string
+		auto?: boolean
+		reauth?: boolean
+		onSuccess?: () => void
+	}
+	let { identifier, auto = true, reauth = false, onSuccess }: Props = $props()
 
 	type ButtonState = 'idle' | 'pending' | 'result' | 'error'
 	let buttonState = $state<ButtonState>('idle')
@@ -40,9 +46,14 @@
 
 			const result = await verifyLoginPasskey({ attestation: authenticationResponse })
 
-			if (result.success && result.redirectUrl) {
+			if (result.success) {
 				buttonState = 'result'
-				goto(result.redirectUrl)
+
+				if (reauth && onSuccess) {
+					onSuccess()
+				} else if (result.redirectUrl) {
+					goto(result.redirectUrl)
+				}
 			}
 		} catch (e) {
 			console.error(e)

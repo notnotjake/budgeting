@@ -11,7 +11,8 @@
 
 	let { registerAction }: { registerAction: (fn: () => void) => void } = $props()
 
-	let sessions = $derived(await getUserSessions())
+	let getUserSessionsPromise = $derived(getUserSessions())
+	let sessions = $derived(await getUserSessionsPromise)
 
 	function relativeTimeString(date: Date): string {
 		const now = new Date()

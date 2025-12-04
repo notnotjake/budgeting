@@ -1,14 +1,9 @@
 - support phone number identifier
-
-- move reauth to a component and create nice DX for calling inside settings context
-
-settings:
-
-    - change email flow
-
-    - passkeys:
-    	- remove
-    	- rename
+- refactor settings contexts stuff
+- change email flow
+- passkeys: remove
+- passkeys: rename
+- reauth full functionality (with preauth and on action return error)
 
 - rate limits
 - error handling

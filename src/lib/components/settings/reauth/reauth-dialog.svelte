@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { getContext } from 'svelte'
+	import { onMount, getContext } from 'svelte'
 
 	import { IconShieldLockFilled, IconArrowLeft } from '@tabler/icons-svelte'
 	import { fade } from 'svelte/transition'
@@ -7,6 +7,7 @@
 	import { Dialog } from 'bits-ui'
 	import PasskeyButton from '$ui/auth/passkey-button.svelte'
 	import CodeInput from '$ui/auth/code-input.svelte'
+	import { startReauth } from '$remotes/auth/authenticate.remote'
 
 	type Props = {
 		open: boolean
@@ -15,15 +16,25 @@
 	}
 	let { open = $bindable(), onSuccess, onCancel }: Props = $props()
 
-	// let open = $state(false)
 	let innerHeight = $state<number>(0)
 
 	const setReauthDialogHeight = getContext<(height: number) => void>('reauth-dialog-height')
 	const scrollSettingsToTop = getContext<(() => void) | undefined>('settings-scroll-to-top')
 
+	// Reauth state
+	const localTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone
+
+	let loading = $state(false)
+	let requireReauth = $state(false)
+
+	let identifier = $state('')
+	let passkeyAvailable = $state(false)
+	let codeSent = $state(false)
+
+	// Initialize reauth options when dialog opens
 	$effect(() => {
 		if (open) {
-			scrollSettingsToTop?.()
+			requestStartReauth()
 		}
 	})
 
@@ -35,10 +46,35 @@
 		}
 	})
 
-	let passkeyAvailable = $state(false)
-	let identifier = $state('jake@notnotjake.com')
-	let codeSent = $state(false)
-	const localTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone
+	function handleReauthSuccess() {
+		open = false
+		requireReauth = false
+		onSuccess()
+	}
+
+	async function requestStartReauth() {
+		loading = true
+		try {
+			const result = await startReauth({ timezone: localTimezone })
+
+			if (result.recentAuth) {
+				handleReauthSuccess()
+				requireReauth = false
+			} else {
+				requireReauth = true
+				scrollSettingsToTop?.()
+
+				identifier = result.identifier
+				passkeyAvailable = result.passkeyAvailable
+				codeSent = result.codeSent
+			}
+			loading = false
+		} catch (e) {
+			console.error('Failed to start reauth', e)
+			open = false
+			onCancel()
+		}
+	}
 </script>
 
 <Dialog.Root bind:open>
@@ -53,7 +89,7 @@
 				>
 					<div class="h-fit w-full overflow-y-auto p-3">
 						<div class="flex w-full flex-col justify-center p-3 text-neutral-200">
-							<div class="flex w-full flex-col px-5 pt-7 pb-12">
+							<div class="flex w-full flex-col px-5 pt-7 pb-10">
 								<!-- Heading -->
 								<div class="mb-8 flex flex-col">
 									<IconShieldLockFilled size={35} class="mb-2 text-sky-500" />
@@ -63,21 +99,30 @@
 									</p>
 								</div>
 
-								<button onclick={onSuccess}>Success</button>
-								<button onclick={onCancel}>Cancel</button>
+								<div class="flex w-full flex-col gap-5 pt-10">
+									{#if !loading && requireReauth}
+										<div data-dark class="group/reauth flex w-full flex-col items-center gap-7">
+											{#if passkeyAvailable}
+												<PasskeyButton
+													{identifier}
+													auto={true}
+													reauth={true}
+													onSuccess={handleReauthSuccess}
+												/>
+											{/if}
 
-								<div class="flex w-full flex-col gap-5 py-1">
-									<div>
-										<div data-dark class="group/reauth flex w-full flex-col items-center p-3">
-											<div class="flex w-full flex-col items-center gap-7 pt-14 pb-3">
-												{#if passkeyAvailable}
-													<PasskeyButton auto={true} {identifier} />
-												{/if}
-
-												<CodeInput {codeSent} {identifier} timezone={localTimezone} dark={true} />
+											<div class="flex w-full flex-col items-center gap-1">
+												<CodeInput
+													{codeSent}
+													{identifier}
+													timezone={localTimezone}
+													reauth={true}
+													dark={true}
+													onSuccess={handleReauthSuccess}
+												/>
 											</div>
 										</div>
-									</div>
+									{/if}
 								</div>
 							</div>
 

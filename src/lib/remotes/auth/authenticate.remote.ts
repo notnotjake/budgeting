@@ -32,27 +32,66 @@ export const logout = command(async () => {
 	return { redirectUrl: Auth.redirects.afterLogout }
 })
 
-export const preauth = query(z.object({ buffer: z.number() }), async ({ buffer }) => {
-	const { locals } = getRequestEvent()
+export const startReauth = query(
+	z.object({
+		timezone: z.string().optional()
+	}),
+	async ({ timezone }) => {
+		const { locals } = getRequestEvent()
 
-	if (!locals.session || !locals.user) {
-		throw error(401)
+		// Require session and user
+		if (!locals.session || !locals.user) {
+			throw error(401)
+		}
+
+		const { user, session } = locals
+
+		const hasRecentAuth =
+			locals.session?.lastAuthAt &&
+			Date.now() - locals.session.lastAuthAt.getTime() <
+				Auth.durations.recentAuthWindow - Auth.durations.recentAuthBuffer
+
+		if (hasRecentAuth) {
+			return { recentAuth: true as const }
+		}
+
+		// Check if a user has passkey
+		const passkeyAvailable = unwrap(
+			await AuthCore.userHasPasskeyAvailable({ userId: user.id }),
+			() => {
+				throw error(500, 'Failed to check for passkey')
+			}
+		)
+
+		if (passkeyAvailable) {
+			return {
+				recentAuth: false as const,
+				identifier: user.identifier,
+				codeSent: false,
+				passkeyAvailable: true
+			}
+		}
+
+		// Send login code
+		await AuthCore.sendLoginCode({
+			sessionId: session.id,
+			identifier: user.identifier,
+			existingUser: !!user,
+			timezone: timezone
+		})
+
+		return {
+			recentAuth: false as const,
+			identifier: user.identifier,
+			codeSent: true,
+			passkeyAvailable: false
+		}
 	}
-
-	const hasRecentAuth =
-		locals.session?.lastAuthAt &&
-		Date.now() < locals.session.lastAuthAt.getTime() + Auth.durations.recentAuthWindow - buffer
-
-	if (hasRecentAuth) {
-		return { requiresReauth: false }
-	} else {
-		return { requiresReauth: true }
-	}
-})
+)
 
 export const startLogin = form(
 	z.object({
-		identifier: z.string().email(),
+		identifier: z.email(),
 		timezone: z.string().optional()
 	}),
 	async ({ identifier: identifierRaw, timezone }) => {
@@ -113,11 +152,11 @@ export const startLogin = form(
 
 export const sendLoginCode = form(
 	z.object({
-		identifier: z.string().email(),
+		identifier: z.email(),
 		timezone: z.string().optional()
 	}),
 	async ({ identifier: identifierRaw, timezone }) => {
-		await delay(750)
+		await delay(300)
 
 		const { locals } = getRequestEvent()
 
@@ -138,6 +177,32 @@ export const sendLoginCode = form(
 			sessionId: locals.session.id,
 			identifier,
 			existingUser: !!user,
+			timezone: timezone
+		})
+
+		return { success: true }
+	}
+)
+
+export const sendReauthCode = form(
+	z.object({
+		timezone: z.string().optional()
+	}),
+	async ({ timezone }) => {
+		await delay(300)
+
+		const { locals } = getRequestEvent()
+
+		if (!locals.session || !locals.user) {
+			throw error(401)
+		}
+
+		const identifier = locals.user.identifier
+
+		// Send reauth code
+		await AuthCore.sendReauthCode({
+			sessionId: locals.session.id,
+			identifier,
 			timezone: timezone
 		})
 
@@ -237,7 +302,7 @@ export const verifyLoginCode = form(
 
 export const startLoginPasskey = query(
 	z.object({
-		identifier: z.string().email().optional()
+		identifier: z.email().optional()
 	}),
 	async ({ identifier }) => {
 		const { locals } = getRequestEvent()
