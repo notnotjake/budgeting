@@ -40,8 +40,7 @@
 		}
 
 		localStorage.setItem('lastSeenAt', Date.now().toString())
-		// return result
-		return true
+		return result
 	}
 
 	let swapActive = $state(false)
