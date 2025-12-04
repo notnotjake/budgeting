@@ -5,7 +5,7 @@
 
 	import { createClass } from '@opensky/style'
 	import { fade } from 'svelte/transition'
-	import { createSequence } from '$lib/utils/timing'
+	import { createSequence, delay } from '$lib/utils/timing'
 	import { IconSettings, IconDots, IconLogout } from '@tabler/icons-svelte'
 	import { Adapt } from '$ui/adapt'
 	import { DropdownMenu } from 'bits-ui'
@@ -40,7 +40,8 @@
 		}
 
 		localStorage.setItem('lastSeenAt', Date.now().toString())
-		return result
+		// return result
+		return true
 	}
 
 	let swapActive = $state(false)
@@ -64,6 +65,8 @@
 
 		// Show welcome message if returning after 45 mins
 		if (shouldWelcomeBack()) {
+			// Delay to allow fly-in transition to complete before running animation
+			await delay(500)
 			sequence.run()
 		}
 	})
