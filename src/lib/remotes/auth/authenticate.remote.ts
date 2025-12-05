@@ -38,8 +38,6 @@ export const startReauth = query(
 	}),
 	async ({ timezone }) => {
 		const event = getRequestEvent()
-		await Auth.ratelimit.expensive(event)
-
 		const { locals } = event
 
 		// Require session and user
@@ -54,9 +52,14 @@ export const startReauth = query(
 			Date.now() - locals.session.lastAuthAt.getTime() <
 				Auth.durations.recentAuthWindow - Auth.durations.recentAuthBuffer
 
+		// If recently authed, use standard rate limit (cheap check)
 		if (hasRecentAuth) {
+			await Auth.ratelimit.standard(event)
 			return { recentAuth: true as const }
 		}
+
+		// Otherwise, use expensive rate limit (will send code or check passkey)
+		await Auth.ratelimit.expensive(event)
 
 		// Check if a user has passkey
 		const passkeyAvailable = unwrap(
