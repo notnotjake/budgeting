@@ -6,7 +6,8 @@ import {
 	generateShortCode,
 	hashShortCode,
 	verifyShortCodesMatch,
-	generateRandomName
+	generateRandomName,
+	normalizeIdentifierInput
 } from './utils'
 
 import {
@@ -61,6 +62,7 @@ const AuthCore = {
 	hashShortCode,
 	verifyShortCodesMatch,
 	generateRandomName,
+	normalizeIdentifierInput,
 
 	// Cookies
 	setSessionTokenCookie,
@@ -106,3 +108,5 @@ const AuthCore = {
 }
 
 export default AuthCore
+
+export { normalizeIdentifierInput }

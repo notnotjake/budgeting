@@ -6,6 +6,7 @@ import type { User } from '$lib/server/auth/schema'
 import { StructuredResponse as Response } from '$utils/structured-response'
 import { ERROR_MESSAGE } from './errors'
 import { randomUUID } from 'crypto'
+import { normalizeIdentifierInput } from './utils'
 
 /**
  * Creates a new user with the provided identifier and name.
@@ -26,7 +27,7 @@ export async function createUser({
 			.insert(table.user)
 			.values({
 				name,
-				identifier: identifier.toLowerCase(),
+				identifier: normalizeIdentifierInput(identifier),
 				createdAt: new Date(),
 				lastSeenAt: new Date(),
 				id: randomUUID(),
@@ -67,7 +68,7 @@ export async function updateUser({
 		}
 
 		if (newIdentifier !== undefined) {
-			updateData.identifier = newIdentifier.toLowerCase()
+			updateData.identifier = normalizeIdentifierInput(newIdentifier)
 		}
 
 		if (Object.keys(updateData).length === 0) {
@@ -135,7 +136,7 @@ export async function getUser({
 			.where(
 				id !== undefined
 					? eq(table.user.id, id)
-					: eq(sql`lower(${table.user.identifier})`, identifier.toLowerCase())
+					: eq(sql`lower(${table.user.identifier})`, normalizeIdentifierInput(identifier))
 			)
 			.limit(1)
 

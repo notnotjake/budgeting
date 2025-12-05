@@ -6,6 +6,7 @@ import type { Challenge, ChallengeType } from '$lib/server/auth/schema'
 import { StructuredResponse as Response } from '$utils/structured-response'
 import { ERROR_MESSAGE } from './errors'
 import { randomUUID } from 'crypto'
+import { normalizeIdentifierInput } from './utils'
 
 /**
  * Creates a new authentication challenge for a user.
@@ -35,6 +36,8 @@ export async function createChallenge({
 	expiresAt: Date
 }): Promise<Response<Challenge>> {
 	try {
+		const normalizedIdentifier = normalizeIdentifierInput(identifier)
+
 		const newChallenge = await db.transaction(async (tx) => {
 			//
 			// Cleanup existing challenges
@@ -43,12 +46,15 @@ export async function createChallenge({
 			// Delete by type
 			deleteConditions.push(eq(table.challenge.type, type))
 
-			if (identifier && sessionId) {
+			if (normalizedIdentifier && sessionId) {
 				deleteConditions.push(
-					or(eq(table.challenge.identifier, identifier), eq(table.challenge.sessionId, sessionId))
+					or(
+						eq(table.challenge.identifier, normalizedIdentifier),
+						eq(table.challenge.sessionId, sessionId)
+					)
 				)
-			} else if (identifier) {
-				deleteConditions.push(eq(table.challenge.identifier, identifier))
+			} else if (normalizedIdentifier) {
+				deleteConditions.push(eq(table.challenge.identifier, normalizedIdentifier))
 			} else if (sessionId) {
 				deleteConditions.push(eq(table.challenge.sessionId, sessionId))
 			}
@@ -62,7 +68,7 @@ export async function createChallenge({
 				.values({
 					id: randomUUID(),
 					type,
-					identifier,
+					identifier: normalizedIdentifier,
 					sessionId,
 					credential,
 					expiresAt
@@ -145,6 +151,7 @@ export async function cleanupLoginChallenges({
 	sessionId: string
 }): Promise<Response<never>> {
 	try {
+		const normalizedIdentifier = normalizeIdentifierInput(identifier)
 		const authChallengeTypes: ChallengeType[] = ['code', 'passkey']
 
 		await db
@@ -152,7 +159,10 @@ export async function cleanupLoginChallenges({
 			.where(
 				and(
 					inArray(table.challenge.type, authChallengeTypes),
-					or(eq(table.challenge.identifier, identifier), eq(table.challenge.sessionId, sessionId))
+					or(
+						eq(table.challenge.identifier, normalizedIdentifier),
+						eq(table.challenge.sessionId, sessionId)
+					)
 				)
 			)
 
@@ -182,18 +192,22 @@ export async function cleanupChallengesByType({
 	type: ChallengeType
 }): Promise<Response<never>> {
 	try {
+		const normalizedIdentifier = identifier ? normalizeIdentifierInput(identifier) : null
 		const conditions = []
 
 		// Delete by type
 		conditions.push(eq(table.challenge.type, type))
 
 		// Delete by sessionId and/or identifier
-		if (identifier && sessionId) {
+		if (normalizedIdentifier && sessionId) {
 			conditions.push(
-				or(eq(table.challenge.identifier, identifier), eq(table.challenge.sessionId, sessionId))
+				or(
+					eq(table.challenge.identifier, normalizedIdentifier),
+					eq(table.challenge.sessionId, sessionId)
+				)
 			)
-		} else if (identifier) {
-			conditions.push(eq(table.challenge.identifier, identifier))
+		} else if (normalizedIdentifier) {
+			conditions.push(eq(table.challenge.identifier, normalizedIdentifier))
 		} else if (sessionId) {
 			conditions.push(eq(table.challenge.sessionId, sessionId))
 		}

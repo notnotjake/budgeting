@@ -5,7 +5,7 @@ import { AuthEmails } from '$lib/server/auth'
 import type { sendCodeParams } from '$lib/server/auth/types'
 
 import { createChallenge, cleanupChallengesByType } from './challenges'
-import { generateShortCode, hashShortCode } from './utils'
+import { generateShortCode, hashShortCode, normalizeIdentifierInput } from './utils'
 
 export async function sendLoginCode({
 	sessionId,
@@ -18,7 +18,8 @@ export async function sendLoginCode({
 	existingUser: boolean
 	timezone?: string
 }) {
-	const emailParams = await sendCodeCore({ sessionId, identifier, timezone })
+	const normalizedIdentifier = normalizeIdentifierInput(identifier)
+	const emailParams = await sendCodeCore({ sessionId, identifier: normalizedIdentifier, timezone })
 
 	try {
 		if (existingUser) {
@@ -43,7 +44,8 @@ export async function sendReauthCode({
 	identifier: string
 	timezone?: string
 }) {
-	const emailParams = await sendCodeCore({ sessionId, identifier, timezone })
+	const normalizedIdentifier = normalizeIdentifierInput(identifier)
+	const emailParams = await sendCodeCore({ sessionId, identifier: normalizedIdentifier, timezone })
 
 	// Send code to email
 	try {

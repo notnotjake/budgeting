@@ -3,7 +3,7 @@ import { error } from '@sveltejs/kit'
 import { z } from 'zod'
 
 import Auth from '$lib/server/auth'
-import AuthCore from '$lib/server/auth/core'
+import AuthCore, { normalizeIdentifierInput } from '$lib/server/auth/core'
 import { unwrap } from '$utils/structured-response'
 import {
 	generateAuthenticationOptions,
@@ -109,7 +109,7 @@ export const startLogin = form(
 		}
 
 		// Normalize input
-		const identifier = identifierRaw.toLowerCase().trim()
+		const identifier = normalizeIdentifierInput(identifierRaw)
 
 		// Check if user exists
 		const userResult = await AuthCore.getUser({ identifier })
@@ -170,7 +170,7 @@ export const sendLoginCode = form(
 		}
 
 		// Normalize input
-		const identifier = identifierRaw.toLowerCase().trim()
+		const identifier = normalizeIdentifierInput(identifierRaw)
 
 		// Check if user exists
 		const user = unwrap(await AuthCore.getUser({ identifier }), () => {
