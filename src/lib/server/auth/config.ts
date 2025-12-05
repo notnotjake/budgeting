@@ -1,5 +1,6 @@
 import { defineConfig } from './index'
 import { sendAuthEmail } from '$lib/server/email'
+import ratelimit from '$lib/server/ratelimit'
 
 import { site } from '$lib/site-config'
 import { NODE_ENV } from '$env/static/private'
@@ -34,5 +35,18 @@ export default defineConfig({
 	},
 	durations: {
 		sessionRetentionWindow: 2 * 60 * MIN_IN_MS // 2 hours for dev purposes
+	},
+	ratelimit: {
+		expensive: async ({ ip }) => {
+			// Check short-term limit first (stricter)
+			const shortResult = await ratelimit.auth.expensive.short.limit(ip)
+			if (!shortResult.success) return shortResult
+
+			// Then check long-term limit
+			return ratelimit.auth.expensive.long.limit(ip)
+		},
+		standard: async ({ ip }) => {
+			return ratelimit.auth.standard.limit(ip)
+		}
 	}
 })

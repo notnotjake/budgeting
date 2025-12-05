@@ -7,10 +7,10 @@ import AuthCore from '$lib/server/auth/core'
 import { generateRegistrationOptions, verifyRegistrationResponse } from '@simplewebauthn/server'
 
 export const startPasskeyRegistration = query(async () => {
-	const { locals } = getRequestEvent()
+	const event = getRequestEvent()
+	await Auth.ratelimit.standard(event)
 
-	const session = locals.session
-	const user = locals.user
+	const { session, user } = event.locals
 
 	if (!session || !user) {
 		throw error(401)
@@ -47,10 +47,10 @@ export const verifyPasskeyRegistration = command(
 		registration: z.any()
 	}),
 	async ({ name, registration }) => {
-		const { locals } = getRequestEvent()
+		const event = getRequestEvent()
+		await Auth.ratelimit.standard(event)
 
-		const session = locals.session
-		const user = locals.user
+		const { session, user } = event.locals
 
 		if (!session || !user) {
 			throw error(401)
@@ -101,13 +101,16 @@ export const verifyPasskeyRegistration = command(
 )
 
 export const getUserPasskeys = query(async () => {
-	const { locals } = getRequestEvent()
+	const event = getRequestEvent()
+	await Auth.ratelimit.standard(event)
 
-	if (!locals.session || !locals.user) {
+	const { session, user } = event.locals
+
+	if (!session || !user) {
 		throw error(401)
 	}
 
-	const keysResult = await AuthCore.listUserPasskeys({ userId: locals.user.id })
+	const keysResult = await AuthCore.listUserPasskeys({ userId: user.id })
 
 	if (keysResult.success) {
 		return keysResult?.data
@@ -122,6 +125,9 @@ export const renamePasskey = query(
 		newName: z.string().min(2).max(32)
 	}),
 	async ({ passkeyId, newName }) => {
+		const event = getRequestEvent()
+		await Auth.ratelimit.standard(event)
+
 		const result = await AuthCore.updatePasskeyName({ passkeyId, name: newName })
 
 		if (!result.success) {
@@ -140,6 +146,9 @@ export const deletePasskey = command(
 		passkeyId: z.string()
 	}),
 	async ({ passkeyId }) => {
+		const event = getRequestEvent()
+		await Auth.ratelimit.standard(event)
+
 		// delete passkey
 		console.log(passkeyId)
 

@@ -5,6 +5,9 @@ import { handleAuthentication } from './hooks/authentication'
 import { handleProtected } from './hooks/protected'
 import { requireSession, requireAuthenticatedUser, requireRecentAuth } from './api/protect'
 import { cleanupChallenges, cleanupSessions } from './api/cleanup'
+import { createRatelimiter } from './core/ratelimit'
+
+import { NODE_ENV } from '$env/static/private'
 
 const DAY_IN_MS = 24 * 60 * 60 * 1000
 const MIN_IN_MS = 60 * 1000
@@ -67,6 +70,22 @@ const DEFAULT_CONFIG: AuthConfig = {
 			console.error('Auth: sendAccountDeletionCompleted email not implemented')
 			throw new Error('Email function not implemented')
 		}
+	},
+	ratelimit: {
+		expensive: async () => {
+			if (NODE_ENV === 'development') {
+				console.warn(`Auth: Missing ratelimit configuration. Allowing in development`)
+				return { success: true, limit: 0, remaining: 0, reset: 0 }
+			}
+			throw new Error(`Auth: Missing ratelimit configuration.`)
+		},
+		standard: async () => {
+			if (NODE_ENV === 'development') {
+				console.warn(`Auth: Missing ratelimit configuration. Allowing in development`)
+				return { success: true, limit: 0, remaining: 0, reset: 0 }
+			}
+			throw new Error(`Auth: Missing ratelimit configuration.`)
+		}
 	}
 }
 
@@ -75,7 +94,8 @@ const config: AuthConfig = {
 	redirects: { ...DEFAULT_CONFIG.redirects, ...userConfig.redirects },
 	durations: { ...DEFAULT_CONFIG.durations, ...userConfig.durations },
 	passkeys: { ...DEFAULT_CONFIG.passkeys, ...userConfig.passkeys },
-	emails: { ...DEFAULT_CONFIG.emails, ...userConfig.emails }
+	emails: { ...DEFAULT_CONFIG.emails, ...userConfig.emails },
+	ratelimit: { ...DEFAULT_CONFIG.ratelimit, ...userConfig.ratelimit }
 }
 
 const Auth = {
@@ -95,6 +115,32 @@ const Auth = {
 	cleanup: {
 		sessions: cleanupSessions,
 		challenges: cleanupChallenges
+	},
+	/**
+	 * Rate limiting functions for auth operations.
+	 * Each function accepts a RequestEvent and throws 429 if rate limit exceeded.
+	 */
+	ratelimit: {
+		/**
+		 * Strict rate limit for expensive or security-sensitive operations.
+		 * Use for: sending emails/SMS, login attempts.
+		 *
+		 * Throws 429 if rate limit exceeded.
+		 *
+		 * @param event - The SvelteKit RequestEvent
+		 * @throws {HttpError} 429 "Too many requests" if rate limited
+		 */
+		expensive: createRatelimiter(config.ratelimit.expensive),
+
+		/**
+		 * Rate limit for general auth operations.
+		 *
+		 * Throws 429 if rate limit exceeded.
+		 *
+		 * @param event - The SvelteKit RequestEvent
+		 * @throws {HttpError} 429 "Too many requests" if rate limited
+		 */
+		standard: createRatelimiter(config.ratelimit.standard)
 	}
 }
 export default Auth
@@ -106,3 +152,6 @@ export const AuthEmails = config.emails
 export function defineConfig(userConfig: AuthConfigInput): AuthConfigInput {
 	return userConfig
 }
+
+// Re-export types for use in remotes
+export type { RatelimitResult, RatelimitContext } from './types'

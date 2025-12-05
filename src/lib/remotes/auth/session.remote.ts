@@ -1,35 +1,39 @@
-import { form, query, command, getRequestEvent } from '$app/server'
-import { error, redirect } from '@sveltejs/kit'
+import { query, command, getRequestEvent } from '$app/server'
+import { error } from '@sveltejs/kit'
 import { z } from 'zod'
 import Auth from '$lib/server/auth'
 import AuthCore from '$lib/server/auth/core'
-import { AuthEmails } from '$lib/server/auth'
-import { unwrap } from '$utils/structured-response'
 
 // getSessions
 export const getUserSessions = query(async () => {
-	const { locals } = getRequestEvent()
+	const event = getRequestEvent()
+	await Auth.ratelimit.standard(event)
 
-	if (!locals.session || !locals.user) {
+	const { session, user } = event.locals
+
+	if (!session || !user) {
 		throw error(401, 'Unauthorized')
 	}
 
-	const result = await AuthCore.listAllUserSessions(locals.user.id)
+	const result = await AuthCore.listAllUserSessions(user.id)
 
 	if (!result.success) {
 		throw error(500)
 	}
 
 	return {
-		currentSessionId: locals.session.id,
+		currentSessionId: session.id,
 		allSessions: result.data
 	}
 })
 
 export const invalidateSession = command(z.string(), async (sessionId) => {
-	const { locals } = getRequestEvent()
+	const event = getRequestEvent()
+	await Auth.ratelimit.standard(event)
 
-	if (!locals.session || !locals.user) {
+	const { session, user } = event.locals
+
+	if (!session || !user) {
 		throw error(401, 'Unauthorized')
 	}
 
@@ -44,17 +48,18 @@ export const invalidateSession = command(z.string(), async (sessionId) => {
 })
 
 export const invalidateAllSessions = command(async () => {
-	const { locals } = getRequestEvent()
+	const event = getRequestEvent()
+	await Auth.ratelimit.standard(event)
 
-	if (!locals.session || !locals.user) {
+	const { session, user } = event.locals
+
+	if (!session || !user) {
 		throw error(401)
 	}
 
-	const activeSessionId = locals.session.id
-
 	const result = await AuthCore.invalidateAllUserSessions({
-		userId: locals.user.id,
-		activeSessionId
+		userId: user.id,
+		activeSessionId: session.id
 	})
 
 	if (!result.success) {

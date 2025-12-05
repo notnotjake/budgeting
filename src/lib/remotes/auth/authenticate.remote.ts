@@ -15,6 +15,7 @@ import { delay } from '$utils/timing'
 
 export const logout = command(async () => {
 	const event = getRequestEvent()
+	await Auth.ratelimit.standard(event)
 	const session = event.locals.session
 
 	// Invalidate the session if we have one
@@ -37,7 +38,10 @@ export const startReauth = query(
 		timezone: z.string().optional()
 	}),
 	async ({ timezone }) => {
-		const { locals } = getRequestEvent()
+		const event = getRequestEvent()
+		await Auth.ratelimit.expensive(event)
+
+		const { locals } = event
 
 		// Require session and user
 		if (!locals.session || !locals.user) {
@@ -95,7 +99,10 @@ export const startLogin = form(
 		timezone: z.string().optional()
 	}),
 	async ({ identifier: identifierRaw, timezone }) => {
-		const { locals } = getRequestEvent()
+		const event = getRequestEvent()
+		await Auth.ratelimit.expensive(event)
+
+		const { locals } = event
 
 		// Require session
 		if (!locals.session) {
@@ -156,9 +163,12 @@ export const sendLoginCode = form(
 		timezone: z.string().optional()
 	}),
 	async ({ identifier: identifierRaw, timezone }) => {
+		const event = getRequestEvent()
+		await Auth.ratelimit.expensive(event)
+
 		await delay(300)
 
-		const { locals } = getRequestEvent()
+		const { locals } = event
 
 		if (!locals.session) {
 			throw error(400)
@@ -189,9 +199,12 @@ export const sendReauthCode = form(
 		timezone: z.string().optional()
 	}),
 	async ({ timezone }) => {
+		const event = getRequestEvent()
+		await Auth.ratelimit.expensive(event)
+
 		await delay(300)
 
-		const { locals } = getRequestEvent()
+		const { locals } = event
 
 		if (!locals.session || !locals.user) {
 			throw error(401)
@@ -219,6 +232,7 @@ export const verifyLoginCode = form(
 	}),
 	async ({ code }) => {
 		const event = getRequestEvent()
+		await Auth.ratelimit.expensive(event)
 
 		if (!event.locals.session) {
 			throw error(400)
@@ -305,7 +319,10 @@ export const startLoginPasskey = query(
 		identifier: z.email().optional()
 	}),
 	async ({ identifier }) => {
-		const { locals } = getRequestEvent()
+		const event = getRequestEvent()
+		await Auth.ratelimit.standard(event)
+
+		const { locals } = event
 
 		if (!locals.session) {
 			throw error(500)
@@ -366,6 +383,7 @@ export const verifyLoginPasskey = command(
 	}),
 	async ({ attestation }) => {
 		const event = getRequestEvent()
+		await Auth.ratelimit.expensive(event)
 
 		if (!event.locals.session) {
 			throw error(400)
