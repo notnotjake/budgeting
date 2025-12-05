@@ -227,7 +227,7 @@ export const verifyLoginCode = form(
 	}),
 	async ({ code }) => {
 		const event = getRequestEvent()
-		await Auth.ratelimit.expensive(event)
+		await Auth.ratelimit.standard(event)
 
 		if (!event.locals.session) {
 			throw error(400)
@@ -378,7 +378,7 @@ export const verifyLoginPasskey = command(
 	}),
 	async ({ attestation }) => {
 		const event = getRequestEvent()
-		await Auth.ratelimit.expensive(event)
+		await Auth.ratelimit.standard(event)
 
 		if (!event.locals.session) {
 			throw error(400)

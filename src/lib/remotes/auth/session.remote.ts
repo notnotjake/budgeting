@@ -4,7 +4,6 @@ import { z } from 'zod'
 import Auth from '$lib/server/auth'
 import AuthCore from '$lib/server/auth/core'
 
-// getSessions
 export const getUserSessions = query(async () => {
 	const event = getRequestEvent()
 	await Auth.ratelimit.standard(event)
