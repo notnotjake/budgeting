@@ -1,5 +1,5 @@
 import { form, query, command, getRequestEvent } from '$app/server'
-import { error } from '@sveltejs/kit'
+import { error, type RequestEvent } from '@sveltejs/kit'
 import { z } from 'zod'
 import Auth from '$lib/server/auth'
 import AuthCore from '$lib/server/auth/core'
@@ -60,7 +60,7 @@ export const deleteUserAccount = command(async () => {
 
 	const { session, user } = event.locals
 
-	if (!session || !user || !hasRecentAuth()) {
+	if (!session || !user || !hasRecentAuth(event)) {
 		return { requireReauth: true }
 	}
 
@@ -85,18 +85,17 @@ export const deleteUserAccount = command(async () => {
 	return { success: true }
 })
 
-function hasRecentAuth() {
-	const { locals } = getRequestEvent()
+function hasRecentAuth(event: RequestEvent) {
+	const { locals } = event
 
 	if (!locals.session || !locals.user) {
-		throw error
+		throw error(401, 'Requires recent authentication. Please reauthenticate and try again')
 	}
 
 	const buffer = 3 * 60 * 1000 // 3 mins in ms
 
-	const r =
+	return (
 		locals.session?.lastAuthAt &&
 		Date.now() < locals.session.lastAuthAt.getTime() + Auth.durations.recentAuthWindow - buffer
-
-	return r
+	)
 }

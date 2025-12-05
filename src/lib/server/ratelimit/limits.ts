@@ -27,7 +27,7 @@ export const limits = {
 		 * Standard auth operations rate limit.
 		 * For general operations like fetching user data, listing sessions.
 		 * - Algorithm: Fixed window
-		 * - Limit: 100 requests per 60 seconds
+		 * - Limit: 60 requests per 60 seconds
 		 */
 		standard: createRatelimit({
 			prefix: 'ratelimit:auth-standard',
@@ -39,7 +39,7 @@ export const limits = {
 			 * Short-term limit for expensive auth operations.
 			 * Prevents rapid-fire attempts (e.g., spamming login codes).
 			 * - Algorithm: Fixed window
-			 * - Limit: 1 request per 20 seconds
+			 * - Limit: 5 request per 60 seconds
 			 */
 			short: createRatelimit({
 				prefix: 'ratelimit:auth-expensive-short',

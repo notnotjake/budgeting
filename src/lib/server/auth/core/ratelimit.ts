@@ -4,9 +4,11 @@ import type { RatelimitContext, RatelimitResult, RatelimitCallback } from '../ty
 /**
  * Builds a RatelimitContext from a RequestEvent.
  * Extracts IP from x-forwarded-for header for proxy support.
+ * Handles comma-separated IPs from multiple proxies (takes the first/client IP).
  */
 function buildContext(event: RequestEvent): RatelimitContext {
-	const ip = event.request.headers.get('x-forwarded-for') || event.getClientAddress() || 'unknown'
+	const forwarded = event.request.headers.get('x-forwarded-for')
+	const ip = forwarded?.split(',')[0]?.trim() || event.getClientAddress() || 'unknown'
 	return {
 		event,
 		user: event.locals.user ?? null,

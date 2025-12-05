@@ -4,6 +4,7 @@ import { error } from '@sveltejs/kit'
 
 import Auth from '$lib/server/auth'
 import AuthCore from '$lib/server/auth/core'
+import { unwrap } from '$utils/structured-response'
 import { generateRegistrationOptions, verifyRegistrationResponse } from '@simplewebauthn/server'
 
 export const startPasskeyRegistration = query(async () => {
@@ -128,10 +129,23 @@ export const renamePasskey = query(
 		const event = getRequestEvent()
 		await Auth.ratelimit.standard(event)
 
+		if (!event.locals.user) {
+			throw error(401)
+		}
+
+		// check if user owns passkey
+		const passkeyUser = unwrap(await AuthCore.getPasskeyUser({ passkeyId }), () => {
+			throw error(500, 'Failed to lookup passkey by id')
+		})
+
+		if (passkeyUser?.id !== event.locals.user.id) {
+			throw error(403, 'You cannot rename this passkey as it does not belong to you')
+		}
+
 		const result = await AuthCore.updatePasskeyName({ passkeyId, name: newName })
 
 		if (!result.success) {
-			return error(500)
+			throw error(500)
 		}
 
 		await getUserPasskeys().refresh()
@@ -149,13 +163,23 @@ export const deletePasskey = command(
 		const event = getRequestEvent()
 		await Auth.ratelimit.standard(event)
 
-		// delete passkey
-		console.log(passkeyId)
+		if (!event.locals.user) {
+			throw error(401)
+		}
+
+		// check if user owns passkey
+		const passkeyUser = unwrap(await AuthCore.getPasskeyUser({ passkeyId }), () => {
+			throw error(500, 'Failed to lookup passkey by id')
+		})
+
+		if (passkeyUser?.id !== event.locals.user.id) {
+			throw error(403, 'You cannot delete this passkey as it does not belong to you')
+		}
 
 		const result = await AuthCore.deletePasskey({ passkeyId })
 
 		if (!result.success) {
-			return error(500)
+			throw error(500)
 		}
 
 		await getUserPasskeys().refresh()
