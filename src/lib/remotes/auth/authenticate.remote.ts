@@ -15,7 +15,6 @@ import { delay } from '$utils/timing'
 
 export const logout = command(async () => {
 	const event = getRequestEvent()
-	await Auth.ratelimit.standard(event)
 	const session = event.locals.session
 
 	// Invalidate the session if we have one
@@ -111,10 +110,6 @@ export const startLogin = form(
 
 		// Normalize input
 		const identifier = identifierRaw.toLowerCase().trim()
-
-		if (identifier === 'error@error.com') {
-			return error(401, 'Email not Allowed')
-		}
 
 		// Check if user exists
 		const userResult = await AuthCore.getUser({ identifier })
@@ -294,7 +289,7 @@ export const verifyLoginCode = form(
 			redirectUrl = Auth.redirects.afterAccountCreated
 		}
 
-		// Authentiacte the session
+		// Authenticate the session
 		const authenticatedSession = unwrap(await AuthCore.authenticateSession({ event, user }), () => {
 			throw error(500)
 		})
@@ -446,7 +441,7 @@ export const verifyLoginPasskey = command(
 				sessionId: session.id
 			})
 
-			// Authentiacte the session
+			// Authenticate the session
 			const authenticatedSession = unwrap(
 				await AuthCore.authenticateSession({ event, user }),
 				() => {
