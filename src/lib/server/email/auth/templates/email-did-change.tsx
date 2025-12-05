@@ -4,22 +4,19 @@ import {
 	Preview,
 	Container,
 	Head,
-	Heading,
 	Html,
 	Text,
 	Tailwind,
-	Section,
-	Button
+	Section
 } from '@react-email/components'
 
 import { HeaderGroup } from '../components/header-group'
 
 type Options = {
 	updatedEmail: string
-	lockLink: string
 }
 
-const EmailDidChange = ({ updatedEmail, lockLink }: Options) => {
+const EmailDidChange = ({ updatedEmail }: Options) => {
 	return (
 		<Html>
 			<Preview>Your account's email has been changed to {updatedEmail}</Preview>
@@ -29,7 +26,7 @@ const EmailDidChange = ({ updatedEmail, lockLink }: Options) => {
 					<meta name="supported-color-schemes" content="light dark" />
 				</Head>
 				<Body className="bg-white font-sans dark:bg-neutral-900">
-					<Container className="w-full max-w-none bg-white pb-[40px] pt-[50px] dark:bg-neutral-900">
+					<Container className="w-full max-w-none bg-white pt-[50px] pb-[40px] dark:bg-neutral-900">
 						<Section className="mx-auto max-w-[430px] px-1">
 							<HeaderGroup
 								headingText="Your account email has been changed"
@@ -41,16 +38,8 @@ const EmailDidChange = ({ updatedEmail, lockLink }: Options) => {
 								}
 							/>
 
-							<Section className="mb-6 mt-8">
-								<Button
-									className="m-0 box-border h-[50px] w-full rounded-[14px] bg-black px-[24px] py-[14px] text-center text-[16px] font-medium text-white dark:bg-neutral-50 dark:text-black"
-									href={lockLink}
-								>
-									Don't Recognize Activity
-								</Button>
-							</Section>
-							<Text className="m-0 mb-[32px] text-left text-[16px] tracking-[-0.01em] text-neutral-500 dark:text-neutral-400">
-								If you did not take this action, click this link to secure your account
+							<Text className="m-0 mt-8 text-left text-[16px] tracking-[-0.01em] text-neutral-500 dark:text-neutral-400">
+								If you did not make this change, please contact support immediately.
 							</Text>
 						</Section>
 					</Container>
@@ -63,6 +52,5 @@ const EmailDidChange = ({ updatedEmail, lockLink }: Options) => {
 export default EmailDidChange
 
 EmailDidChange.PreviewProps = {
-	updatedEmail: 'john@apple.com',
-	lockLink: 'localhost:5173/lock?test'
+	updatedEmail: 'john@apple.com'
 } as Options

@@ -109,3 +109,83 @@ async function sendCodeCore({
 		maxAgeMins
 	}
 }
+
+/**
+ * Initiates an email change flow by creating a challenge and sending a verification code.
+ * Cleans up any existing email change attempts for this user before creating the new one.
+ *
+ * The challenge identifier is stored as "oldEmail:newEmail" to allow lookup by user's current email.
+ *
+ * @param sessionId - The current session ID
+ * @param currentEmail - The user's current email address
+ * @param newEmail - The new email address to change to
+ * @param timezone - Optional timezone for email formatting
+ * @returns The created challenge data including expiration
+ */
+export async function sendEmailChangeCode({
+	sessionId,
+	currentEmail,
+	newEmail,
+	timezone
+}: {
+	sessionId: string
+	currentEmail: string
+	newEmail: string
+	timezone?: string
+}) {
+	const normalizedCurrentEmail = normalizeIdentifierInput(currentEmail)
+	const normalizedNewEmail = normalizeIdentifierInput(newEmail)
+
+	// Cleanup any existing email change challenges for this user (across all sessions)
+	const cleanupResult = await cleanupChallengesByType({
+		identifier: normalizedCurrentEmail,
+		sessionId: null,
+		type: 'code_email_change'
+	})
+
+	if (!cleanupResult.success) {
+		throw error(500, 'Failed to cleanup existing email change challenges')
+	}
+
+	// Generate and hash verification code
+	const code = generateShortCode()
+	const hashedCode = await hashShortCode(code)
+
+	// Create expires at time from auth config
+	const expiresAt = new Date(Date.now() + Auth.durations.challengeCodeMaxAge)
+
+	// Derive time for sharing in email
+	const maxAgeMins = Math.floor(Auth.durations.challengeCodeMaxAge / (60 * 1000))
+
+	// Store identifier as "oldEmail:newEmail" for easy lookup by user
+	const challengeIdentifier = `${normalizedCurrentEmail}:${normalizedNewEmail}`
+
+	// Save challenge
+	const challenge = await createChallenge({
+		identifier: challengeIdentifier,
+		sessionId,
+		credential: hashedCode,
+		type: 'code_email_change',
+		expiresAt
+	})
+
+	if (!challenge.success || !challenge.data) {
+		throw error(500, 'Failed to create email change challenge')
+	}
+
+	// Send verification code to the NEW email address
+	try {
+		await AuthEmails.sendChangeEmailCode({
+			email: normalizedNewEmail,
+			code,
+			timezone,
+			expiresAt,
+			maxAgeMins
+		})
+	} catch (e) {
+		console.error('Failed trying to send email change verification', e)
+		throw error(500, 'Failed to send verification email')
+	}
+
+	return
+}

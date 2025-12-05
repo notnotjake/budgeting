@@ -108,6 +108,11 @@ export const startLogin = form(
 			throw error(400)
 		}
 
+		// Reject identifiers containing colon (reserved for internal use)
+		if (identifierRaw.includes(':')) {
+			return { error: 'Invalid email address' }
+		}
+
 		// Normalize input
 		const identifier = normalizeIdentifierInput(identifierRaw)
 

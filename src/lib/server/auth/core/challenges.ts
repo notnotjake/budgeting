@@ -1,5 +1,5 @@
 import { db } from '$lib/server/db'
-import { eq, lt, gt, and, or, desc, inArray } from 'drizzle-orm'
+import { eq, lt, gt, and, or, desc, inArray, like } from 'drizzle-orm'
 import * as table from '$lib/server/auth/schema'
 
 import type { Challenge, ChallengeType } from '$lib/server/auth/schema'
@@ -177,6 +177,10 @@ export async function cleanupLoginChallenges({
  * Removes duplicate challenges of a specific type before creating a new one.
  * Prevents multiple active challenges of the same type for a user.
  *
+ * For `code_email_change` type, uses a prefix match on identifier since those
+ * challenges store "oldEmail:newEmail" format - this finds all pending email
+ * change attempts for a user regardless of which session initiated them.
+ *
  * @param identifier - The user's identifier
  * @param sessionId - Optional session ID to clean up challenges for
  * @param type - The specific challenge type to remove duplicates of
@@ -198,8 +202,11 @@ export async function cleanupChallengesByType({
 		// Delete by type
 		conditions.push(eq(table.challenge.type, type))
 
-		// Delete by sessionId and/or identifier
-		if (normalizedIdentifier && sessionId) {
+		if (type === 'code_email_change' && normalizedIdentifier) {
+			// For email change challenges, use prefix match since identifier is "currentEmail:newEmail"
+			conditions.push(like(table.challenge.identifier, `${normalizedIdentifier}:%`))
+		} else if (normalizedIdentifier && sessionId) {
+			// Delete by sessionId and/or identifier
 			conditions.push(
 				or(
 					eq(table.challenge.identifier, normalizedIdentifier),
@@ -207,8 +214,10 @@ export async function cleanupChallengesByType({
 				)
 			)
 		} else if (normalizedIdentifier) {
+			// Delete just based on identifier
 			conditions.push(eq(table.challenge.identifier, normalizedIdentifier))
 		} else if (sessionId) {
+			// Delete just based on session id
 			conditions.push(eq(table.challenge.sessionId, sessionId))
 		}
 

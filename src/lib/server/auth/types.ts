@@ -158,8 +158,6 @@ export type AuthConfig = {
 		sendEmailDidChangeNotification: (params: {
 			email: string
 			updatedEmail: string
-			lockLink: string
-			maxAgeMins: number
 		}) => Promise<void>
 		sendAccountDeletionCompleted: (params: { email: string }) => Promise<void>
 	}
@@ -231,8 +229,6 @@ export type AuthConfigInput = {
 		sendEmailDidChangeNotification?: (params: {
 			email: string
 			updatedEmail: string
-			lockLink: string
-			maxAgeMins: number
 		}) => Promise<void>
 		sendAccountDeletionCompleted?: (params: { email: string }) => Promise<void>
 	}
@@ -250,8 +246,6 @@ export type sendCodeParams = {
 export type sendEmailDidChangeParams = {
 	email: string
 	updatedEmail: string
-	lockLink: string
-	maxAgeMins: number
 }
 
 export type sendAccountDeletionCompletedParams = {

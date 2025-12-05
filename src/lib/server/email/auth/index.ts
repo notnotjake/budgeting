@@ -99,20 +99,18 @@ export async function changeEmailCode({ email, code, timezone, maxAgeMins }: sen
 	return
 }
 
-// TODO: modify template to accept lock link token url and display max age
 export async function emailDidChangeNotification({
 	email,
-	updatedEmail,
-	lockLink
+	updatedEmail
 }: sendEmailDidChangeParams) {
 	const result = await sendEmail(
 		{
 			from: SEND_FROM,
 			to: email,
 			subject: 'Email Changed',
-			react: EmailDidChange({ updatedEmail, lockLink })
+			react: EmailDidChange({ updatedEmail })
 		},
-		`Email changed. FROM:${email} >> TO:${email}`
+		`Email changed. FROM:${email} >> TO:${updatedEmail}`
 	)
 
 	if (!result?.success) {

@@ -1,4 +1,4 @@
-import { sendLoginCode, sendReauthCode } from './sending'
+import { sendLoginCode, sendReauthCode, sendEmailChangeCode } from './sending'
 
 import {
 	generateToken,
@@ -54,6 +54,7 @@ const AuthCore = {
 	// Sending
 	sendLoginCode,
 	sendReauthCode,
+	sendEmailChangeCode,
 
 	// Utils
 	generateToken,

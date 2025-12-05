@@ -91,7 +91,17 @@ export async function verifyShortCodesMatch({
 	return await Bun.password.verify(inputCode, savedCode)
 }
 
-export function normalizeIdentifierInput(identifier: string) {
+/**
+ * Normalizes an identifier (email) to lowercase and trimmed.
+ *
+ * Note: Colons are reserved as separators for composite challenge identifiers
+ * (e.g., "oldEmail:newEmail"). Input validation at the API layer should reject
+ * user-provided identifiers containing colons before they reach this function.
+ *
+ * @param identifier - The identifier to normalize
+ * @returns The normalized identifier
+ */
+export function normalizeIdentifierInput(identifier: string): string {
 	return identifier.toLowerCase().trim()
 }
 
