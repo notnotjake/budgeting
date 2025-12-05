@@ -78,7 +78,10 @@
 <Dialog.Content forceMount>
 	{#snippet child({ props, open })}
 		{#if open}
-			<div class="absolute inset-0 z-100 flex h-screen w-full justify-center">
+			<div
+				class="absolute inset-0 z-100 flex h-screen w-full justify-center"
+				data-sveltekit-preload-data="off"
+			>
 				<div
 					{...props}
 					bind:this={dialogContainer}
