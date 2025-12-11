@@ -51,36 +51,6 @@ export const updateUserName = form(
 )
 
 /**
- * Query to check if there's a pending email change challenge for the current session.
- * Returns the new email if a pending challenge exists, null otherwise.
- */
-export const getEmailChangeStatus = query(async () => {
-	const event = getRequestEvent()
-	await Auth.ratelimit.standard(event)
-
-	const { session, user } = event.locals
-
-	if (!session || !user) {
-		return null
-	}
-
-	// Look up any pending email change challenge for this session
-	const challengeResult = await AuthCore.getChallenge({
-		type: 'code_email_change',
-		sessionId: session.id
-	})
-
-	if (!challengeResult.success || !challengeResult.data) {
-		return null
-	}
-
-	// Parse the identifier to get the new email (format is "oldEmail:newEmail")
-	const [, newEmail] = challengeResult.data.identifier.split(':')
-
-	return newEmail || null
-})
-
-/**
  * Start the email change flow by sending a verification code to the new email.
  * Cleans up any existing email change attempts for this user first.
  */
@@ -112,7 +82,7 @@ export const startEmailChange = form(
 		}
 
 		// Check if the new email is already registered to another user
-		const existingUserResult = await AuthCore.getUser({ identifier: normalizedNewEmail })
+		const existingUserResult = await AuthCore.userExists({ identifier: normalizedNewEmail })
 
 		if (!existingUserResult.success) {
 			throw error(500, 'Failed to check email availability')
@@ -129,9 +99,6 @@ export const startEmailChange = form(
 				currentEmail: user.identifier,
 				newEmail: normalizedNewEmail
 			})
-
-			// Refresh the status query so UI updates
-			await getEmailChangeStatus().refresh()
 
 			return { success: true }
 		} catch (e) {
@@ -151,7 +118,7 @@ export const verifyEmailChange = form(
 	}),
 	async ({ code }) => {
 		const event = getRequestEvent()
-		await Auth.ratelimit.expensive(event)
+		await Auth.ratelimit.standard(event)
 
 		const { session, user } = event.locals
 
@@ -160,16 +127,19 @@ export const verifyEmailChange = form(
 		}
 
 		// Get the pending challenge for this session
-		const challengeResult = await AuthCore.getChallenge({
-			type: 'code_email_change',
-			sessionId: session.id
-		})
+		const challenge = unwrap(
+			await AuthCore.getChallenge({
+				type: 'code_email_change',
+				sessionId: session.id
+			}),
+			() => {
+				throw error(400, 'No pending email change request found. Please start again.')
+			}
+		)
 
-		if (!challengeResult.success || !challengeResult.data) {
-			return { error: 'No pending email change request found. Please start again.' }
+		if (!challenge) {
+			throw error(400, 'No pending email change request found. Please start again.')
 		}
-
-		const challenge = challengeResult.data
 
 		// Parse the identifier to get old and new email
 		const [oldEmail, newEmail] = challenge.identifier.split(':')
@@ -219,10 +189,6 @@ export const verifyEmailChange = form(
 			// Don't fail the operation if notification fails
 			console.error('Failed to send email change notification', e)
 		}
-
-		// Refresh user data
-		await getUser().refresh()
-		await getEmailChangeStatus().refresh()
 
 		return { success: true, newEmail }
 	}

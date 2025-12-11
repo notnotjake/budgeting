@@ -160,11 +160,12 @@ export async function userExists(
 	try {
 		const result = await getUser(params)
 
-		if (!result.success || !result.data) {
+		if (!result.success) {
 			return Response.fail(ERROR_MESSAGE.CORE.USER_LOOKUP_FAILED)
 		}
 
-		return Response.succeed(!!result.data)
+		// result.data is null if user not found, which means user doesn't exist
+		return Response.succeed(result.data !== null)
 	} catch (e) {
 		console.error('Failed to lookup user', e)
 		return Response.fail(ERROR_MESSAGE.CORE.USER_LOOKUP_FAILED)
