@@ -8,6 +8,7 @@
 		IconCircleCheckFilled,
 		IconAlertTriangleFilled
 	} from '@tabler/icons-svelte'
+	import DialogHeader from '../../components/dialog-header.svelte'
 	import { scale } from 'svelte/transition'
 	import { AdaptSwap, AdaptFit } from '$ui/adapt'
 	import { SuspenseText } from '$ui/feedback'
@@ -78,12 +79,12 @@
 
 <div class="flex w-full flex-col justify-center p-3 text-neutral-200">
 	<div class="flex w-full flex-col px-5 pt-7 pb-12">
-		<!-- Heading -->
-		<div class="mb-8 flex flex-col">
-			<IconTrashFilled size={35} class="mb-2 text-rose-600" />
-			<h2 class="text-[1.2rem] font-semibold">Delete Account</h2>
-			<p class="text-[1.05rem] text-neutral-300">Deleting your account is permanent</p>
-		</div>
+		<DialogHeader
+			title="Delete Account"
+			description="Delete your account and data. This action is permanent"
+			icon={IconTrashFilled}
+			iconClasses="text-rose-600"
+		/>
 
 		<AdaptFit direction="y">
 			{#if currentState === 'pending'}

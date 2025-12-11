@@ -52,6 +52,7 @@
 				if (reauth && onSuccess) {
 					onSuccess()
 				} else if (result.redirectUrl) {
+					// eslint-disable-next-line svelte/no-navigation-without-resolve
 					goto(result.redirectUrl)
 				}
 			}
@@ -74,7 +75,7 @@
 		onclick={handleClick}
 		class={createClass(
 			'flex cursor-pointer items-center justify-center gap-2 bg-blue-vibrant-light py-3 font-medium text-white transition-all outline-none',
-			buttonState === 'idle' ? 'rounded-[1.2rem] px-10' : 'my-2 rounded-[2rem] px-4',
+			buttonState === 'idle' ? 'rounded-[1.2rem] px-10' : 'my-2 rounded-4xl px-4',
 			buttonState === 'error' &&
 				'rounded-[1.2rem] bg-neutral-600 text-neutral-100 group-data-dark/reauth:bg-neutral-700'
 		)}

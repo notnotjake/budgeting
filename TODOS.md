@@ -1,14 +1,18 @@
-- support phone number identifier
-- refactor settings contexts stuff
 - change email flow
-- passkeys: remove
-- passkeys: rename
-- reauth full functionality (with preauth and on action return error)
 
-- rate limits
-- error handling
+- hint text on passkeys and sessions (currently hard coded)
+  maybe should have a remote for settings context that handles user name, email, profile pic, and these hints and other settings.
 
-- welcome page
+- visual oddity when opening passkey context menu, the settings title goes behind the profile pic
+
+* passkeys: remove
+* passkeys: rename
+* welcome page
+
+* support phone number identifier
+* reauth full functionality (with preauth and on action return error)
+
+* error handling
 
 ## future
 
