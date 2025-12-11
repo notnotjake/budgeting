@@ -38,6 +38,10 @@ export default defineConfig({
 	},
 	ratelimit: {
 		expensive: async ({ ip }) => {
+			if (NODE_ENV === 'development') {
+				return { success: true, limit: 10, remaining: 10, reset: Date.now() + 1000 }
+			}
+
 			// Check short-term limit first (stricter)
 			const shortResult = await ratelimit.auth.expensive.short.limit(ip)
 			if (!shortResult.success) return shortResult
@@ -46,6 +50,10 @@ export default defineConfig({
 			return ratelimit.auth.expensive.long.limit(ip)
 		},
 		standard: async ({ ip }) => {
+			if (NODE_ENV === 'development') {
+				return { success: true, limit: 10, remaining: 10, reset: Date.now() + 1000 }
+			}
+
 			return ratelimit.auth.standard.limit(ip)
 		}
 	}
