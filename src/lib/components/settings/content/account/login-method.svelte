@@ -1,145 +1,212 @@
 <script lang="ts">
+	import { onMount, tick } from 'svelte'
+	import { z } from 'zod'
+	import { getUser, startEmailChange } from '$remotes/auth/user.remote'
+	import { createValidation, createEnhancedForm } from '@opensky/remotes'
+	import { getDialogContext } from '../../dialog-context'
+
+	import { createClass } from '@opensky/style'
+	import { wipeVertical } from '$ui/transition'
+	import { fade } from 'svelte/transition'
 	import {
 		IconUserCircle,
 		IconArrowLeft,
-		IconMail,
-		IconDeviceMobile,
 		IconArrowBackUp,
-		IconChevronRight
+		IconArrowRight
 	} from '@tabler/icons-svelte'
-	import { Dialog } from 'bits-ui'
-	import { onMount, getContext } from 'svelte'
-	import { fade } from 'svelte/transition'
-	import { wipeVertical } from '$ui/transition'
-	import { createClass } from '@opensky/style'
+	import { Dialog, Tooltip } from 'bits-ui'
+
+	import { Suspense } from '$ui/feedback'
+	import DialogHeader from '../../components/dialog-header.svelte'
 	import VerificationCodeInput from './verification-code-input.svelte'
 
+	// Context callbacks
 	let { close }: { close: () => void } = $props()
+	const { requireRecentAuth } = getDialogContext()
 
-	const { requireRecentAuth } = getContext('settings-reauth')
+	// Get current user data
+	let getUserPromise = $derived(getUser())
+	let user = $derived(await getUserPromise)
 
-	const revert = () => {
-		emailValue = currentEmail
+	// Change email schema
+	const startEmailChangeSchema = z.object({
+		newEmail: z.email('Invalid email address'),
+		timezone: z.string().optional()
+	})
+
+	// Change email validator
+	const startEmailChangeValid = createValidation(startEmailChange)
+	// Change email form helper
+	const startEmailChangeForm = createEnhancedForm(startEmailChange, {
+		validation: startEmailChangeValid,
+		delayMs: 100,
+		timeoutMs: 9000
+	})
+
+	// Get local timezone for email formatting
+	const localTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone
+	let emailInput = $state<HTMLInputElement>()
+
+	// Current field value for checking if email differs from current
+	let emailDiff = $derived.by(() => {
+		const current = startEmailChange.fields.newEmail.value().toLowerCase().trim()
+		return current !== user.identifier && current.length > 0
+	})
+
+	const revertEmail = () => {
+		startEmailChange.fields.newEmail.set(user.identifier)
 	}
 
-	const currentEmail = 'jake@notnotjake.com'
-	let emailValue = $state('jake@notnotjake.com')
-	let emailDiff = $derived(emailValue !== currentEmail)
-	let emailInput = $state<HTMLFormElement>()
+	// TODO: verify success callback
 
-	let verificationStep = $state(false)
-	let emailCode = $state('')
+	// TODO: verify error callback
 
 	onMount(async () => {
+		// Ensure recent auth
 		const authed = await requireRecentAuth()
 
 		if (!authed) {
 			close()
+			return
 		}
 
+		await tick()
+		startEmailChangeForm.reset()
+		startEmailChange.fields.newEmail.set(user.identifier)
 		emailInput?.focus()
 	})
 </script>
 
 <div class="flex w-full flex-col justify-center p-3 text-neutral-200">
 	<div class="flex w-full flex-col px-5 pt-7 pb-12">
-		<!-- Heading -->
-		<div class="mb-8 flex flex-col">
-			<IconUserCircle size={35} class="mb-2 text-sky-500" />
-			<h2 class="text-[1.2rem] font-semibold">Login Method</h2>
-			<p class="text-[1.05rem] text-neutral-300">Change how you login to your account</p>
-		</div>
+		<DialogHeader
+			title="Login Method"
+			description="Change how you login to your account"
+			icon={IconUserCircle}
+			iconClasses="text-sky-500"
+		/>
 
 		<div class="flex w-full flex-col gap-5 py-1">
 			<div>
-				<div class="flex w-full items-baseline gap-2 px-5">
-					<p class="pb-1 text-[0.94rem] font-semibold whitespace-nowrap text-neutral-400">Email</p>
-				</div>
-
-				<div
-					class="group flex w-full flex-col items-center rounded-3xl bg-neutral-800/70 px-5 pr-3 focus-within:outline-2 focus-within:outline-blue-vibrant"
-				>
-					{#if verificationStep}
-						<div
-							in:fade={{ duration: 350 }}
-							class="flex w-full items-center justify-start gap-2 py-5"
-						>
-							<p class="text-[1.05rem] font-medium">Verification</p>
-							<p class="text-neutral-400">Enter code sent to new email</p>
-						</div>
-					{:else}
-						<div class="flex w-full items-center py-3">
-							<IconMail class="mr-2 shrink-0 text-neutral-500" />
-							<input
-								type="text"
-								bind:value={emailValue}
-								bind:this={emailInput}
-								class="shrink grow border-none font-medium outline-none"
-							/>
-
-							{#if emailDiff}
-								<button
-									onclick={revert}
-									class="flex items-center px-3 py-2 text-neutral-400 transition-transform hover:text-neutral-300"
-								>
-									<IconArrowBackUp />
-								</button>
-							{/if}
-
-							<button
-								onclick={() => {
-									verificationStep = true
-								}}
-								class={createClass(
-									'rounded-full bg-linear-to-b px-5 py-2 text-[1.05rem] transition-all active:scale-[0.97]',
-									emailDiff
-										? 'from-blue-500 to-sky-500 text-white shadow-[inset_0.5px_0.5px_0_rgba(255,255,255,0.3),inset_-0.5px_-0.5px_0_rgba(255,255,255,0.15)]'
-										: 'from-neutral-600 to-neutral-600 text-neutral-400 shadow-[inset_0.5px_0.5px_0_rgba(255,255,255,0.2),inset_-0.5px_-0.5px_0_rgba(255,255,255,0.1)]'
-								)}
-							>
-								Update
-							</button>
-						</div>
-					{/if}
-					{#if verificationStep}
-						<div
-							in:wipeVertical
-							class="flex w-full items-center justify-between border-t border-neutral-700 py-3"
-						>
-							<VerificationCodeInput bind:code={emailCode} />
-							<div class="flex items-center gap-2">
-								<button
-									class={createClass(
-										'rounded-full bg-linear-to-b px-5 py-2 text-[1.05rem] transition-all active:scale-[0.97]',
-										emailCode.length === 6
-											? 'from-blue-500 to-sky-500 text-white shadow-[inset_0.5px_0.5px_0_rgba(255,255,255,0.3),inset_-0.5px_-0.5px_0_rgba(255,255,255,0.15)]'
-											: 'from-neutral-600 to-neutral-600 text-neutral-400 shadow-[inset_0.5px_0.5px_0_rgba(255,255,255,0.2),inset_-0.5px_-0.5px_0_rgba(255,255,255,0.1)]'
-									)}
-								>
-									Continue
-								</button>
-							</div>
-						</div>
-					{/if}
-				</div>
-			</div>
-
-			<div>
+				<!-- Label -->
 				<div class="flex w-full items-baseline gap-2 px-5">
 					<p class="pb-1 text-[0.94rem] font-semibold whitespace-nowrap text-neutral-400">
-						Phone Number
+						Change Email
 					</p>
 				</div>
 
+				<!-- Control -->
 				<div
-					class="group flex w-full items-center rounded-3xl bg-neutral-800/70 px-5 py-3 pr-3 focus-within:outline-2 focus-within:outline-blue-500"
+					class="flex w-full flex-col items-center rounded-3xl bg-neutral-800/70 px-5 pr-3 focus-within:outline-2 focus-within:outline-blue-vibrant"
 				>
-					<IconDeviceMobile class="mr-2 text-neutral-500" />
-					<p class="grow">Switch to Phone Number</p>
+					{#if !startEmailChange.result}
+						<!-- Email Input Step -->
+						<form
+							class="flex h-full w-full items-center py-2"
+							{...startEmailChange
+								.preflight(startEmailChangeSchema)
+								.enhance(async (opts) => startEmailChangeForm.enhance(opts, {}))}
+						>
+							<!-- Local timezone hidden input -->
+							{#if localTimezone}
+								<input
+									{...startEmailChange.fields.timezone.as('hidden', localTimezone)}
+									aria-hidden="true"
+								/>
+							{/if}
 
-					<button class={createClass('py-2 text-[1.05rem] ')}>
-						<IconChevronRight />
-					</button>
+							<!-- New email input -->
+							<input
+								{...startEmailChange.fields.newEmail.as('email')}
+								{...startEmailChangeValid.fields('newEmail')}
+								bind:this={emailInput}
+								autocomplete="email"
+								placeholder="Enter new email"
+								class="h-full w-full shrink grow bg-transparent py-3 font-medium outline-none placeholder:text-neutral-600"
+							/>
+
+							<Tooltip.Provider delayDuration={350}>
+								<!-- Undo button -->
+								{#if emailDiff}
+									<Tooltip.Root>
+										<Tooltip.Trigger>
+											<button
+												type="button"
+												onclick={revertEmail}
+												class="flex items-center px-3 py-2 text-neutral-400 transition-transform hover:text-neutral-300"
+											>
+												<IconArrowBackUp />
+											</button>
+										</Tooltip.Trigger>
+										<Tooltip.Content side="top" sideOffset={5} align="center">
+											<div
+												class="rounded-2xl bg-neutral-900 px-3 py-2 text-[0.9rem] font-semibold text-neutral-50"
+											>
+												Undo Change
+											</div>
+										</Tooltip.Content>
+									</Tooltip.Root>
+								{/if}
+
+								<!-- Continue button -->
+								<Tooltip.Root>
+									<Tooltip.Trigger>
+										<button
+											type="submit"
+											disabled={!emailDiff || startEmailChangeForm.pending}
+											class={createClass(
+												'rounded-full bg-linear-to-b px-5 py-2 transition-all active:scale-[0.97] disabled:cursor-not-allowed',
+												emailDiff
+													? 'bg-blue-vibrant-light text-white shadow-[inset_0.5px_0.5px_0_rgba(255,255,255,0.3),inset_-0.5px_-0.5px_0_rgba(255,255,255,0.15)]'
+													: 'bg-neutral-600 text-neutral-400 shadow-[inset_0.5px_0.5px_0_rgba(255,255,255,0.2),inset_-0.5px_-0.5px_0_rgba(255,255,255,0.1)]'
+											)}
+										>
+											{#if startEmailChangeForm.delayed}
+												<Suspense.Spinner />
+											{:else}
+												<IconArrowRight stroke={3} size={26} />
+											{/if}
+										</button>
+									</Tooltip.Trigger>
+									<Tooltip.Content side="top" sideOffset={5} align="center">
+										<div
+											class="rounded-2xl bg-neutral-900 px-3 py-2 text-[0.9rem] font-semibold text-neutral-50"
+										>
+											Change Email
+										</div>
+									</Tooltip.Content>
+								</Tooltip.Root>
+							</Tooltip.Provider>
+						</form>
+
+						<!-- Error display -->
+						{#if startEmailChangeForm.error}
+							<div transition:wipeVertical class="w-full pb-3">
+								<p class="text-sm text-rose-500">
+									{startEmailChangeForm.error || 'Something went wrong. Try again.'}
+								</p>
+							</div>
+						{/if}
+					{:else}
+						<!-- Verification Step -->
+						<div
+							in:fade={{ duration: 350 }}
+							class="flex w-full items-center justify-start gap-2 overflow-x-scroll py-5 pr-5 tabular-nums"
+						>
+							<p class="max-w-36 shrink truncate text-neutral-400">{user.identifier}</p>
+							<IconArrowRight size={23} class="text-neutral-300" />
+							<p class="shrink-0 text-neutral-300 tabular-nums">
+								{startEmailChange.result.newEmail ?? 'Something went wrong'}
+							</p>
+						</div>
+
+						<div
+							in:wipeVertical
+							class="group flex w-full items-center justify-between border-t border-neutral-700 py-3"
+						>
+							<VerificationCodeInput newEmail={startEmailChange.result.newEmail ?? ''} />
+						</div>
+					{/if}
 				</div>
 			</div>
 		</div>

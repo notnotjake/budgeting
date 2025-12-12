@@ -1,10 +1,10 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte'
-	import { getContext } from 'svelte'
 	import type { Icon as TablerIcon } from '@tabler/icons-svelte'
 	import { Dialog } from 'bits-ui'
 	import { fade } from 'svelte/transition'
 	import { IconDotsVertical } from '@tabler/icons-svelte'
+	import { getDialogContext } from '../dialog-context'
 
 	type Props = {
 		content: Snippet<[{ close: () => void }]>
@@ -22,12 +22,11 @@
 		open = false
 	}
 
-	const setNestedDialogHeight = getContext<(height: number) => void>('nested-dialog-height')
-	const scrollSettingsToTop = getContext<(() => void) | undefined>('settings-scroll-to-top')
+	const { setNestedDialogHeight, scrollToTop } = getDialogContext()
 
 	$effect(() => {
 		if (open) {
-			scrollSettingsToTop?.()
+			scrollToTop()
 		}
 	})
 
@@ -62,7 +61,7 @@
 			</div>
 		</div>
 	</Dialog.Trigger>
-	<Dialog.Content forceMount preventScroll={false}>
+	<Dialog.Content forceMount preventScroll={false} interactOutsideBehavior="ignore">
 		{#snippet child({ props, open })}
 			{#if open}
 				<div

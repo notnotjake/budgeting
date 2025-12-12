@@ -17,26 +17,28 @@
 
 	let { data } = $props()
 
+	// Start login schema
 	const startLoginSchema = z.object({
 		identifier: z.email(),
 		timezone: z.string().optional()
 	})
-
+	// Start login validator
 	const startLoginValid = createValidation(startLogin)
+	// Start login form helper
 	const startLoginForm = createEnhancedForm(startLogin, {
 		validation: startLoginValid,
 		delayMs: 100,
 		timeoutMs: 9000
 	})
 
+	const localTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone
+	let identifierInput = $state<HTMLInputElement>()
+
 	const { translateX, triggerShake: incorrectShake } = createShake({
 		amplitude: 7,
 		shakes: 2,
 		duration: 325
 	})
-
-	const localTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone
-	let identifierInput = $state<HTMLInputElement>()
 
 	let showError = $derived(
 		!startLoginForm.result &&

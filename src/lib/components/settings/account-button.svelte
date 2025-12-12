@@ -1,17 +1,19 @@
 <script lang="ts">
 	import { onMount, onDestroy } from 'svelte'
-	import { getUser } from '$remotes/auth/user.remote'
 	import { handleLogout } from '$ui/auth/logout'
+	import { getUser } from '$remotes/auth/user.remote'
 
 	import { createClass } from '@opensky/style'
 	import { fade } from 'svelte/transition'
 	import { createSequence, delay } from '$lib/utils/timing'
 	import { IconSettings, IconDots, IconLogout } from '@tabler/icons-svelte'
+	import type { Icon as TablerIcon } from '@tabler/icons-svelte'
 	import { Adapt } from '$ui/adapt'
 	import { DropdownMenu } from 'bits-ui'
 
 	let { openSettings }: { openSettings: () => void } = $props()
 
+	// Get user data
 	let getUserPromise = $derived(getUser())
 	let lazyUser = $derived(await getUserPromise)
 
@@ -20,32 +22,12 @@
 		name: lazyUser.name || 'Error'
 	})
 
-	$effect(() => {
-		console.log(user)
-	})
-
-	function shouldWelcomeBack() {
-		let result = false
-		const lastSeenAt = localStorage.getItem('lastSeenAt')
-
-		if (lastSeenAt) {
-			const lastSeenTime = parseInt(lastSeenAt)
-			const now = Date.now()
-
-			if (now - lastSeenTime > 45 * 60 * 1000) {
-				result = true
-			}
-		} else {
-			result = true
-		}
-
-		localStorage.setItem('lastSeenAt', Date.now().toString())
-		return result
-	}
-
+	// UI state
+	let menuOpen = $state(false)
 	let swapActive = $state(false)
-	let swapData = $state<string | undefined | null>()
+	let swapData = $state<'initial' | 'welcome' | 'menu' | null>(null)
 
+	// Setup animation sequence
 	const sequence = createSequence({ interruptible: true })
 		.at(0, () => {
 			swapActive = true
@@ -59,23 +41,18 @@
 			swapData = null
 		})
 
-	onMount(async () => {
-		await getUser().refresh()
+	// Determine if welcome animation should play
+	const WELCOME_BACK_THRESHOLD_MINS = 45
+	function shouldWelcomeBack() {
+		const lastSeenAt = localStorage.getItem('lastSeenAt')
+		const elapsed = lastSeenAt ? Date.now() - parseInt(lastSeenAt) : Infinity
+		// Update last seen at to local storage
+		localStorage.setItem('lastSeenAt', Date.now().toString())
+		// Return true if it's been more than threshold
+		return elapsed > WELCOME_BACK_THRESHOLD_MINS * 60 * 1000 // 45 mins in ms
+	}
 
-		// Show welcome message if returning after 45 mins
-		if (shouldWelcomeBack()) {
-			// Delay to allow fly-in transition to complete before running animation
-			await delay(500)
-			sequence.run()
-		}
-	})
-
-	onDestroy(() => {
-		sequence.stop()
-	})
-
-	let menuOpen = $state(false)
-
+	// Update state when menu opens/closes
 	function onOpenChange(open: boolean) {
 		if (open) {
 			menuOpen = true
@@ -89,16 +66,22 @@
 		}
 	}
 
-	const handleSettings = () => {
-		openSettings()
-	}
+	onMount(async () => {
+		await getUser().refresh()
 
-	const selectLogout = async () => {
-		await handleLogout()
-	}
+		if (shouldWelcomeBack()) {
+			await delay(500) // Allow fly-in transition to complete
+			sequence.run()
+		}
+	})
+
+	onDestroy(() => {
+		sequence.stop()
+	})
 </script>
 
 <DropdownMenu.Root {onOpenChange}>
+	<!-- Dropdown trigger adapting content -->
 	<DropdownMenu.Trigger class="outline-none">
 		<div
 			class={createClass(
@@ -113,54 +96,54 @@
 				class="flex items-center"
 				adaptSize={true}
 			>
-				{#snippet swapContent(data)}
-					<div transition:fade={{ duration: 200 }}>
-						{#if data === 'initial'}
-							<div class="flex items-center justify-center gap-1 px-4 py-2">
-								<h3 class="text-[0.95rem] font-medium text-white">Logged In</h3>
-								<p class="text-[0.93rem] text-neutral-300">{user.identifier}</p>
-							</div>
-						{:else if data === 'welcome'}
-							<div class="flex items-center justify-center gap-1 px-4 py-2">
-								<h3 class="text-[0.95rem] font-medium text-white">Welcome back</h3>
-								<p class="text-[0.93rem] text-neutral-300">{user.name}</p>
-							</div>
-						{:else if data === 'menu'}
-							<div class="flex items-center justify-center gap-2 px-4 py-2" in:fade>
-								<h3 class="text-[0.95rem] font-medium text-white">{user.name}</h3>
-								<p class="text-[0.93rem] text-neutral-300">{user.identifier}</p>
-							</div>
-						{/if}
-					</div>
-				{/snippet}
-
+				<!-- Default state -->
 				<div class="px-2">
 					<IconDots color="var(--color-neutral-500)" />
 				</div>
+				<!-- Swap during welcome -->
+				{#snippet swapContent(data)}
+					<div transition:fade={{ duration: 200 }}>
+						{#if data === 'initial'}
+							{@render swapMessage('Logged In', user.identifier)}
+						{:else if data === 'welcome'}
+							{@render swapMessage('Welcome Back', user.name)}
+						{:else if data === 'menu'}
+							{@render swapMessage(user.name, user.identifier)}
+						{/if}
+
+						{#snippet swapMessage(primaryText: string, secondaryText: string)}
+							<div class="flex items-center justify-center gap-1 px-4 py-2">
+								<h3 class="text-[0.95rem] font-medium text-white">{primaryText}</h3>
+								<p class="text-[0.93rem] text-neutral-300">{secondaryText}</p>
+							</div>
+						{/snippet}
+					</div>
+				{/snippet}
 			</Adapt.Swap>
 		</div>
 	</DropdownMenu.Trigger>
 
+	<!-- Dropdown open content -->
 	<DropdownMenu.Content
-		class="w-44 rounded-[1.15rem] bg-neutral-900 p-[0.25rem] shadow-lg outline-none"
+		class="w-44 rounded-[1.15rem] bg-neutral-900 p-1 shadow-lg outline-none"
 		sideOffset={8}
 		collisionPadding={8}
 	>
-		<DropdownMenu.Item onSelect={handleSettings} class="outline-none">
-			<div
-				class="flex cursor-pointer gap-2 rounded-[0.9rem] px-2 py-1.5 pr-3 text-white hover:bg-neutral-600/80"
-			>
-				<IconSettings class="text-neutral-200" />
-				<p class="px-1.5 font-medium text-neutral-200">Settings</p>
-			</div>
-		</DropdownMenu.Item>
-		<DropdownMenu.Item onSelect={selectLogout} class="outline-none">
-			<div
-				class="flex cursor-pointer gap-2 rounded-[0.9rem] px-2 py-1.5 pr-3 text-white hover:bg-neutral-600/80"
-			>
-				<IconLogout class="text-neutral-200" />
-				<p class="px-1.5 font-medium text-neutral-200">Logout</p>
-			</div>
-		</DropdownMenu.Item>
+		{@render dropdownMenuItem('Settings', IconSettings, openSettings)}
+		{@render dropdownMenuItem('Logout', IconLogout, () => {
+			handleLogout()
+		})}
 	</DropdownMenu.Content>
 </DropdownMenu.Root>
+
+<!-- Snippet for dropdown items -->
+{#snippet dropdownMenuItem(title: string, Icon: TablerIcon, onSelect: () => void)}
+	<DropdownMenu.Item {onSelect} class="outline-none">
+		<div
+			class="flex cursor-pointer gap-2 rounded-[0.9rem] px-2 py-1.5 pr-3 text-white hover:bg-neutral-600/80"
+		>
+			<Icon class="text-neutral-200" />
+			<p class="px-1.5 font-medium text-neutral-200">{title}</p>
+		</div>
+	</DropdownMenu.Item>
+{/snippet}

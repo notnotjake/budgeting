@@ -1,16 +1,30 @@
 <script lang="ts">
-	import { setContext } from 'svelte'
 	import { Dialog, Accordion } from 'bits-ui'
 	import { createClass } from '@opensky/style'
 	import { slide } from 'svelte/transition'
 
+	import { setDialogContext } from './dialog-context'
 	import Toolbar from './components/toolbar.svelte'
 	import Content from './content/index.svelte'
 	import ReauthDialog from './reauth/reauth-dialog.svelte'
 
+	// Reference to scrollable content area
+	let scrollRegion = $state<HTMLDivElement | null>(null)
+
+	// Height overrides for nested dialogs (controls dialog sizing)
+	let nestedDialogHeight = $state<null | number>(null)
+	let reauthDialogHeight = $state<null | number>(null)
+	const activeDialogHeight = $derived(reauthDialogHeight ?? nestedDialogHeight)
+	const isNestedDialogOpen = $derived(!!activeDialogHeight)
+
+	// Currently expanded accordion section ID
+	let accordionValue = $state('')
+
+	// Reauth dialog state
 	let showReauthDialog = $state(false)
 	let reauthResolve = $state<((success: boolean) => void) | null>(null)
 
+	// Opens reauth dialog and returns promise that resolves on user action
 	const requireRecentAuth = (): Promise<boolean> => {
 		return new Promise((resolve) => {
 			reauthResolve = resolve
@@ -18,40 +32,28 @@
 		})
 	}
 
+	// Resolves reauth promise with success
 	const handleReauthSuccess = () => {
 		showReauthDialog = false
 		reauthResolve?.(true)
 		reauthResolve = null
 	}
 
+	// Resolves reauth promise with cancellation
 	const handleReauthCancel = () => {
 		showReauthDialog = false
 		reauthResolve?.(false)
 		reauthResolve = null
 	}
 
-	setContext('settings-reauth', {
-		requireRecentAuth
-	})
-
-	let accordionValue = $state('')
-	setContext('accordion-value', () => accordionValue)
-
-	let dialogContainer = $state<HTMLDivElement | null>(null)
-	const getDialogContainer = () => dialogContainer
-	setContext('settings-dialog-container', getDialogContainer)
-
-	let scrollRegion = $state<HTMLDivElement | null>(null)
-	const scrollSettingsToTop = () => {
+	// Resets scroll position (used when opening nested dialogs)
+	const scrollToTop = () => {
 		if (scrollRegion) {
 			scrollRegion.scrollTo({ top: 0, behavior: 'auto' })
 		}
 	}
-	setContext('settings-scroll-to-top', scrollSettingsToTop)
 
-	let nestedDialogHeight = $state<null | number>(null)
-	let reauthDialogHeight = $state<null | number>(null)
-
+	// Sets nested dialog height; pass 0 to clear
 	const setNestedDialogHeight = (height: number) => {
 		if (height > 0) {
 			nestedDialogHeight = Math.ceil(height)
@@ -59,8 +61,8 @@
 			nestedDialogHeight = null
 		}
 	}
-	setContext('nested-dialog-height', setNestedDialogHeight)
 
+	// Sets reauth dialog height; pass 0 to clear
 	const setReauthDialogHeight = (height: number) => {
 		if (height > 0) {
 			reauthDialogHeight = Math.ceil(height)
@@ -68,11 +70,14 @@
 			reauthDialogHeight = null
 		}
 	}
-	setContext('reauth-dialog-height', setReauthDialogHeight)
 
-	// If reauth is showing, use its height; otherwise use nested dialog height
-	const activeDialogHeight = $derived(reauthDialogHeight ?? nestedDialogHeight)
-	const isNestedDialogOpen = $derived(!!activeDialogHeight)
+	setDialogContext({
+		requireRecentAuth,
+		accordionValue: () => accordionValue,
+		scrollToTop,
+		setNestedDialogHeight,
+		setReauthDialogHeight
+	})
 </script>
 
 <Dialog.Content forceMount>
@@ -84,7 +89,6 @@
 			>
 				<div
 					{...props}
-					bind:this={dialogContainer}
 					in:slide={{ axis: 'y', delay: 300, duration: 400 }}
 					out:slide={{ axis: 'y', duration: 300 }}
 					class={createClass(
@@ -105,10 +109,12 @@
 						</div>
 
 						<div class="w-full px-3 pb-8">
+							<!-- Main settings content -->
 							<Accordion.Root type="single" bind:value={accordionValue}>
 								<Content />
 							</Accordion.Root>
 
+							<!-- Reauth dialog -->
 							<ReauthDialog
 								bind:open={showReauthDialog}
 								onSuccess={handleReauthSuccess}

@@ -1,10 +1,9 @@
 <script lang="ts">
-	import { onMount, getContext } from 'svelte'
-
 	import { IconShieldLockFilled, IconArrowLeft } from '@tabler/icons-svelte'
 	import { fade } from 'svelte/transition'
 	import { createClass } from '@opensky/style'
 	import { Dialog } from 'bits-ui'
+	import { getDialogContext } from '../dialog-context'
 	import PasskeyButton from '$ui/auth/passkey-button.svelte'
 	import CodeInput from '$ui/auth/code-input.svelte'
 	import { startReauth } from '$remotes/auth/authenticate.remote'
@@ -18,8 +17,7 @@
 
 	let innerHeight = $state<number>(0)
 
-	const setReauthDialogHeight = getContext<(height: number) => void>('reauth-dialog-height')
-	const scrollSettingsToTop = getContext<(() => void) | undefined>('settings-scroll-to-top')
+	const { setReauthDialogHeight, scrollToTop } = getDialogContext()
 
 	// Reauth state
 	const localTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone
@@ -62,7 +60,7 @@
 				requireReauth = false
 			} else {
 				requireReauth = true
-				scrollSettingsToTop?.()
+				scrollToTop()
 
 				identifier = result.identifier
 				passkeyAvailable = result.passkeyAvailable
@@ -78,7 +76,7 @@
 </script>
 
 <Dialog.Root bind:open>
-	<Dialog.Content forceMount preventScroll={false}>
+	<Dialog.Content forceMount preventScroll={false} interactOutsideBehavior="ignore">
 		{#snippet child({ props, open })}
 			{#if open}
 				<div

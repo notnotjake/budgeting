@@ -1,11 +1,11 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte'
-	import { getContext } from 'svelte'
 	import type { Icon as TablerIcon } from '@tabler/icons-svelte'
 	import { Accordion } from 'bits-ui'
 	import { createClass } from '@opensky/style'
 	import { fade } from 'svelte/transition'
 	import { AdaptFit } from '$ui/adapt'
+	import { getDialogContext } from '../dialog-context'
 
 	import { IconChevronRight } from '@tabler/icons-svelte'
 
@@ -20,8 +20,8 @@
 
 	let { content, id, icon: Icon, title, hint, actionButtonText }: Props = $props()
 
-	const accordionValue = getContext('accordion-value') as () => string
-	let isOpen = $derived(accordionValue?.() === id)
+	const { accordionValue } = getDialogContext()
+	let isOpen = $derived(accordionValue() === id)
 
 	let actionHandler: (() => void | Promise<void>) | null = $state(null)
 	function registerActionHandler(fn: () => void | Promise<void>) {

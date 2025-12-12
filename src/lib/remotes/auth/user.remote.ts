@@ -56,9 +56,10 @@ export const updateUserName = form(
  */
 export const startEmailChange = form(
 	z.object({
-		newEmail: z.email('Invalid email address')
+		newEmail: z.email('Invalid email address'),
+		timezone: z.string().optional()
 	}),
-	async ({ newEmail }) => {
+	async ({ newEmail, timezone }) => {
 		const event = getRequestEvent()
 		await Auth.ratelimit.expensive(event)
 
@@ -97,10 +98,11 @@ export const startEmailChange = form(
 			await AuthCore.sendEmailChangeCode({
 				sessionId: session.id,
 				currentEmail: user.identifier,
-				newEmail: normalizedNewEmail
+				newEmail: normalizedNewEmail,
+				timezone
 			})
 
-			return { success: true }
+			return { success: true, newEmail: normalizedNewEmail }
 		} catch (e) {
 			console.error('Failed to start email change', e)
 			throw error(500, 'Failed to send verification email')

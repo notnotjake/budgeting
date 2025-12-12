@@ -2,16 +2,17 @@
 	import { startRegistration } from '@simplewebauthn/browser'
 	import { startPasskeyRegistration, verifyPasskeyRegistration } from '$remotes/auth/passkey.remote'
 
-	import { onMount, getContext } from 'svelte'
+	import { onMount } from 'svelte'
 	import { createClass } from '@opensky/style'
 	import { scale } from 'svelte/transition'
 	import { IconX, IconArrowRight } from '@tabler/icons-svelte'
 	import { AdaptSwap } from '$ui/adapt'
 	import { SuspenseSpinner } from '$ui/feedback'
+	import { getDialogContext } from '../../dialog-context'
 
 	let { close }: { close: () => void } = $props()
 
-	const { requireRecentAuth } = getContext('settings-reauth')
+	const { requireRecentAuth } = getDialogContext()
 
 	let name = $state('')
 	let nameInput = $state<HTMLElement>()

@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { onMount, getContext } from 'svelte'
+	import { onMount } from 'svelte'
 	import { goto } from '$app/navigation'
 	import { Dialog } from 'bits-ui'
 	import {
@@ -9,6 +9,7 @@
 		IconAlertTriangleFilled
 	} from '@tabler/icons-svelte'
 	import DialogHeader from '../../components/dialog-header.svelte'
+	import { getDialogContext } from '../../dialog-context'
 	import { scale } from 'svelte/transition'
 	import { AdaptSwap, AdaptFit } from '$ui/adapt'
 	import { SuspenseText } from '$ui/feedback'
@@ -16,7 +17,7 @@
 
 	let { close }: { close: () => void } = $props()
 
-	const { requireRecentAuth } = getContext('settings-reauth')
+	const { requireRecentAuth } = getDialogContext()
 
 	onMount(async () => {
 		const authed = await requireRecentAuth()
