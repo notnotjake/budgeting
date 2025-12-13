@@ -67,7 +67,7 @@ export const startEmailChange = form(
 		const { session, user } = event.locals
 
 		if (!session || !user || !hasRecentAuth(event)) {
-			return { requireReauth: true }
+			throw error(401, 'Please reauthenticate')
 		}
 
 		// Reject emails containing colon (reserved for internal use)
@@ -80,18 +80,18 @@ export const startEmailChange = form(
 
 		// Check if the new email is the same as current
 		if (normalizedNewEmail === normalizedCurrentEmail) {
-			throw error(400, 'Provided email is the same as users current email')
+			throw error(400, 'This is your current email')
 		}
 
 		// Check if the new email is already registered to another user
 		const existingUserResult = await AuthCore.userExists({ identifier: normalizedNewEmail })
 
 		if (!existingUserResult.success) {
-			throw error(500, 'Failed to check email availability')
+			throw error(500, '')
 		}
 
 		if (existingUserResult.data) {
-			throw error(403, 'This email belongs to another account')
+			throw error(403, 'Email belongs to another account')
 		}
 
 		// Send the verification code (this also cleans up any existing attempts)
@@ -106,7 +106,7 @@ export const startEmailChange = form(
 			return { success: true, newEmail: normalizedNewEmail }
 		} catch (e) {
 			console.error('Failed to start email change', e)
-			throw error(500, 'Failed to send verification email')
+			throw error(500, '')
 		}
 	}
 )
@@ -206,7 +206,7 @@ export const deleteUserAccount = command(async () => {
 	const { session, user } = event.locals
 
 	if (!session || !user || !hasRecentAuth(event)) {
-		return { requireReauth: true }
+		throw error(401, 'Please reauthenticate')
 	}
 
 	// delete user

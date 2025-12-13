@@ -1,12 +1,3 @@
-/**
- * Production-ready rate limiting wrapper for Bun + Redis
- *
- * Wraps Upstash Ratelimit to:
- * - Automatically inject our Bun Redis adapter
- * - Force analytics to false (not supported with Bun Redis)
- * - Provide type-safe API
- */
-
 import { RedisClient } from 'bun'
 import { REDIS_URL } from '$env/static/private'
 import { BunRedisAdapter } from './adapter-bun'

@@ -37,7 +37,7 @@
 	})
 
 	let resultSuccess = $derived(verifyEmailChangeForm.result && verifyEmailChange?.result?.success)
-	let resultError = $derived(verifyEmailChange?.result?.error && codeValue === '')
+	let resultError = $derived(verifyEmailChangeForm.error && codeValue === '')
 
 	let triggerErrorToast = $state<(() => void) | null>(null)
 	let triggerSentToast = $state<(() => void) | null>(null)
@@ -83,16 +83,14 @@
 			onError: async ({ error }) => {
 				codeValue = ''
 
-				const status = error?.status
+				const err = error as { status?: number }
+				const status = err?.status
 
 				if (status === 401) {
-					// Reauth required
-					onUnrecoverableError()
+					onUnrecoverableError() // Reauth required
 				} else if (status === 400) {
-					// Issue with request
-					onUnrecoverableError()
+					onUnrecoverableError() // Issue with request
 				} else {
-					// 403 invalid code or 500 server error
 					triggerShake()
 					triggerErrorToast?.()
 					await delay(1300)

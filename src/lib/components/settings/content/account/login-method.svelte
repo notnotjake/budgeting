@@ -48,12 +48,8 @@
 	const localTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone
 	let emailInput = $state<HTMLInputElement>()
 
-	// Is email input different than users current email
-	let emailDiff = $derived.by(() => {
-		const current = startEmailChange.fields.newEmail.value()?.toLowerCase().trim() ?? ''
-		return current !== user.identifier && current.length > 0
-	})
-
+	// Error state
+	let serverErrorMessage = $state<string | null>(null)
 	let showError = $derived(
 		!startEmailChangeForm.result &&
 			(startEmailChangeForm.error ||
@@ -61,22 +57,40 @@
 					startEmailChange.fields.newEmail.value()?.length > 0))
 	)
 
+	// Is email input different than users current email
+	let emailDiff = $derived.by(() => {
+		const current = startEmailChange.fields.newEmail.value()?.toLowerCase().trim() ?? ''
+		return current !== user.identifier && current.length > 0
+	})
+
 	let startButtonAvailable = $derived(
 		!startEmailChangeForm.result && !startEmailChangeValid.issues('newEmail') && emailDiff
 	)
-
-	const revertEmail = () => {
-		startEmailChange.fields.newEmail.set(user.identifier)
-	}
 
 	const focusInput = () => {
 		emailInput?.focus()
 	}
 
+	const revertEmail = () => {
+		serverErrorMessage = null
+		startEmailChange.fields.newEmail.set(user.identifier)
+	}
+
 	const resetForm = () => {
 		const current = startEmailChange.result?.newEmail
+		serverErrorMessage = null
 		startEmailChangeForm.reset()
 		startEmailChange.fields.newEmail.set(current ?? '')
+	}
+
+	const checkReauth = async () => {
+		// Check recent auth
+		const authed = await requireRecentAuth()
+		// If not, then go back
+		if (!authed) {
+			close()
+			return
+		}
 	}
 
 	const onSuccess = async () => {
@@ -87,24 +101,11 @@
 
 	const onUnrecoverableError = async () => {
 		resetForm()
-
-		// Ensure recent auth
-		const authed = await requireRecentAuth()
-
-		if (!authed) {
-			close()
-			return
-		}
+		await checkReauth()
 	}
 
 	onMount(async () => {
-		// Ensure recent auth
-		const authed = await requireRecentAuth()
-
-		if (!authed) {
-			close()
-			return
-		}
+		await checkReauth()
 
 		await tick()
 		startEmailChangeForm.reset()
@@ -144,14 +145,19 @@
 							class="flex h-full w-full items-center py-2"
 							{...startEmailChange.preflight(startEmailChangeSchema).enhance(async (opts) =>
 								startEmailChangeForm.enhance(opts, {
-									onReturn: async ({ result }) => {
-										if (result.requireReauth) {
-											const authed = await requireRecentAuth()
+									onSubmit() {
+										serverErrorMessage = null
+									},
+									onError: async ({ error }) => {
+										const err = error as { status?: number; body?: { message?: string } }
 
-											if (!authed) {
-												close()
-												return
-											}
+										const status = err?.status || 400
+										const message: string | null = err?.body?.message || null
+
+										if (status === 401) {
+											await checkReauth()
+										} else {
+											serverErrorMessage = message
 										}
 									}
 								})
@@ -170,6 +176,7 @@
 								{...startEmailChange.fields.newEmail.as('email')}
 								{...startEmailChangeValid.fields('newEmail')}
 								bind:this={emailInput}
+								oninput={() => (serverErrorMessage = null)}
 								autocomplete="email"
 								placeholder="Enter new email"
 								class="h-full w-full shrink grow bg-transparent py-3 font-medium outline-none placeholder:text-neutral-600"
@@ -230,10 +237,10 @@
 						</form>
 
 						<!-- Error display -->
-						{#if showError && startEmailChangeForm.error}
+						{#if showError && !startEmailChangeValid.issues('newEmail')}
 							<div transition:wipeVertical class="w-full py-2.5">
 								<button class="cursor-pointer font-[450] text-rose-500" onclick={focusInput}>
-									An error occured, try again
+									{serverErrorMessage || 'Something went wrong, try again'}
 								</button>
 							</div>
 						{:else if showError && startEmailChangeValid.issues('newEmail')}
