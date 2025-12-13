@@ -208,6 +208,8 @@ export async function validateSessionToken(
 	}
 }
 
+type SessionSummary = Pick<Session, 'id' | 'ipAddress' | 'userAgent' | 'lastSeenAt'>
+
 /**
  * Retrieves all sessions (active and inactive) for a specific user.
  * Sessions are ordered by last seen timestamp in descending order.
@@ -215,7 +217,7 @@ export async function validateSessionToken(
  * @param userId - The ID of the user whose sessions to retrieve
  * @returns Response containing an array of all user sessions
  */
-export async function listAllUserSessions(userId: string): Promise<Response<Session[]>> {
+export async function listAllUserSessions(userId: string): Promise<Response<SessionSummary[]>> {
 	try {
 		const allSessions = await db
 			.select({

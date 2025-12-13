@@ -45,7 +45,7 @@
 				)}
 				innerClass={createClass('px-3 py-2')}
 			>
-				{#snippet children({ state, previousState, data })}
+				{#snippet content({ state, previousState })}
 					{#if state === states.default}
 						<button
 							onclick={() => {
@@ -70,7 +70,7 @@
 						</div>
 					{:else if state === 'error'}
 						<div class="flex items-center gap-4 rounded-lg border border-red-200 bg-red-50 p-6">
-							<div class="flex-shrink-0">
+							<div class="shrink-0">
 								<svg
 									class="h-8 w-8 text-red-600"
 									fill="none"
@@ -100,7 +100,7 @@
 						<div
 							class="flex items-center gap-4 rounded-lg border border-yellow-200 bg-yellow-50 p-6"
 						>
-							<div class="flex-shrink-0">
+							<div class="shrink-0">
 								<svg
 									class="h-8 w-8 text-yellow-600"
 									fill="none"

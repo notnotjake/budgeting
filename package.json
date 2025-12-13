@@ -7,7 +7,7 @@
 		"dev": "bunx --bun vite dev",
 		"dev:preview": "bun run build && bunx --bun vite preview",
 		"dev:emails": "email dev --dir src/lib/server/email",
-		"env:pull": "railway variables -e dev -s vars -k > .env",
+		"env:pull": "railway environment dev && railway variables -e dev -s vars -k > .env",
 		"docker:start": "docker compose up -d",
 		"docker:stop": "docker compose stop",
 		"db:push": "drizzle-kit push",
@@ -17,8 +17,8 @@
 		"build": "bunx --bun vite build",
 		"start": "bun run ./build",
 		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
-		"format": "prettier --write .",
-		"lint": "prettier --check . && eslint ."
+		"prettier": "prettier --write .",
+		"eslint": "eslint . --cache --concurrency auto"
 	},
 	"devDependencies": {
 		"@eslint/compat": "^2.0.0",

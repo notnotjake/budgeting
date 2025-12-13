@@ -9,7 +9,7 @@
 		iconClasses?: string
 	}
 
-	let { title, description, icon: Icon, iconClasses = '' } = $props()
+	let { title, description, icon: Icon, iconClasses = '' }: Props = $props()
 </script>
 
 <div class="mb-8 flex flex-col">

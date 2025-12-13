@@ -46,6 +46,8 @@
 				(startLoginValid.issues('identifier') && startLogin.fields.identifier.value()?.length > 0))
 	)
 
+	let serverErrorMessage = $state<string | null>(null)
+
 	let startButtonAvailable = $derived(
 		!startLoginForm.result &&
 			!startLoginValid.issues('identifier') &&
@@ -123,7 +125,7 @@
 		<div
 			style:transform="translateX({$translateX}px)"
 			class={createClass(
-				'group relative z-10 flex h-12 w-full items-center overflow-hidden rounded-[1rem] focus-within:outline-2 focus-within:outline-blue-500',
+				'group relative z-10 flex h-12 w-full items-center overflow-hidden rounded-2xl focus-within:outline-2 focus-within:outline-blue-500',
 				startLoginForm.result ? 'bg-neutral-50' : 'bg-neutral-100',
 				showError && 'outline-[0.12rem] outline-rose-400'
 			)}
@@ -133,10 +135,16 @@
 					class="flex h-full w-full items-center"
 					{...startLogin.preflight(startLoginSchema).enhance(async (opts) =>
 						startLoginForm.enhance(opts, {
+							onSubmit: () => {
+								serverErrorMessage = null
+							},
 							onIssues: () => {
 								incorrectShake()
 							},
-							onError: () => {
+							onError: ({ error }) => {
+								const err = error as { status?: number; body?: { message?: string } }
+								const message: string | null = err?.body?.message || null
+								serverErrorMessage = message
 								incorrectShake()
 							}
 						})
@@ -152,6 +160,7 @@
 						{...startLogin.fields.identifier.as('email')}
 						{...startLoginValid.fields('identifier')}
 						bind:this={identifierInput}
+						oninput={() => (serverErrorMessage = null)}
 						autocomplete="username webauthn"
 						placeholder="Continue with email"
 						aria-label="Enter your email"
@@ -213,10 +222,10 @@
 		</div>
 
 		<!-- Errors & Issues -->
-		{#if showError && startLoginForm.error}
+		{#if showError && startLoginForm.error && !startLoginValid.issues('identifier')}
 			<div transition:wipeVertical={{ delay: 300 }} class="flex w-full justify-center py-2.5">
 				<button class="cursor-pointer font-[450] text-rose-500" onclick={focusInput}>
-					An error occured, try again
+					{serverErrorMessage || 'Something went wrong, try again'}
 				</button>
 			</div>
 		{:else if showError && startLoginValid.issues('identifier')}

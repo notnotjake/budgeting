@@ -1,7 +1,7 @@
 import { RedisClient } from 'bun'
 import { REDIS_URL } from '$env/static/private'
 import { BunRedisAdapter } from './adapter-bun'
-import { Ratelimit, type Algorithm } from '@upstash/ratelimit'
+import { Ratelimit } from '@upstash/ratelimit'
 
 // Initialize Redis connection
 const redis = new RedisClient(REDIS_URL)
@@ -18,9 +18,15 @@ try {
 	console.error('[Redis] Connection test failed:', error)
 }
 
+type AnyAlgorithm =
+	| ReturnType<typeof Ratelimit.fixedWindow>
+	| ReturnType<typeof Ratelimit.slidingWindow>
+	| ReturnType<typeof Ratelimit.tokenBucket>
+	| ReturnType<typeof Ratelimit.cachedFixedWindow>
+
 type RatelimiterConfig = {
 	prefix: string
-	limiter: Algorithm<any>
+	limiter: AnyAlgorithm
 }
 
 /**

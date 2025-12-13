@@ -41,10 +41,12 @@
 		delayMs: 50,
 		timeoutMs: 5000
 	})
+	// svelte-ignore state_referenced_locally
 	const sendCodeForm = reauth ? sendReauthCodeForm : sendLoginCodeForm
 	let sendLoginCodeFormElement = $state<HTMLFormElement>()
 	let sendReauthCodeFormElement = $state<HTMLFormElement>()
 
+	// svelte-ignore state_referenced_locally
 	let codeSent = $state(codeSentInitially)
 	let emailSentSuccessToast = $state(false)
 
@@ -106,6 +108,7 @@
 						if (reauth && onSuccess) {
 							onSuccess()
 						} else if (result.redirectUrl) {
+							// eslint-disable-next-line svelte/no-navigation-without-resolve
 							goto(result.redirectUrl)
 						}
 					}
@@ -179,6 +182,7 @@
 					</div>
 					<!-- Pin Input -->
 					<div class="flex">
+						<!-- eslint-disable-next-line svelte/require-each-key -->
 						{#each cells.slice(0, 3) as cell}
 							{@render Cell(cell)}
 						{/each}
@@ -187,6 +191,7 @@
 					<div class="flex w-4 items-center justify-center"></div>
 
 					<div class="flex">
+						<!-- eslint-disable-next-line svelte/require-each-key -->
 						{#each cells.slice(3, 6) as cell}
 							{@render Cell(cell)}
 						{/each}

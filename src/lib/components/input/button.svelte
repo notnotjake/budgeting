@@ -1,7 +1,25 @@
 <script lang="ts">
-	import type { Snippet, Component } from 'svelte'
+	import type { Snippet } from 'svelte'
+	import type { Icon as TablerIcon } from '@tabler/icons-svelte'
 	import { createClass, createVariants } from '@opensky/style'
 	import { Suspense } from '$ui/feedback'
+
+	type Props = {
+		children: Snippet
+		icon?: TablerIcon
+		onClick?: (e?: MouseEvent) => void
+		href?: string
+		as?: string
+		type?: 'button' | 'submit'
+		suspense?: boolean
+		class?: string
+		disabled?: boolean
+		// Variant Props
+		style?: 'primary' | 'secondary' | 'outline' | 'ghost' | 'link'
+		rounded?: 'full' | 'lg' | 'md' | 'sm'
+		size?: 'sm' | 'md' | 'lg' | 'xl'
+		role?: 'destructive'
+	}
 
 	let {
 		children,
@@ -13,18 +31,9 @@
 		suspense = false,
 		class: classProp,
 		disabled,
+		// Style props
 		...restProps
-	}: {
-		children: Snippet
-		icon?: Component | HTMLElement
-		onClick?: () => void
-		href: string
-		as: string
-		type?: 'button' | 'submit'
-		suspense?: boolean
-		class?: string
-		disabled?: boolean
-	} = $props()
+	}: Props = $props()
 
 	const variants = createVariants(
 		{
@@ -100,7 +109,6 @@
 {:else if href}
 	<a
 		{href}
-		{disabled}
 		onclick={(e) => {
 			if (onClick) {
 				onClick(e)

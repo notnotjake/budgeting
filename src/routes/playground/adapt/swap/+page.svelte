@@ -6,9 +6,9 @@
 	import { IconCheck } from '@tabler/icons-svelte'
 
 	// Trigger functions bound from components
-	let triggerCopyExample = $state<((opts?: any) => void) | null>(null)
-	let triggerInlineToast = $state<((opts?: any) => void) | null>(null)
-	let triggerAdaptingSwap = $state<((opts?: any) => void) | null>(null)
+	let triggerCopyExample = $state<((opts?: { duration?: number }) => void) | null>(null)
+	let triggerInlineToast = $state<(() => void) | null>(null)
+	let triggerAdaptingSwap = $state<((opts?: { duration?: number }) => void) | null>(null)
 
 	let isSavingMessage = $state(false)
 
@@ -122,7 +122,7 @@
 					Save
 				</button>
 
-				{#snippet swapContent(data)}
+				{#snippet swapContent()}
 					<div transition:wipeHorizontal>
 						<div
 							transition:scale={{ duration: 500, opacity: 0 }}

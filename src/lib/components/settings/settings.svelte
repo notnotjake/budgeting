@@ -6,7 +6,7 @@
 	import { setDialogContext } from './dialog-context'
 	import Toolbar from './components/toolbar.svelte'
 	import Content from './content/index.svelte'
-	import ReauthDialog from './reauth/reauth-dialog.svelte'
+	import ReauthDialog from './content/reauth-dialog.svelte'
 
 	// Reference to scrollable content area
 	let scrollRegion = $state<HTMLDivElement | null>(null)
@@ -90,7 +90,7 @@
 				<div
 					{...props}
 					in:slide={{ axis: 'y', delay: 300, duration: 400 }}
-					out:slide={{ axis: 'y', duration: 300 }}
+					out:slide={{ axis: 'y', duration: 200 }}
 					class={createClass(
 						'relative flex flex-col overflow-hidden bg-neutral-950 text-neutral-100 shadow-lg transition-all duration-200 ease-out outline-none',
 						isNestedDialogOpen ? 'mt-5 rounded-[2.25rem]' : 'mt-0 rounded-t-none rounded-b-4xl',

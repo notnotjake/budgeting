@@ -49,6 +49,7 @@
 		addPasskeyShown = false
 	}
 
+	// svelte-ignore state_referenced_locally
 	registerAction(() => {
 		openAddPasskey()
 	})

@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { resolve } from '$app/paths'
 	import { Dialog } from 'bits-ui'
 	import { IconX, IconHelp } from '@tabler/icons-svelte'
 </script>
@@ -12,7 +13,7 @@
 
 	<p class="text-[1.15rem] font-semibold">Settings</p>
 
-	<a href="/help" class="flex items-center transition-transform active:scale-95">
+	<a href={resolve('/help')} class="flex items-center transition-transform active:scale-95">
 		<IconHelp size={30} />
 	</a>
 </div>

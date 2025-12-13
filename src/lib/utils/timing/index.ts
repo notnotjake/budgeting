@@ -22,20 +22,20 @@ import * as sequenceUtils from './sequence.svelte.js'
 
 /**
  * Timing namespace containing all timing utilities
- * 
+ *
  * @example
  * ```ts
  * import { Timing } from '$lib/utils/timing'
- * 
+ *
  * // Use units
  * const duration = 5 * Timing.SECOND
- * 
+ *
  * // Create utilities
  * const timer = new Timing.Timer({ duration: 1000 })
  * const delay = new Timing.MinimumDelay(500)
  * const interval = new Timing.Interval({ interval: 1000 })
  * const sequence = new Timing.Sequence()
- * 
+ *
  * // Use functions
  * await Timing.delay(1000)
  * ```

@@ -286,11 +286,7 @@
 							in:wipeVertical
 							class="group flex w-full items-center justify-between border-t border-neutral-700 py-3"
 						>
-							<VerificationCodeInput
-								newEmail={startEmailChange.result?.newEmail ?? ''}
-								{onSuccess}
-								{onUnrecoverableError}
-							/>
+							<VerificationCodeInput {onSuccess} {onUnrecoverableError} />
 						</div>
 					{/if}
 				</div>

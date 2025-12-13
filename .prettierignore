@@ -5,6 +5,12 @@ yarn.lock
 bun.lock
 bun.lockb
 
-# Miscellaneous
+# Build output
+/.svelte-kit/
+/build/
+
+# Database
+/db/migrations/
+
+# Static assets
 /static/
-/drizzle/

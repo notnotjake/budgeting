@@ -42,11 +42,11 @@ const AuthCode = ({
 					<meta name="supported-color-schemes" content="light dark" />
 				</Head>
 				<Body className="bg-white font-sans dark:bg-neutral-900">
-					<Container className="w-full max-w-none bg-white pb-[40px] pt-[50px] dark:bg-neutral-900">
+					<Container className="w-full max-w-none bg-white pt-[50px] pb-[40px] dark:bg-neutral-900">
 						<Section className="mx-auto max-w-[430px] px-1">
 							<HeaderGroup headingText={headingText} descriptiveText={descriptiveText} />
 
-							<Section className="mb-6 mt-8">
+							<Section className="mt-8 mb-6">
 								<Text className="m-0 box-border h-[50px] w-full rounded-[14px] bg-neutral-100 px-[24px] py-[14px] text-center font-mono text-[16px] font-medium text-black dark:bg-neutral-800 dark:text-white">
 									{code}
 								</Text>

@@ -30,18 +30,12 @@
 	}: Props = $props()
 
 	// Create a tweened store for smooth transitions
-	const progress = new Tween(value, {
-		duration: dur,
-		easing: cubicOut
-	})
+	const progress = new Tween(0, { easing: cubicOut })
 
 	// Update the progress when percentComplete changes
 	$effect(() => {
-		if (value >= 100) {
-			progress.target = 100
-		} else {
-			progress.target = Math.min(max, Math.max(min, value))
-		}
+		const target = value >= 100 ? 100 : Math.min(max, Math.max(min, value))
+		progress.set(target, { duration: dur })
 	})
 
 	$effect(() => {

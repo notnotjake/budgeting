@@ -2,17 +2,17 @@
  * A minimum delay utility that ensures consistent response times.
  * Perfect for security-sensitive operations like password validation
  * to prevent timing attacks.
- * 
+ *
  * Works on both server and client without Svelte-specific features.
- * 
+ *
  * @example
  * ```ts
  * // Initialize with minimum delay time
  * const delay = new MinimumDelay(500)
- * 
+ *
  * // Do your work...
  * const result = await validatePassword(password)
- * 
+ *
  * // Wait for minimum time to elapse before returning
  * await delay.wait()
  * return result
@@ -82,10 +82,10 @@ export class MinimumDelay {
 
 /**
  * Simple promise-based delay function for one-off delays
- * 
+ *
  * @param ms - Duration to wait in milliseconds
  * @returns A promise that resolves after the specified duration
- * 
+ *
  * @example
  * ```ts
  * await delay(1000) // Wait 1 second
@@ -98,17 +98,17 @@ export function delay(ms: number): Promise<void> {
 
 /**
  * Create a minimum delay guard for consistent timing
- * 
+ *
  * @param duration - Minimum duration in milliseconds
  * @returns A new MinimumDelay instance
- * 
+ *
  * @example
  * ```ts
  * async function checkPassword(password: string) {
  *   const guard = createMinimumDelay(500)
- *   
+ *
  *   const isValid = await validatePassword(password)
- *   
+ *
  *   // Ensure at least 500ms have passed
  *   await guard.wait()
  *   return isValid

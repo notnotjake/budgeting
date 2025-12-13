@@ -19,13 +19,9 @@
 		primaryColor = 'var(--color-neutral-900)'
 	}: Props = $props()
 
-	let element: HTMLElement
+	let element = $state<null | HTMLElement>(null)
 
-	let textLength = $state(1)
-	$effect(() => {
-		textLength = element.innerText.length
-	})
-	let totalSpread = $derived(spread * textLength)
+	let textLength = $derived(element?.innerText?.length ?? 1)
 
 	let speedMultiplier = $derived.by(() => {
 		if (typeof speed === 'number') {

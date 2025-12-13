@@ -19,8 +19,12 @@
 </script>
 
 <button
-	onclick={() => {
-		handleLogout(error)
+	onclick={async () => {
+		try {
+			await handleLogout()
+		} catch {
+			console.error('Failed to logout')
+		}
 	}}
 	class={createClass(classProp, error && errorClass)}
 >

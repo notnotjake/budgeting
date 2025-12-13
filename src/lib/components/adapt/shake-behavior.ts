@@ -49,24 +49,30 @@ export function createShake(config: Partial<ShakeConfig> = {}): ShakeReturn {
 		if (shakeTimeout) {
 			clearTimeout(shakeTimeout)
 		}
-		shakeSequence.forEach(timeout => clearTimeout(timeout))
+		shakeSequence.forEach((timeout) => clearTimeout(timeout))
 		shakeSequence = []
 
 		// Calculate timing for each shake
 		const shakeInterval = finalConfig.duration / (finalConfig.shakes * 2)
-		
+
 		// Create shake sequence
 		for (let i = 0; i < finalConfig.shakes; i++) {
 			// Shake to the right
-			const rightTimeout = setTimeout(() => {
-				translateX.set(finalConfig.amplitude)
-			}, i * shakeInterval * 2)
+			const rightTimeout = setTimeout(
+				() => {
+					translateX.set(finalConfig.amplitude)
+				},
+				i * shakeInterval * 2
+			)
 			shakeSequence.push(rightTimeout)
 
 			// Shake to the left
-			const leftTimeout = setTimeout(() => {
-				translateX.set(-finalConfig.amplitude)
-			}, i * shakeInterval * 2 + shakeInterval)
+			const leftTimeout = setTimeout(
+				() => {
+					translateX.set(-finalConfig.amplitude)
+				},
+				i * shakeInterval * 2 + shakeInterval
+			)
 			shakeSequence.push(leftTimeout)
 		}
 
@@ -83,7 +89,7 @@ export function createShake(config: Partial<ShakeConfig> = {}): ShakeReturn {
 			clearTimeout(shakeTimeout)
 			shakeTimeout = undefined
 		}
-		shakeSequence.forEach(timeout => clearTimeout(timeout))
+		shakeSequence.forEach((timeout) => clearTimeout(timeout))
 		shakeSequence = []
 		translateX.set(0)
 	}

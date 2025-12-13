@@ -12,6 +12,7 @@
 
 	let el = $state<HTMLTextAreaElement>(null!)
 
+	// svelte-ignore state_referenced_locally
 	new TextareaAutosize({
 		element: () => el,
 		input: () => value,

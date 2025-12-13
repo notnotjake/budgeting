@@ -13,31 +13,6 @@ import {
 
 import { Title, ChargeDetails, Actions, TransactionId, Summary } from '../components'
 
-const invoiceDetails = {
-	description: 'Landing page for new product',
-	link: '/invoices/fc9ae3',
-	items: [
-		{
-			name: 'Web Design',
-			qty: 1,
-			units: null,
-			price: 250
-		},
-		{
-			name: 'Hosting & Analytics',
-			qty: 1,
-			units: 'month',
-			price: 50
-		},
-		{
-			name: 'Content Design & Publishing',
-			qty: 6,
-			units: 'pages',
-			price: 500
-		}
-	]
-}
-
 const Receipt = () => {
 	return (
 		<Html>
@@ -47,11 +22,11 @@ const Receipt = () => {
 					<meta name="color-scheme" content="light dark" />
 					<meta name="supported-color-schemes" content="light dark" />
 				</Head>
-				<Body className="bg-white pb-[150px] pt-[18px] font-sans dark:bg-neutral-900">
+				<Body className="bg-white pt-[18px] pb-[150px] font-sans dark:bg-neutral-900">
 					<Container className="mx-auto max-w-[500px] px-1">
 						<Title primaryText="Receipt" secondaryText="from Light Dance" />
 
-						<Section className="mb-24 mt-6 w-full">
+						<Section className="mt-6 mb-24 w-full">
 							<Text className="my-1 text-[16px] font-normal tracking-[-0.01em] text-neutral-800 dark:text-neutral-200">
 								Your payment was successfully received
 							</Text>

@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { onMount } from 'svelte'
 	import { goto } from '$app/navigation'
+	import { resolve } from '$app/paths'
 	import { Dialog } from 'bits-ui'
 	import {
 		IconTrashFilled,
@@ -64,7 +65,7 @@
 
 				if (result.success) {
 					currentState = 'success'
-					goto('/')
+					goto(resolve('/'))
 				} else {
 					currentStep = steps.length
 					currentState = 'error'

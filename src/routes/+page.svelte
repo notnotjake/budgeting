@@ -2,7 +2,7 @@
 	import { Button } from '$ui/input'
 </script>
 
-<div class="max-w-160 mx-auto flex min-h-full flex-col gap-2 bg-neutral-50 px-6 py-8">
+<div class="mx-auto flex min-h-full max-w-160 flex-col gap-2 bg-neutral-50 px-6 py-8">
 	<div class="W-full flex justify-end">
 		<Button href="/login" style="primary" rounded="full" class="w-fit bg-neutral-600">Login</Button>
 	</div>

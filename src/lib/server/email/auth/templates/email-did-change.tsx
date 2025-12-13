@@ -26,7 +26,7 @@ const EmailDidChange = ({ updatedEmail }: Options) => {
 					<meta name="supported-color-schemes" content="light dark" />
 				</Head>
 				<Body className="bg-white font-sans dark:bg-neutral-900">
-					<Container className="w-full max-w-none bg-white pt-[50px] pb-[40px] dark:bg-neutral-900">
+					<Container className="w-full max-w-none bg-white pt-[50px] pb-10 dark:bg-neutral-900">
 						<Section className="mx-auto max-w-[430px] px-1">
 							<HeaderGroup
 								headingText="Your account email has been changed"

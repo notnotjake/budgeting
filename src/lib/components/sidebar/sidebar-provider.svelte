@@ -1,12 +1,11 @@
 <script lang="ts">
 	import { setContext, type Snippet } from 'svelte'
-	import { createClass } from '$utils/styles'
+	import { createClass } from '@opensky/style'
 	import { Tween } from 'svelte/motion'
 	import { cubicOut } from 'svelte/easing'
 
 	type Props = {
 		isShown?: boolean
-		onChange?: () => void
 		children: Snippet
 		sidebarContent: Snippet
 		class?: string
@@ -18,7 +17,6 @@
 	}
 	let {
 		isShown: isShownProp = $bindable(true),
-		onChange,
 		children,
 		sidebarContent,
 		class: classProp,
@@ -40,11 +38,11 @@
 		duration: 350,
 		easing: cubicOut
 	})
-	let beforeResizingWidth = $state(null)
+	let beforeResizingWidth = $state<number | null>(null)
 
 	// Resizing
 	let isResizing = $state(false)
-	function startResize(event) {
+	function startResize(event: MouseEvent) {
 		isResizing = true
 		event.preventDefault()
 		beforeResizingWidth = contentWidth
@@ -54,7 +52,7 @@
 		beforeResizingWidth = null
 	}
 	let containerWidth = $state(0)
-	function resize(event) {
+	function resize(event: MouseEvent) {
 		if (!isResizing) return
 
 		let x
@@ -65,7 +63,9 @@
 		}
 		if (x < 25) {
 			sidebar.isShown = !sidebar.isShown
-			contentWidth = beforeResizingWidth
+			if (beforeResizingWidth !== null) {
+				contentWidth = beforeResizingWidth
+			}
 			stopResize()
 			return
 		}
@@ -94,17 +94,18 @@
 <svelte:window on:mouseup={stopResize} />
 
 <div
+	role="navigation"
 	class={createClass('flex h-full w-full', side == 'right' ? 'flex-row-reverse' : '', classProp)}
 	onmousemove={resize}
 	bind:offsetWidth={containerWidth}
 >
+	<!-- Sidebar container -->
 	<div
-		desc="sidebar container"
 		style:width={`${sidebarWidthTweened.current}px`}
 		class="relative h-full shrink-0 overflow-hidden"
 	>
+		<!-- Sidebar content -->
 		<div
-			desc="sidebar content"
 			style:width={`${contentWidth}px`}
 			class={createClass(
 				'absolute top-0 h-full transition-opacity delay-[25ms] duration-250',
@@ -114,10 +115,11 @@
 		>
 			{@render sidebarContent()}
 		</div>
+		<!-- Drag handle -->
 		<div
-			desc="drag handle"
+			aria-hidden="true"
 			class={createClass(
-				'absolute top-0 h-full w-[0px] bg-blue-500 transition-all duration-200 has-hover:w-[3px] has-hover:opacity-100',
+				'absolute top-0 h-full w-0 bg-blue-500 transition-all duration-200 has-hover:w-[3px] has-hover:opacity-100',
 				!resizable && 'hidden',
 				side == 'left' ? 'right-0' : 'left-0',
 				isResizing ? 'w-[3px] opacity-100' : 'opacity-0'
@@ -132,8 +134,8 @@
 			></div>
 		</div>
 	</div>
-
-	<div class="h-full w-full" desc="main content">
+	<!-- Main content -->
+	<div class="h-full w-full">
 		{@render children()}
 	</div>
 </div>

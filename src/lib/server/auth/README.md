@@ -5,11 +5,12 @@
 Add `import type { User, Session } from '$lib/server/auth/schema'`
 
 Update Locals:
+
 ```ts
-	interface Locals {
-		user: User | null
-		session: Session | null
-	}
+interface Locals {
+	user: User | null
+	session: Session | null
+}
 ```
 
 ##### Update Drizzle schema

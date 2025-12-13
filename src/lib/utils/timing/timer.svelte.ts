@@ -1,3 +1,5 @@
+import { SvelteDate } from 'svelte/reactivity'
+
 /**
  * Configuration options for a Timer
  */
@@ -246,32 +248,35 @@ export class Timer {
 	/**
 	 * Parse duration input to milliseconds
 	 */
-	private parseDuration(duration: number | { seconds: number } | { endTime: Date | string | number }): number {
+	private parseDuration(
+		duration: number | { seconds: number } | { endTime: Date | string | number }
+	): number {
 		if (typeof duration === 'number') {
 			return duration
 		}
-		
+
 		if ('seconds' in duration) {
 			return duration.seconds * 1000
 		}
-		
+
 		if ('endTime' in duration) {
-			const endTime = duration.endTime instanceof Date
-				? duration.endTime.getTime()
-				: typeof duration.endTime === 'string'
-				? new Date(duration.endTime).getTime()
-				: duration.endTime
-			
+			const endTime =
+				duration.endTime instanceof Date
+					? duration.endTime.getTime()
+					: typeof duration.endTime === 'string'
+						? new SvelteDate(duration.endTime).getTime()
+						: duration.endTime
+
 			const now = Date.now()
 			const diff = endTime - now
-			
+
 			if (diff <= 0) {
 				throw new Error('End time must be in the future')
 			}
-			
+
 			return diff
 		}
-		
+
 		throw new Error('Invalid duration format')
 	}
 

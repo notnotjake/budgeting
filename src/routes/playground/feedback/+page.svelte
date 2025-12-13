@@ -21,7 +21,7 @@
 <div class="flex flex-col gap-2 px-4 py-4">
 	<Progress.Ring {value} />
 	<Progress.Text {value} class="text-xl font-bold">Testing this Tooling</Progress.Text>
-	<Progress.Radial {value} class="w-20" />
+	<Progress.Radial {value} />
 	<Progress.Bar {value} />
 	<Progress.Countdown totalTime={15} />
 </div>
