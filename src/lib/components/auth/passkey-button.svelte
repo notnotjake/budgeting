@@ -12,7 +12,7 @@
 	import { Suspense } from '$ui/feedback'
 
 	type Props = {
-		identifier: string
+		identifier?: string
 		auto?: boolean
 		reauth?: boolean
 		onSuccess?: () => void

@@ -29,7 +29,7 @@
 					{#if open}
 						<div
 							{...props}
-							transition:fade={{ duration: 200 }}
+							transition:fade={{ duration: 400 }}
 							class="absolute inset-0 z-50 h-screen w-full bg-neutral-100/30 transition-colors data-nested-open:bg-neutral-300/50"
 						></div>
 					{/if}
@@ -45,7 +45,7 @@
 			<div
 				class="flex w-full justify-center pt-1.5"
 				out:fly={{ y: -100, duration: 200 }}
-				in:fly={{ y: -100, duration: 400, delay: 375 }}
+				in:fly={{ y: -100, duration: 400, delay: 250 }}
 			>
 				<div class="pointer-events-auto">
 					<AccountButton {openSettings} />

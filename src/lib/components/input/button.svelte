@@ -4,6 +4,23 @@
 	import { createClass, createVariants } from '@opensky/style'
 	import { Suspense } from '$ui/feedback'
 
+	type Props = {
+		children: Snippet
+		icon?: TablerIcon
+		onClick?: (e?: MouseEvent) => void
+		href?: string
+		as?: string
+		type?: 'button' | 'submit'
+		suspense?: boolean
+		class?: string
+		disabled?: boolean
+		// Variant Props
+		style?: 'primary' | 'secondary' | 'outline' | 'ghost' | 'link'
+		rounded?: 'full' | 'lg' | 'md' | 'sm'
+		size?: 'sm' | 'md' | 'lg' | 'xl'
+		role?: 'destructive'
+	}
+
 	let {
 		children,
 		icon: Icon,
@@ -14,18 +31,9 @@
 		suspense = false,
 		class: classProp,
 		disabled,
+		// Style props
 		...restProps
-	}: {
-		children: Snippet
-		icon?: TablerIcon
-		onClick?: () => void
-		href: string
-		as: string
-		type?: 'button' | 'submit'
-		suspense?: boolean
-		class?: string
-		disabled?: boolean
-	} = $props()
+	}: Props = $props()
 
 	const variants = createVariants(
 		{

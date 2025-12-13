@@ -1,8 +1,18 @@
 import { cubicOut } from 'svelte/easing'
 
+/**
+ * @param {string | number} value
+ * @returns {[number, string]}
+ */
 function split_css_unit(value) {
 	const split = typeof value === 'string' && value.match(/^\s*(-?[\d.]+)([^\s]*)\s*$/)
-	return split ? [parseFloat(split[1]), split[2] || 'px'] : [value, 'px']
+	if (split) {
+		return [parseFloat(split[1]), split[2] || 'px']
+	}
+	if (typeof value === 'number') {
+		return [value, 'px']
+	}
+	throw new Error(`Cannot parse CSS unit from: ${value}`)
 }
 
 /**
@@ -39,8 +49,8 @@ export function flyScale(
 		delay,
 		duration,
 		easing,
-		css: (t, u) => `
-	  transform: ${transform} 
+		css: (/** @type {number} */ t, /** @type {number} */ u) => `
+	  transform: ${transform}
 				translate(${(1 - t) * x_value}${x_unit}, ${(1 - t) * y_value}${y_unit})
 				scale(${1 - sd * u});
 	  opacity: ${target_opacity - od * u}

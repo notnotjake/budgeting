@@ -110,12 +110,12 @@ export const startLogin = form(
 
 		// Require session
 		if (!locals.session) {
-			throw error(400)
+			throw error(400, '')
 		}
 
 		// Reject identifiers containing colon (reserved for internal use)
 		if (identifierRaw.includes(':')) {
-			return { error: 'Invalid email address' }
+			throw error(400, 'Invalid email address')
 		}
 
 		// Normalize input
@@ -126,7 +126,7 @@ export const startLogin = form(
 
 		if (!userResult.success || userResult.data === undefined) {
 			await delayed.wait()
-			throw error(500, 'Failed to get user')
+			throw error(500, '')
 		}
 
 		const user = userResult.data
@@ -135,7 +135,7 @@ export const startLogin = form(
 		let passkeyAvailable = false
 		if (user) {
 			passkeyAvailable = unwrap(await AuthCore.userHasPasskeyAvailable({ userId: user.id }), () => {
-				throw error(500, 'Failed to check for passkey')
+				throw error(500, '')
 			})
 		}
 

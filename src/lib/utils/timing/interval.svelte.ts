@@ -378,7 +378,7 @@ export function runIntervalTimes(
 	interval: number,
 	ticks: number,
 	callback: (tick: number, elapsed: number) => void | Promise<void>
-): [Interval, Promise<void>] {
+) {
 	return new Promise<[Interval, Promise<void>]>((resolve) => {
 		const intervalInstance = new Interval({
 			interval,

@@ -7,7 +7,7 @@
 	import { createSequence } from '$lib/utils/timing'
 
 	let isActive = $state(false)
-	let swapData = $state<string | undefined>()
+	let swapData = $state<string | undefined | null>()
 
 	const sequence = createSequence({ interruptible: true })
 

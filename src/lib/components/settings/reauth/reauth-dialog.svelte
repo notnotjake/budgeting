@@ -1,11 +1,9 @@
 <script lang="ts">
-	import { IconShieldLockFilled, IconArrowLeft } from '@tabler/icons-svelte'
 	import { fade } from 'svelte/transition'
+	import { IconShieldLockFilled, IconArrowLeft } from '@tabler/icons-svelte'
 	import { Dialog } from 'bits-ui'
 	import { getDialogContext } from '../dialog-context'
-	import PasskeyButton from '$ui/auth/passkey-button.svelte'
-	import CodeInput from '$ui/auth/code-input.svelte'
-	import { startReauth } from '$remotes/auth/authenticate.remote'
+	import Reauth from '$ui/auth/reauth.svelte'
 
 	type Props = {
 		open: boolean
@@ -14,26 +12,11 @@
 	}
 	let { open = $bindable(), onSuccess, onCancel }: Props = $props()
 
-	let innerHeight = $state<number>(0)
+	let startReauth = $state<(() => void) | null>(null)
 
 	const { setReauthDialogHeight, scrollToTop } = getDialogContext()
 
-	// Reauth state
-	const localTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone
-
-	let loading = $state(false)
-	let requireReauth = $state(false)
-
-	let identifier = $state('')
-	let passkeyAvailable = $state(false)
-	let codeSent = $state(false)
-
-	// Initialize reauth options when dialog opens
-	$effect(() => {
-		if (open) {
-			requestStartReauth()
-		}
-	})
+	let innerHeight = $state<number>(0)
 
 	$effect(() => {
 		if (innerHeight && open) {
@@ -43,35 +26,21 @@
 		}
 	})
 
-	function handleReauthSuccess() {
+	function handleSuccess() {
 		open = false
-		requireReauth = false
 		onSuccess()
 	}
 
-	async function requestStartReauth() {
-		loading = true
-		try {
-			const result = await startReauth({ timezone: localTimezone })
-
-			if (result.recentAuth) {
-				handleReauthSuccess()
-				requireReauth = false
-			} else {
-				requireReauth = true
-				scrollToTop()
-
-				identifier = result.identifier
-				passkeyAvailable = result.passkeyAvailable
-				codeSent = result.codeSent
-			}
-			loading = false
-		} catch (e) {
-			console.error('Failed to start reauth', e)
-			open = false
-			onCancel()
-		}
+	function handleCancel() {
+		onCancel()
 	}
+
+	$effect(() => {
+		if (open && startReauth) {
+			startReauth?.()
+			scrollToTop()
+		}
+	})
 </script>
 
 <Dialog.Root bind:open>
@@ -96,31 +65,12 @@
 									</p>
 								</div>
 
-								<div class="flex w-full flex-col gap-5 pt-10">
-									{#if !loading && requireReauth}
-										<div data-dark class="group/reauth flex w-full flex-col items-center gap-7">
-											{#if passkeyAvailable}
-												<PasskeyButton
-													{identifier}
-													auto={true}
-													reauth={true}
-													onSuccess={handleReauthSuccess}
-												/>
-											{/if}
-
-											<div class="flex w-full flex-col items-center gap-1">
-												<CodeInput
-													{codeSent}
-													{identifier}
-													timezone={localTimezone}
-													reauth={true}
-													dark={true}
-													onSuccess={handleReauthSuccess}
-												/>
-											</div>
-										</div>
-									{/if}
-								</div>
+								<Reauth
+									autoStart={false}
+									bind:start={startReauth}
+									onSuccess={handleSuccess}
+									onCancel={handleCancel}
+								/>
 							</div>
 
 							<!-- Buttons -->

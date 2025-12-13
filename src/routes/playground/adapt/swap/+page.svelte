@@ -6,7 +6,7 @@
 	import { IconCheck } from '@tabler/icons-svelte'
 
 	// Trigger functions bound from components
-	let triggerCopyExample = $state<((opts?: { duraiton?: number }) => void) | null>(null)
+	let triggerCopyExample = $state<((opts?: { duration?: number }) => void) | null>(null)
 	let triggerInlineToast = $state<(() => void) | null>(null)
 	let triggerAdaptingSwap = $state<((opts?: { duration?: number }) => void) | null>(null)
 

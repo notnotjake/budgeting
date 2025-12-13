@@ -5,6 +5,8 @@
  * which uses dynamic types for Redis command arguments and return values.
  */
 
+import type { RedisClient } from 'bun'
+
 /**
  * Bun Redis Adapter for Upstash Ratelimit
  *
@@ -27,9 +29,6 @@
  * });
  * ```
  */
-
-import type { RedisClient } from 'bun'
-
 export class BunRedisAdapter {
 	constructor(private client: RedisClient) {}
 
