@@ -6,12 +6,11 @@
 	import { IconCheck } from '@tabler/icons-svelte'
 
 	// Trigger functions bound from components
-	let triggerBasicSwap = $state(null)
-	let triggerCopyExample = $state(null)
-	let triggerInlineToast = $state(null)
-	let triggerAdaptingSwap = $state(null)
+	let triggerCopyExample = $state<((opts?: any) => void) | null>(null)
+	let triggerInlineToast = $state<((opts?: any) => void) | null>(null)
+	let triggerAdaptingSwap = $state<((opts?: any) => void) | null>(null)
 
-	let isSavingMessage = $state(null)
+	let isSavingMessage = $state(false)
 
 	let interruptBounce = true
 </script>
@@ -85,7 +84,7 @@
 
 							{#snippet swapContent()}
 								<div
-									transition:scale={{ from: 0.5, duration: 150 }}
+									transition:scale={{ start: 0.5, duration: 150 }}
 									class="flex items-center gap-1 text-green-600"
 								>
 									<span class="text-sm">Copied!</span>

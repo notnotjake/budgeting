@@ -206,6 +206,7 @@
 							: 'scale-100 opacity-100 blur-none'
 					)}
 				>
+					<!-- Cell placeholder (swaps) -->
 					<div class="absolute top-0 left-0 flex h-full w-full items-center justify-center">
 						<div
 							style:opacity={cell.char === null ? '1.0' : '0.0'}
@@ -221,6 +222,7 @@
 							0
 						</div>
 					</div>
+					<!-- Active cell text -->
 					<div
 						style:opacity={cell.char !== null ? '1.0' : '0.0'}
 						style:transform={cell.char !== null ? 'translateY(0%)' : 'translateY(-50%)'}

@@ -15,9 +15,10 @@
 
 	type Props = {
 		newEmail: string
-		onSuccess?: () => void
+		onSuccess: () => void
+		onUnrecoverableError: () => void
 	}
-	let { newEmail, onSuccess }: Props = $props()
+	let { newEmail, onSuccess, onUnrecoverableError }: Props = $props()
 
 	// Verify Email Change Form
 	const verifyEmailChangeForm = createEnhancedForm(verifyEmailChange, {
@@ -45,16 +46,19 @@
 		await tick()
 		codeValue = ''
 		verifyEmailChangeForm.reset()
+		triggerSentToast?.()
 	})
 </script>
 
 <div class="flex gap-2">
 	<p class="shrink-0 text-[1.05rem] font-medium">Verify Email</p>
-	<AdaptReveal bind:trigger={triggerErrorToast}>
+	<AdaptReveal bind:trigger={triggerErrorToast} durationMs={5000}>
 		<p transition:scale class="text-rose-600">Code invalid</p>
 	</AdaptReveal>
 	<AdaptReveal bind:trigger={triggerSentToast}>
-		<p transition:scale class="font-medium text-green-600">Code Sent</p>
+		<p transition:scale={{ start: 0.5, duration: 300 }} class="font-medium text-neutral-400">
+			Code Sent
+		</p>
 	</AdaptReveal>
 </div>
 
@@ -66,20 +70,34 @@
 	{...verifyEmailChange.enhance(async (opts) =>
 		verifyEmailChangeForm.enhance(opts, {
 			onReturn: async ({ result }) => {
-				if (result.success === false || result.error) {
+				if (result.success === false) {
 					codeValue = ''
 					triggerShake()
 					await delay(1300)
 					verifyEmailChangeForm.reset()
 				} else if (result.success === true) {
-					onSuccess?.()
+					await delay(3000)
+					onSuccess()
 				}
 			},
-			onError: async () => {
+			onError: async ({ error }) => {
 				codeValue = ''
-				triggerShake()
-				await delay(1300)
-				verifyEmailChangeForm.reset()
+
+				const status = error?.status
+
+				if (status === 401) {
+					// Reauth required
+					onUnrecoverableError()
+				} else if (status === 400) {
+					// Issue with request
+					onUnrecoverableError()
+				} else {
+					// 403 invalid code or 500 server error
+					triggerShake()
+					triggerErrorToast?.()
+					await delay(1300)
+					verifyEmailChangeForm.reset()
+				}
 			}
 		})
 	)}
@@ -101,17 +119,17 @@
 			maxlength={6}
 			pattern={REGEXP_ONLY_DIGITS}
 			class={createClass(
-				'group flex w-fit cursor-pointer items-center justify-start overflow-hidden py-1 pr-2 has-disabled:opacity-70',
-				verifyEmailChangeForm.pending && 'bg-blue-900/30 focus-within:outline-none',
-				resultSuccess && 'outline-2 outline-green-500 focus-within:outline-green-500'
+				'group relative flex w-fit cursor-pointer items-center justify-start overflow-hidden py-1 pr-2 has-disabled:opacity-70'
 			)}
 		>
 			{#snippet children({ cells })}
 				<!-- Pending State -->
 				<div
 					class={createClass(
-						'absolute inset-0 flex h-full w-full items-center justify-center transition-all delay-100 duration-300',
-						verifyEmailChangeForm.pending ? 'scale-100 opacity-100' : 'scale-80 opacity-0'
+						'absolute inset-0 z-10 flex h-full w-full items-center justify-center transition-all delay-100 duration-300',
+						verifyEmailChangeForm.pending || verifyEmailChangeForm.delayed
+							? 'scale-100 opacity-100'
+							: 'scale-80 opacity-0'
 					)}
 				>
 					<Suspense.Text
@@ -126,13 +144,12 @@
 				<div
 					class={createClass(
 						'absolute inset-0 z-10 flex h-full w-full items-center justify-center rounded-xl transition-all duration-150',
-						resultSuccess
-							? 'translate-y-0 bg-green-900/30 opacity-100 backdrop-blur'
-							: 'translate-y-full bg-transparent opacity-0 backdrop-blur-none'
+						resultSuccess ? 'translate-y-0 opacity-100' : 'translate-y-full opacity-0'
 					)}
 				>
 					<div class={createClass('flex h-full w-full items-center justify-center')}>
 						<IconCircleCheck class="text-green-500" />
+						<p class="font-medium tracking-tight-md text-green-500">Verified</p>
 					</div>
 				</div>
 				<!-- Pin Input -->
@@ -160,11 +177,12 @@
 		class={createClass(
 			'group/cell relative flex h-10 w-5 cursor-pointer items-center justify-center rounded-xl transition-all duration-500',
 			cell.char !== null && 'data-active:bg-sky-400/10',
-			verifyEmailChangeForm.pending
+			verifyEmailChangeForm.pending || verifyEmailChangeForm.delayed || resultSuccess
 				? 'scale-110 opacity-0 blur-md'
 				: 'scale-100 opacity-100 blur-none'
 		)}
 	>
+		<!-- Cell placeholder (swaps) -->
 		<div class="absolute top-0 left-0 flex h-full w-full items-center justify-center">
 			<div
 				style:opacity={cell.char === null ? '1.0' : '0.0'}
@@ -172,7 +190,7 @@
 				style:scaleY={cell.char === null ? '1.0' : '3.0'}
 				class={createClass(
 					'text-xl font-semibold transition-all duration-200',
-					cell.hasFakeCaret && 'text-shadow-blue-vibrant-light',
+					cell.hasFakeCaret && 'text-blue-500 text-shadow-blue-vibrant-light',
 					!cell.hasFakeCaret &&
 						!resultError &&
 						'text-neutral-600 group-hover:text-neutral-500 group-hover:group-focus-within:text-neutral-600',
@@ -184,6 +202,7 @@
 				0
 			</div>
 		</div>
+		<!-- Active cell text -->
 		<div
 			style:opacity={cell.char !== null ? '1.0' : '0.0'}
 			style:transform={cell.char !== null ? 'translateY(0%)' : 'translateY(-50%)'}

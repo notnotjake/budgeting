@@ -12,7 +12,8 @@
 		IconUserCircle,
 		IconArrowLeft,
 		IconArrowBackUp,
-		IconArrowRight
+		IconArrowRight,
+		IconX
 	} from '@tabler/icons-svelte'
 	import { Dialog, Tooltip } from 'bits-ui'
 
@@ -43,23 +44,58 @@
 		timeoutMs: 9000
 	})
 
-	// Get local timezone for email formatting
+	// Get local timezone for email absolute times
 	const localTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone
 	let emailInput = $state<HTMLInputElement>()
 
-	// Current field value for checking if email differs from current
+	// Is email input different than users current email
 	let emailDiff = $derived.by(() => {
-		const current = startEmailChange.fields.newEmail.value().toLowerCase().trim()
+		const current = startEmailChange.fields.newEmail.value()?.toLowerCase().trim() ?? ''
 		return current !== user.identifier && current.length > 0
 	})
+
+	let showError = $derived(
+		!startEmailChangeForm.result &&
+			(startEmailChangeForm.error ||
+				(startEmailChangeValid.issues('newEmail') &&
+					startEmailChange.fields.newEmail.value()?.length > 0))
+	)
+
+	let startButtonAvailable = $derived(
+		!startEmailChangeForm.result && !startEmailChangeValid.issues('newEmail') && emailDiff
+	)
 
 	const revertEmail = () => {
 		startEmailChange.fields.newEmail.set(user.identifier)
 	}
 
-	// TODO: verify success callback
+	const focusInput = () => {
+		emailInput?.focus()
+	}
 
-	// TODO: verify error callback
+	const resetForm = () => {
+		const current = startEmailChange.result?.newEmail
+		startEmailChangeForm.reset()
+		startEmailChange.fields.newEmail.set(current ?? '')
+	}
+
+	const onSuccess = async () => {
+		await getUser().refresh()
+		startEmailChangeForm.reset()
+		startEmailChange.fields.newEmail.set(user.identifier)
+	}
+
+	const onUnrecoverableError = async () => {
+		resetForm()
+
+		// Ensure recent auth
+		const authed = await requireRecentAuth()
+
+		if (!authed) {
+			close()
+			return
+		}
+	}
 
 	onMount(async () => {
 		// Ensure recent auth
@@ -73,7 +109,7 @@
 		await tick()
 		startEmailChangeForm.reset()
 		startEmailChange.fields.newEmail.set(user.identifier)
-		emailInput?.focus()
+		focusInput()
 	})
 </script>
 
@@ -97,15 +133,29 @@
 
 				<!-- Control -->
 				<div
-					class="flex w-full flex-col items-center rounded-3xl bg-neutral-800/70 px-5 pr-3 focus-within:outline-2 focus-within:outline-blue-vibrant"
+					class={createClass(
+						'flex w-full flex-col items-center rounded-3xl bg-neutral-800/70 px-5 pr-3 focus-within:outline-2 focus-within:outline-blue-vibrant',
+						showError && 'outline-2 outline-rose-600'
+					)}
 				>
-					{#if !startEmailChange.result}
+					{#if !startEmailChangeForm.result}
 						<!-- Email Input Step -->
 						<form
 							class="flex h-full w-full items-center py-2"
-							{...startEmailChange
-								.preflight(startEmailChangeSchema)
-								.enhance(async (opts) => startEmailChangeForm.enhance(opts, {}))}
+							{...startEmailChange.preflight(startEmailChangeSchema).enhance(async (opts) =>
+								startEmailChangeForm.enhance(opts, {
+									onReturn: async ({ result }) => {
+										if (result.requireReauth) {
+											const authed = await requireRecentAuth()
+
+											if (!authed) {
+												close()
+												return
+											}
+										}
+									}
+								})
+							)}
 						>
 							<!-- Local timezone hidden input -->
 							{#if localTimezone}
@@ -151,22 +201,22 @@
 								<!-- Continue button -->
 								<Tooltip.Root>
 									<Tooltip.Trigger>
-										<button
-											type="submit"
-											disabled={!emailDiff || startEmailChangeForm.pending}
-											class={createClass(
-												'rounded-full bg-linear-to-b px-5 py-2 transition-all active:scale-[0.97] disabled:cursor-not-allowed',
-												emailDiff
-													? 'bg-blue-vibrant-light text-white shadow-[inset_0.5px_0.5px_0_rgba(255,255,255,0.3),inset_-0.5px_-0.5px_0_rgba(255,255,255,0.15)]'
-													: 'bg-neutral-600 text-neutral-400 shadow-[inset_0.5px_0.5px_0_rgba(255,255,255,0.2),inset_-0.5px_-0.5px_0_rgba(255,255,255,0.1)]'
-											)}
-										>
-											{#if startEmailChangeForm.delayed}
-												<Suspense.Spinner />
-											{:else}
+										{#if startEmailChangeForm.delayed}
+											<Suspense.Spinner />
+										{:else}
+											<button
+												type="submit"
+												disabled={!startButtonAvailable}
+												class={createClass(
+													'rounded-full bg-linear-to-b px-5 py-2 transition-all active:scale-[0.97] disabled:cursor-not-allowed',
+													startButtonAvailable
+														? 'bg-blue-vibrant-light text-white shadow-[inset_0.5px_0.5px_0_rgba(255,255,255,0.3),inset_-0.5px_-0.5px_0_rgba(255,255,255,0.15)]'
+														: 'bg-neutral-600 text-neutral-400 shadow-[inset_0.5px_0.5px_0_rgba(255,255,255,0.2),inset_-0.5px_-0.5px_0_rgba(255,255,255,0.1)]'
+												)}
+											>
 												<IconArrowRight stroke={3} size={26} />
-											{/if}
-										</button>
+											</button>
+										{/if}
 									</Tooltip.Trigger>
 									<Tooltip.Content side="top" sideOffset={5} align="center">
 										<div
@@ -180,23 +230,48 @@
 						</form>
 
 						<!-- Error display -->
-						{#if startEmailChangeForm.error}
-							<div transition:wipeVertical class="w-full pb-3">
-								<p class="text-sm text-rose-500">
-									{startEmailChangeForm.error || 'Something went wrong. Try again.'}
-								</p>
+						{#if showError && startEmailChangeForm.error}
+							<div transition:wipeVertical class="w-full py-2.5">
+								<button class="cursor-pointer font-[450] text-rose-500" onclick={focusInput}>
+									An error occured, try again
+								</button>
+							</div>
+						{:else if showError && startEmailChangeValid.issues('newEmail')}
+							<div transition:wipeVertical class="flex w-full justify-start py-2.5">
+								{#each startEmailChangeValid.issues('newEmail') ?? [] as issue (issue)}
+									<button class="cursor-pointer font-[450] text-rose-500" onclick={focusInput}>
+										{issue}
+									</button>
+								{/each}
 							</div>
 						{/if}
 					{:else}
 						<!-- Verification Step -->
 						<div
 							in:fade={{ duration: 350 }}
-							class="flex w-full items-center justify-start gap-2 overflow-x-scroll py-5 pr-5 tabular-nums"
+							class="flex w-full items-center justify-start gap-2 overflow-x-scroll py-3 pr-5 tabular-nums"
 						>
-							<p class="max-w-36 shrink truncate text-neutral-400">{user.identifier}</p>
+							<button
+								type="button"
+								onclick={resetForm}
+								class="group/button relative max-w-36 shrink rounded-xl bg-neutral-700/0 py-2 transition-colors delay-75 hover:bg-neutral-700"
+							>
+								<div
+									class="pointer-events-none absolute inset-0 flex h-full w-full items-center gap-2 px-2 opacity-0 transition-opacity delay-75 duration-75 group-hover/button:opacity-100"
+								>
+									<IconX />
+									<p>Cancel</p>
+								</div>
+
+								<p
+									class="max-w-full truncate text-neutral-400 transition-opacity delay-75 duration-75 group-hover/button:opacity-0"
+								>
+									{user.identifier}
+								</p>
+							</button>
 							<IconArrowRight size={23} class="text-neutral-300" />
 							<p class="shrink-0 text-neutral-300 tabular-nums">
-								{startEmailChange.result.newEmail ?? 'Something went wrong'}
+								{startEmailChange.result?.newEmail ?? 'Something went wrong'}
 							</p>
 						</div>
 
@@ -204,7 +279,11 @@
 							in:wipeVertical
 							class="group flex w-full items-center justify-between border-t border-neutral-700 py-3"
 						>
-							<VerificationCodeInput newEmail={startEmailChange.result.newEmail ?? ''} />
+							<VerificationCodeInput
+								newEmail={startEmailChange.result?.newEmail ?? ''}
+								{onSuccess}
+								{onUnrecoverableError}
+							/>
 						</div>
 					{/if}
 				</div>

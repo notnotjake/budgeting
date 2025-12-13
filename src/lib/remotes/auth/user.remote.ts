@@ -5,6 +5,7 @@ import Auth from '$lib/server/auth'
 import AuthCore from '$lib/server/auth/core'
 import { AuthEmails } from '$lib/server/auth'
 import { unwrap } from '$utils/structured-response'
+import { delay } from '$utils/timing'
 
 export const getUser = query(async () => {
 	const event = getRequestEvent()
@@ -71,7 +72,7 @@ export const startEmailChange = form(
 
 		// Reject emails containing colon (reserved for internal use)
 		if (newEmail.includes(':')) {
-			return { error: 'Invalid email address' }
+			throw error(400, 'Invalid email address')
 		}
 
 		const normalizedNewEmail = AuthCore.normalizeIdentifierInput(newEmail)
@@ -79,7 +80,7 @@ export const startEmailChange = form(
 
 		// Check if the new email is the same as current
 		if (normalizedNewEmail === normalizedCurrentEmail) {
-			return { error: 'New email must be different from current email' }
+			throw error(400, 'Provided email is the same as users current email')
 		}
 
 		// Check if the new email is already registered to another user
@@ -90,7 +91,7 @@ export const startEmailChange = form(
 		}
 
 		if (existingUserResult.data) {
-			return { error: 'This email is already associated with another account' }
+			throw error(403, 'This email belongs to another account')
 		}
 
 		// Send the verification code (this also cleans up any existing attempts)
@@ -128,6 +129,8 @@ export const verifyEmailChange = form(
 			throw error(401)
 		}
 
+		await delay(2000)
+
 		// Get the pending challenge for this session
 		const challenge = unwrap(
 			await AuthCore.getChallenge({
@@ -147,7 +150,7 @@ export const verifyEmailChange = form(
 		const [oldEmail, newEmail] = challenge.identifier.split(':')
 
 		if (!oldEmail || !newEmail) {
-			return { error: 'Invalid challenge data. Please start again.' }
+			throw error(400, 'Invalid challenge. Please start again')
 		}
 
 		// Verify the code matches
@@ -157,7 +160,7 @@ export const verifyEmailChange = form(
 		})
 
 		if (!codeMatches) {
-			return { error: 'Invalid verification code' }
+			throw error(403, 'Invalid code')
 		}
 
 		// Sanity check: make sure user's current email matches the old email in challenge

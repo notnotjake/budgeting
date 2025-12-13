@@ -112,7 +112,7 @@
 					{data?.title}
 				</h2>
 				<p
-					class="animate-fade-in-scale text-[1.05rem] leading-4 font-[430] tracking-[-0.015em] text-neutral-500"
+					class="animate-fade-in-scale text-[1.05rem] leading-4 font-[430] tracking-tight-lg text-neutral-500"
 				>
 					{data?.text}
 				</p>

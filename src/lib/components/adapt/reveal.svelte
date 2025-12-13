@@ -1,7 +1,6 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte'
-	import { onMount, onDestroy } from 'svelte'
-	import { fade, scale } from 'svelte/transition'
+	import { onDestroy } from 'svelte'
 	import { createClass } from '@opensky/style'
 	import { createToastBounce } from './bounce-behavior.js'
 
