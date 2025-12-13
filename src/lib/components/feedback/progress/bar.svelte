@@ -23,27 +23,20 @@
 	}: Props = $props()
 
 	// Create a tweened store for smooth transitions
-	const progress = tween
-		? new Tween(value, {
-				duration: dur,
-				easing: cubicOut
-			})
-		: null
+	const progress = new Tween(0, { easing: cubicOut })
 
 	// Update the progress when value changes
 	$effect(() => {
-		if (tween && progress) {
-			progress.target = Math.min(100, Math.max(0, value))
-		}
+		progress.set(Math.min(100, Math.max(0, value)), { duration: tween ? dur : 0 })
 	})
 
 	$effect(() => {
-		if (tween && progress && progress.current >= 100 && onComplete) {
+		if (progress.current >= 100 && onComplete) {
 			onComplete()
 		}
 	})
 
-	let displayValue = $derived(tween && progress ? progress.current : value)
+	let displayValue = $derived(progress.current)
 </script>
 
 <div

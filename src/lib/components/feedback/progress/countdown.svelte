@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { onDestroy } from 'svelte'
+	import { onDestroy, untrack } from 'svelte'
 	import { createClass } from '@opensky/style'
 	import { Timer, SEC } from '$lib/utils/timing'
 	import Radial from './radial.svelte'
@@ -23,11 +23,15 @@
 		onComplete
 	}: Props = $props()
 
-	const timer = new Timer({
-		duration: totalTime * SEC,
-		immediate: false,
-		onComplete
-	})
+	// Use untrack to explicitly capture initial values (intentional one-time initialization)
+	const timer = untrack(
+		() =>
+			new Timer({
+				duration: totalTime * SEC,
+				immediate: false,
+				onComplete: () => onComplete?.()
+			})
+	)
 
 	// Start the timer with the current time offset
 	$effect(() => {
