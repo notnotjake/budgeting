@@ -4,7 +4,6 @@
 	import { createClass } from '@opensky/style'
 	import { Spring } from 'svelte/motion'
 	import { createToastBounce } from './bounce-behavior.js'
-	import { scale } from 'svelte/transition'
 	import { SPRING_DEFAULTS } from './spring-config.js'
 
 	interface TriggerOptions<T = unknown> {
@@ -141,7 +140,7 @@
 	}
 
 	// Open function without auto-hide
-	open = (data?: any) => {
+	open = (data?: unknown) => {
 		if (timer) {
 			clearTimeout(timer)
 			timer = null
@@ -185,7 +184,7 @@
 				bind:offsetWidth={activeContentWidth}
 				bind:offsetHeight={activeContentHeight}
 			>
-				{@render swapContent(swapData)}
+				{@render swapContent?.(swapData)}
 			</div>
 		{:else}
 			<div
@@ -197,14 +196,14 @@
 				bind:offsetHeight={defaultContentHeight}
 				bind:offsetWidth={defaultContentWidth}
 			>
-				{@render children()}
+				{@render children?.()}
 			</div>
 		{/if}
 	</div>
 {:else}
 	<div class={createClass(classProp)} style:transform="scaleX({$scaleX}) scaleY({$scaleY})">
 		{#if isActive}
-			{@render swapContent(swapData)}
+			{@render swapContent?.(swapData)}
 		{:else if children}
 			{@render children()}
 		{/if}

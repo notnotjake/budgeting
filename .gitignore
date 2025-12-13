@@ -18,12 +18,9 @@ Thumbs.db
 !.env.example
 !.env.test
 
-# Vite
+# Other
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
-
-# Added by @opensky/setup
-# Nova editor files
+.eslintcache
 .nova/
-# VS Code settings
 .vscode/

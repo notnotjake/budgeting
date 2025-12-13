@@ -1,5 +1,6 @@
 <script lang="ts">
-	import type { Snippet, Component } from 'svelte'
+	import type { Snippet } from 'svelte'
+	import type { Icon as TablerIcon } from '@tabler/icons-svelte'
 	import { createClass, createVariants } from '@opensky/style'
 	import { Suspense } from '$ui/feedback'
 
@@ -16,7 +17,7 @@
 		...restProps
 	}: {
 		children: Snippet
-		icon?: Component | HTMLElement
+		icon?: TablerIcon
 		onClick?: () => void
 		href: string
 		as: string

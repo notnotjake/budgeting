@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { Slider } from 'bits-ui'
-	import { createClass } from '@opensky/style'
 
 	let { value = $bindable() } = $props()
 </script>

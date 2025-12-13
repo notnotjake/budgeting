@@ -1,3 +1,10 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/**
+ * Note: This file uses `any` types intentionally because it must implement
+ * a compatible interface with @upstash/ratelimit's Redis client expectations,
+ * which uses dynamic types for Redis command arguments and return values.
+ */
+
 /**
  * Bun Redis Adapter for Upstash Ratelimit
  *
@@ -258,7 +265,7 @@ export class BunRedisAdapter {
 	 */
 	multi() {
 		const commands: Array<{ method: string; args: any[] }> = []
-		const self = this
+		const client = this.client
 
 		const transaction = {
 			/**
@@ -339,15 +346,15 @@ export class BunRedisAdapter {
 			 */
 			async exec() {
 				// Start transaction
-				await self.client.send('MULTI', [])
+				await client.send('MULTI', [])
 
 				// Queue all commands (Redis will respond with "QUEUED" for each)
 				for (const cmd of commands) {
-					await self.client.send(cmd.method, cmd.args as string[])
+					await client.send(cmd.method, cmd.args as string[])
 				}
 
 				// Execute atomically and get results
-				const results = await self.client.send('EXEC', [])
+				const results = await client.send('EXEC', [])
 				return results
 			}
 		}

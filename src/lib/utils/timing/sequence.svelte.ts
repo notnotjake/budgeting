@@ -1,3 +1,5 @@
+import { SvelteSet } from 'svelte/reactivity'
+
 /**
  * Represents a single action in a sequence
  */
@@ -63,7 +65,7 @@ export class Sequence {
 	private timers: ReturnType<typeof setTimeout>[] = []
 	private totalDuration = 0
 	private startedAt?: number
-	private completedActions = new Set<number>()
+	private completedActions = new SvelteSet<number>()
 
 	// Reactive state using Svelte runes
 	state = $state<SequenceState>('idle')

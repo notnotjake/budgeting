@@ -1,6 +1,6 @@
 import * as React from 'react'
 import { Section, Text, Row, Column, Link } from '@react-email/components'
-import { formatCurrency, formatCurrencyCompact } from '../utils/currency-format'
+import { formatCurrency } from '../utils/currency-format'
 
 const invoiceDetails = {
 	description: 'Landing page for new product',
@@ -64,7 +64,9 @@ export const Summary = ({ details = invoiceDetails }) => {
 						</Text>
 					</Column>
 					<Column className="text-right align-top font-normal">
-						<Text className="my-1 text-neutral-800 dark:text-neutral-200">${item.price}</Text>
+						<Text className="my-1 text-neutral-800 dark:text-neutral-200">
+							${formatCurrency(item.price)}
+						</Text>
 					</Column>
 				</Row>
 			))}

@@ -1,5 +1,5 @@
 import { Cron } from 'croner'
-import { EVERY_1_HOUR } from './schedules'
+import { EVERY_1_HOUR } from '../schedules'
 import { cleanupExpiredUploads } from '$lib/server/storage'
 
 export function scheduleStorageUploadsCleanup() {
@@ -20,4 +20,5 @@ export function scheduleStorageUploadsCleanup() {
 			timezone: 'UTC'
 		}
 	)
+	return schedule
 }

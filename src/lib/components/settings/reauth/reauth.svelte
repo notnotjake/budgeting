@@ -1,7 +1,6 @@
 <script lang="ts">
 	import { IconShieldLockFilled, IconArrowLeft } from '@tabler/icons-svelte'
 	import { Dialog } from 'bits-ui'
-	import { createClass } from '@opensky/style'
 	import PasskeyButton from '$ui/auth/passkey-button.svelte'
 	import CodeInput from '$ui/auth/code-input.svelte'
 

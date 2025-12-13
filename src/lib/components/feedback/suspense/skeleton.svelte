@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { createClass, preserveClass } from '@opensky/style'
+	import { createClass } from '@opensky/style'
 
 	type Props = {
 		class?: string

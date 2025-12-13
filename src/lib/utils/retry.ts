@@ -9,7 +9,7 @@ export type AttemptFunction<T> = (context: AttemptContext, options: AttemptOptio
 export type BeforeAttempt<T> = (context: AttemptContext, options: AttemptOptions<T>) => void
 export type CalculateDelay<T> = (context: AttemptContext, options: AttemptOptions<T>) => number
 export type HandleError<T> = (
-	err: any,
+	err: unknown,
 	context: AttemptContext,
 	options: AttemptOptions<T>
 ) => Promise<void> | void
@@ -99,8 +99,16 @@ export async function retry<T>(
 ): Promise<T> {
 	const options = applyDefaults(attemptOptions)
 
-	for (const prop of ['delay', 'initialDelay', 'minDelay', 'maxDelay', 'maxAttempts', 'timeout']) {
-		const value: any = (options as any)[prop]
+	const numericProps = [
+		'delay',
+		'initialDelay',
+		'minDelay',
+		'maxDelay',
+		'maxAttempts',
+		'timeout'
+	] as const
+	for (const prop of numericProps) {
+		const value = options[prop]
 
 		if (!Number.isInteger(value) || value < 0) {
 			throw new Error(`Value for ${prop} must be an integer greater than or equal to 0`)
@@ -128,18 +136,18 @@ export async function retry<T>(
 
 	const calculateDelay = options.calculateDelay || defaultCalculateDelay
 
-	async function makeAttempt(): Promise<any> {
+	async function makeAttempt(): Promise<T> {
 		if (options.beforeAttempt) {
 			options.beforeAttempt(context, options)
 		}
 
 		if (context.aborted) {
-			const err: any = new Error(`Attempt aborted`)
+			const err = new Error(`Attempt aborted`) as Error & { code: string }
 			err.code = 'ATTEMPT_ABORTED'
 			throw err
 		}
 
-		const onError = async (err: any) => {
+		const onError = async (err: unknown): Promise<T> => {
 			if (options.handleError) {
 				await options.handleError(err, context, options)
 			}
@@ -175,9 +183,9 @@ export async function retry<T>(
 							reject(e)
 						}
 					} else {
-						const err: any = new Error(
+						const err = new Error(
 							`Retry timeout (attemptNum: ${context.attemptNum}, timeout: ${options.timeout})`
-						)
+						) as Error & { code: string }
 						err.code = 'ATTEMPT_TIMEOUT'
 						reject(err)
 					}
@@ -188,7 +196,7 @@ export async function retry<T>(
 						clearTimeout(timer)
 						resolve(result)
 					})
-					.catch((err: any) => {
+					.catch((err: unknown) => {
 						clearTimeout(timer)
 						// Calling resolve with a Promise that rejects here will result
 						// in an unhandled rejection. Calling `reject` with errors

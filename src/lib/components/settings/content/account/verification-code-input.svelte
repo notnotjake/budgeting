@@ -13,12 +13,13 @@
 
 	import { Suspense } from '$ui/feedback'
 
-	type Props = {
-		newEmail: string
+	let {
+		onSuccess,
+		onUnrecoverableError
+	}: {
 		onSuccess: () => void
 		onUnrecoverableError: () => void
-	}
-	let { newEmail, onSuccess, onUnrecoverableError }: Props = $props()
+	} = $props()
 
 	// Verify Email Change Form
 	const verifyEmailChangeForm = createEnhancedForm(verifyEmailChange, {
@@ -147,6 +148,7 @@
 				</div>
 				<!-- Pin Input -->
 				<div class="flex">
+					<!-- eslint-disable-next-line svelte/require-each-key -->
 					{#each cells.slice(0, 3) as cell}
 						{@render Cell(cell)}
 					{/each}
@@ -155,6 +157,7 @@
 				<div class="flex w-4 items-center justify-center"></div>
 
 				<div class="flex">
+					<!-- eslint-disable-next-line svelte/require-each-key -->
 					{#each cells.slice(3, 6) as cell}
 						{@render Cell(cell)}
 					{/each}

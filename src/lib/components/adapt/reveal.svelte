@@ -4,6 +4,13 @@
 	import { createClass } from '@opensky/style'
 	import { createToastBounce } from './bounce-behavior.js'
 
+	interface TriggerOptions {
+		/** Duration in ms before auto-hiding (defaults to durationMs prop) */
+		duration?: number
+	}
+
+	type TriggerFunction = (options?: TriggerOptions) => void
+
 	interface Props {
 		/** CSS class for the container */
 		class?: string
@@ -12,7 +19,7 @@
 		/** Whether the content is currently visible */
 		isActive?: boolean
 		/** Function to trigger the reveal with auto-hide timer */
-		trigger?: (() => void) | null
+		trigger?: TriggerFunction | null
 		/** Default duration in ms before auto-hiding */
 		durationMs?: number
 		/** Function to open without auto-hide timer */
@@ -41,7 +48,7 @@
 	let timer: ReturnType<typeof setTimeout> | undefined
 
 	// Trigger function with auto-hide timer
-	trigger = () => {
+	trigger = ({ duration = durationMs }: TriggerOptions = {}) => {
 		// Clear any existing timer
 		if (timer) {
 			clearTimeout(timer)
@@ -60,7 +67,7 @@
 			isActive = false
 			reset()
 			timer = undefined
-		}, durationMs)
+		}, duration)
 	}
 
 	// Open function without auto-hide

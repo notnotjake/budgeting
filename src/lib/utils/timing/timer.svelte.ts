@@ -1,3 +1,5 @@
+import { SvelteDate } from 'svelte/reactivity'
+
 /**
  * Configuration options for a Timer
  */
@@ -262,7 +264,7 @@ export class Timer {
 				duration.endTime instanceof Date
 					? duration.endTime.getTime()
 					: typeof duration.endTime === 'string'
-						? new Date(duration.endTime).getTime()
+						? new SvelteDate(duration.endTime).getTime()
 						: duration.endTime
 
 			const now = Date.now()

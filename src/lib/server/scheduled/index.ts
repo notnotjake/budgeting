@@ -1,5 +1,5 @@
-import { scheduleAuthCleanup } from './auth-cleanup'
-import { scheduleStorageUploadsCleanup } from './storage-uploads-cleanup'
+import { scheduleAuthCleanup } from './tasks/auth-cleanup'
+import { scheduleStorageUploadsCleanup } from './tasks/storage-uploads-cleanup'
 
 export function scheduledTasks() {
 	console.log('Starting scheduled tasks')

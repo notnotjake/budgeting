@@ -129,11 +129,15 @@
 					<Tooltip.Root>
 						<Tooltip.Trigger>
 							<button
-								onclick={() => {
-									if (isCurrentSession) {
-										handleLogout()
-									} else {
+								onclick={async () => {
+									if (!isCurrentSession) {
 										removeSession(session.id)
+									} else {
+										try {
+											await handleLogout()
+										} catch {
+											console.error('Failed to logout')
+										}
 									}
 								}}
 								class="ml-1 aspect-square rounded-xl p-1.5 text-neutral-400 hover:bg-neutral-500 hover:text-neutral-100 active:scale-95"

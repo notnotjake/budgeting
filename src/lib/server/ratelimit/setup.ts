@@ -20,7 +20,7 @@ try {
 
 type RatelimiterConfig = {
 	prefix: string
-	limiter: Algorithm<any>
+	limiter: Algorithm<unknown>
 }
 
 /**

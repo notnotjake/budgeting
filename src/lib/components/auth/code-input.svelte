@@ -106,6 +106,7 @@
 						if (reauth && onSuccess) {
 							onSuccess()
 						} else if (result.redirectUrl) {
+							// eslint-disable-next-line svelte/no-navigation-without-resolve
 							goto(result.redirectUrl)
 						}
 					}
@@ -179,6 +180,7 @@
 					</div>
 					<!-- Pin Input -->
 					<div class="flex">
+						<!-- eslint-disable-next-line svelte/require-each-key -->
 						{#each cells.slice(0, 3) as cell}
 							{@render Cell(cell)}
 						{/each}
@@ -187,6 +189,7 @@
 					<div class="flex w-4 items-center justify-center"></div>
 
 					<div class="flex">
+						<!-- eslint-disable-next-line svelte/require-each-key -->
 						{#each cells.slice(3, 6) as cell}
 							{@render Cell(cell)}
 						{/each}

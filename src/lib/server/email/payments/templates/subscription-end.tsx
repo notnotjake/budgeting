@@ -39,14 +39,14 @@ const ConfirmChangeEmail = () => {
 						<SubscriptionItem />
 
 						<Section className="mt-10">
-							<Section className="mt-4 mb-0 mb-8">
+							<Section className="mt-4 mb-8">
 								<Text className="my-0 text-[14px] text-neutral-700 dark:text-neutral-300">
 									Auto-renew is disabled. You will lose access on May 6th
 								</Text>
 								<Text className="my-0 mt-5 text-[14px]">
 									<Link
 										href="/"
-										className="m-0 rounded-[8px] bg-black px-3 py-2 text-left text-[14px] text-white dark:bg-neutral-100 dark:text-neutral-900"
+										className="m-0 rounded-lg bg-black px-3 py-2 text-left text-[14px] text-white dark:bg-neutral-100 dark:text-neutral-900"
 									>
 										Renew Subscription
 									</Link>

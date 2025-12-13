@@ -1,7 +1,6 @@
 <script lang="ts">
-	import { onMount, onDestroy } from 'svelte'
+	import { onDestroy } from 'svelte'
 	import type { Snippet } from 'svelte'
-	import type { Attachment } from 'svelte/attachments'
 	import { createClass } from '@opensky/style'
 	import { Spring } from 'svelte/motion'
 	import { scale } from 'svelte/transition'
@@ -14,15 +13,15 @@
 		/** CSS class for the inner elements */
 		innerClass?: string
 		/** Children snippets - use {#snippet state:name} syntax */
-		children: Snippet
+		content: Snippet<[{ state: string; previousState: string; data?: unknown }]>
 		/** Data passed to the active state snippet */
 		swapData?: T
 		/** Currently active state name */
 		activeState?: string
 		/** Function to change states - exposed for external control */
-		changeState?: ((stateName: string, data?: any) => void) | null
+		changeState?: ((stateName: string, data?: unknown) => void) | null
 		/** Function to temporarily change state with auto-return */
-		trigger?: ((stateName: string, options?: { data?: any; duration?: number }) => void) | null
+		trigger?: ((stateName: string, options?: { data?: unknown; duration?: number }) => void) | null
 		/** Default duration in ms before auto-returning to previous state */
 		durationMs?: number
 		/** Transition function for elements entering */
@@ -30,9 +29,9 @@
 		/** Transition function for elements leaving */
 		transitionOut?: typeof scale
 		/** Configuration object for entering transitions */
-		transitionInConfig?: any
+		transitionInConfig?: Record<string, unknown>
 		/** Configuration object for leaving transitions */
-		transitionOutConfig?: any
+		transitionOutConfig?: Record<string, unknown>
 		/** Whether to show bounce animation when setting same state */
 		interruptBounce?: boolean
 		/** Whether to smoothly adapt container size to content changes */
@@ -46,7 +45,7 @@
 	let {
 		class: classProp,
 		innerClass,
-		children,
+		content,
 		swapData = $bindable(),
 		activeState = $bindable('default'),
 		changeState = $bindable(null),
@@ -139,7 +138,7 @@
 	let timer = $state<ReturnType<typeof setTimeout> | null>(null)
 
 	// Method for switching between states
-	changeState = (stateName: string, data?: any) => {
+	changeState = (stateName: string, data?: unknown) => {
 		// Clear any existing timer
 		if (timer) {
 			clearTimeout(timer)
@@ -169,7 +168,7 @@
 	}
 
 	// Trigger function with auto-return timer
-	trigger = (stateName: string, options?: { data?: any; duration?: number }) => {
+	trigger = (stateName: string, options?: { data?: unknown; duration?: number }) => {
 		const { data, duration = durationMs } = options || {}
 
 		// Clear any existing timer
@@ -216,7 +215,7 @@
 				in:transitionIn={transitionInConfig}
 				out:transitionOut={transitionOutConfig}
 			>
-				{@render children({ state: stateName, previousState, data: swapData })}
+				{@render content({ state: stateName, previousState, data: swapData })}
 			</div>
 		{/each}
 	</div>
@@ -228,7 +227,7 @@
 				in:transitionIn={transitionInConfig}
 				out:transitionOut={transitionOutConfig}
 			>
-				{@render children({ state: stateName, previousState, data: swapData })}
+				{@render content({ state: stateName, previousState, data: swapData })}
 			</div>
 		{/each}
 	</div>

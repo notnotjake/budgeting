@@ -36,8 +36,6 @@
 		}
 	})
 
-	$inspect(timer.state)
-
 	onDestroy(() => {
 		timer.destroy()
 	})

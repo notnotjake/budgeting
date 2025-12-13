@@ -1,5 +1,5 @@
 import { Cron } from 'croner'
-import { EVERY_12_HOURS } from './schedules'
+import { EVERY_12_HOURS } from '../schedules'
 import Auth from '$lib/server/auth'
 
 export function scheduleAuthCleanup() {
@@ -18,4 +18,5 @@ export function scheduleAuthCleanup() {
 			timezone: 'UTC'
 		}
 	)
+	return schedule
 }

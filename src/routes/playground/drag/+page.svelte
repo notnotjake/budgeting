@@ -35,7 +35,7 @@
 		list.push(newValue)
 	}
 
-	$inspect(items)
+	// $inspect(items)
 </script>
 
 <ul use:parent class="number-list debug p-10">

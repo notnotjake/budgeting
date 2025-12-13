@@ -90,7 +90,7 @@ export function formatInput(element: HTMLInputElement, pattern: string) {
 		const oldCursor = element.selectionStart ?? 0 // cursor position state
 		const currentValue = element.value // input value state
 
-		let formattedValue = format(currentValue, { trailing: !endDelete })
+		const formattedValue = format(currentValue, { trailing: !endDelete })
 
 		if (formattedValue !== currentValue) {
 			isFormatting = true // lock formatting
@@ -99,8 +99,8 @@ export function formatInput(element: HTMLInputElement, pattern: string) {
 			if (oldCursor === currentValue.length) {
 				newCursor = formattedValue.length
 			} else {
-				let rawPrefix = currentValue.substring(0, oldCursor)
-				let formattedPrefix = format(rawPrefix, { trailing: false })
+				const rawPrefix = currentValue.substring(0, oldCursor)
+				const formattedPrefix = format(rawPrefix, { trailing: false })
 				newCursor = formattedPrefix.length
 			}
 

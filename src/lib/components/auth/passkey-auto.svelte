@@ -15,6 +15,7 @@
 			const result = await verifyLoginPasskey({ attestation: authenticationResponse })
 
 			if (result.success && result.redirectUrl) {
+				// eslint-disable-next-line svelte/no-navigation-without-resolve
 				goto(result.redirectUrl)
 			}
 		} catch (e) {

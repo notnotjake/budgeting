@@ -131,7 +131,11 @@
 	>
 		{@render dropdownMenuItem('Settings', IconSettings, openSettings)}
 		{@render dropdownMenuItem('Logout', IconLogout, () => {
-			handleLogout()
+			try {
+				handleLogout()
+			} catch {
+				console.error('Failed to logout')
+			}
 		})}
 	</DropdownMenu.Content>
 </DropdownMenu.Root>
