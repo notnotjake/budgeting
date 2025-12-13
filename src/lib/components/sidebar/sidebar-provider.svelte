@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { setContext, type Snippet } from 'svelte'
-	import { createClass } from '$utils/styles'
+	import { createClass } from '@opensky/style'
 	import { Tween } from 'svelte/motion'
 	import { cubicOut } from 'svelte/easing'
 
@@ -38,11 +38,11 @@
 		duration: 350,
 		easing: cubicOut
 	})
-	let beforeResizingWidth = $state(null)
+	let beforeResizingWidth = $state<number | null>(null)
 
 	// Resizing
 	let isResizing = $state(false)
-	function startResize(event) {
+	function startResize(event: MouseEvent) {
 		isResizing = true
 		event.preventDefault()
 		beforeResizingWidth = contentWidth
@@ -52,7 +52,7 @@
 		beforeResizingWidth = null
 	}
 	let containerWidth = $state(0)
-	function resize(event) {
+	function resize(event: MouseEvent) {
 		if (!isResizing) return
 
 		let x
@@ -63,7 +63,9 @@
 		}
 		if (x < 25) {
 			sidebar.isShown = !sidebar.isShown
-			contentWidth = beforeResizingWidth
+			if (beforeResizingWidth !== null) {
+				contentWidth = beforeResizingWidth
+			}
 			stopResize()
 			return
 		}

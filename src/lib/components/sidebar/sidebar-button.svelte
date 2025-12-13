@@ -1,11 +1,21 @@
 <script lang="ts">
-	import { getContext } from 'svelte'
-	import SidebarButton from '$ui/icon/sidebar-button.svelte'
+	import { getContext, type Snippet } from 'svelte'
+	import SidebarIcon from './sidebar-icon.svelte'
 	import { Tooltip } from 'bits-ui'
 
-	let { children, whenOpen, whenClosed, useButton } = $props()
+	type SidebarContext = {
+		isShown: boolean
+	}
 
-	let sidebar = getContext('sidebar')
+	type Props = {
+		children?: Snippet
+		whenOpen?: Snippet
+		whenClosed?: Snippet
+		useButton?: boolean
+	}
+	let { children, whenOpen, whenClosed, useButton }: Props = $props()
+
+	let sidebar = getContext<SidebarContext>('sidebar')
 
 	function toggle() {
 		sidebar.isShown = !sidebar.isShown
@@ -33,7 +43,7 @@
 		<Tooltip.Provider>
 			<Tooltip.Root delayDuration={350}>
 				<Tooltip.Trigger>
-					<SidebarButton isOpen={sidebar.isShown} colorTint="var(--color-neutral-400)" />
+					<SidebarIcon isOpen={sidebar.isShown} colorTint="var(--color-neutral-400)" />
 				</Tooltip.Trigger>
 				<Tooltip.Content side="bottom" sideOffset={5} align="start">
 					<div
