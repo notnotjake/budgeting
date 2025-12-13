@@ -6,7 +6,7 @@
 	import { setDialogContext } from './dialog-context'
 	import Toolbar from './components/toolbar.svelte'
 	import Content from './content/index.svelte'
-	import ReauthDialog from './reauth/reauth-dialog.svelte'
+	import ReauthDialog from './content/reauth-dialog.svelte'
 
 	// Reference to scrollable content area
 	let scrollRegion = $state<HTMLDivElement | null>(null)
