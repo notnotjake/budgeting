@@ -53,7 +53,7 @@
 		style:--shimmer-color={shimmerColor}
 		style:--shimmer-duration={shimmerDuration}
 		class={createClass(
-			'skeleton shadow-inner-xs relative flex h-6 min-w-14 items-center justify-center overflow-hidden rounded-full px-3 py-1 before:absolute before:inset-0 before:-translate-x-full before:bg-gradient-to-r before:from-transparent before:to-transparent',
+			'skeleton relative flex h-6 min-w-14 items-center justify-center overflow-hidden rounded-full px-3 py-1 shadow-inner-xs before:absolute before:inset-0 before:-translate-x-full before:bg-gradient-to-r before:from-transparent before:to-transparent',
 			classProp
 		)}
 	></div>

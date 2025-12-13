@@ -34,25 +34,25 @@ export type SequenceState = 'idle' | 'running' | 'completed' | 'cancelled'
  * A reactive utility class for orchestrating timed sequences of actions.
  * Actions can be scheduled at specific times and the sequence can be run, stopped, and reused.
  * Uses Svelte runes for reactive state management.
- * 
+ *
  * @example
  * ```svelte
  * <script lang="ts">
  * import { Sequence } from '$lib/utils/sequence.svelte'
- * 
+ *
  * const sequence = new Sequence({
  *   onStart: () => console.log('Starting'),
  *   onComplete: () => console.log('Done'),
  *   onActionStart: (action, index) => console.log(`Action ${index} starting`),
  *   interruptible: true
  * })
- * 
+ *
  * sequence
  *   .add(1000, () => console.log('After 1 second'), 'First action')
  *   .add(2000, () => console.log('After 3 seconds total'), 'Second action')
  *   .run()
  * </script>
- * 
+ *
  * <div>State: {sequence.state}</div>
  * <div>Progress: {sequence.progress}%</div>
  * <div>Current action: {sequence.currentAction?.name || 'None'}</div>
@@ -64,7 +64,7 @@ export class Sequence {
 	private totalDuration = 0
 	private startedAt?: number
 	private completedActions = new Set<number>()
-	
+
 	// Reactive state using Svelte runes
 	state = $state<SequenceState>('idle')
 	progress = $state(0)
@@ -83,7 +83,7 @@ export class Sequence {
 	})
 	actionsCompleted = $state(0)
 	totalActions = $derived(this.actions.length)
-	
+
 	private rafId?: number
 	private options: SequenceOptions
 
@@ -94,12 +94,12 @@ export class Sequence {
 	/**
 	 * Add an action with a relative delay (time after the previous action).
 	 * Actions are executed in the order they are added.
-	 * 
+	 *
 	 * @param delay - Time in milliseconds to wait after the previous action
 	 * @param action - Function to execute
 	 * @param name - Optional name/description for the action
 	 * @returns The Sequence instance for chaining
-	 * 
+	 *
 	 * @example
 	 * ```ts
 	 * sequence
@@ -116,12 +116,12 @@ export class Sequence {
 
 	/**
 	 * Add an action at an absolute time from the start of the sequence.
-	 * 
+	 *
 	 * @param time - Absolute time in milliseconds from sequence start
 	 * @param action - Function to execute
 	 * @param name - Optional name/description for the action
 	 * @returns The Sequence instance for chaining
-	 * 
+	 *
 	 * @example
 	 * ```ts
 	 * sequence
@@ -143,7 +143,7 @@ export class Sequence {
 	 * If the sequence is already running:
 	 * - If interruptible is true, stops the current run and starts over
 	 * - If interruptible is false (default), does nothing
-	 * 
+	 *
 	 * @example
 	 * ```ts
 	 * sequence.run()
@@ -178,12 +178,12 @@ export class Sequence {
 		sortedActions.forEach((action, index) => {
 			const timer = setTimeout(async () => {
 				if (this.state !== 'running') return
-				
+
 				this.currentActionIndex = index
 				this.options.onActionStart?.(action, index)
-				
+
 				await action.action()
-				
+
 				this.completedActions.add(index)
 				this.actionsCompleted++
 				this.currentActionIndex = null
@@ -218,7 +218,7 @@ export class Sequence {
 	 * Stop the currently running sequence, clearing all pending timeouts.
 	 * Triggers the onCancel callback if provided.
 	 * The sequence can be run again after stopping.
-	 * 
+	 *
 	 * @example
 	 * ```ts
 	 * sequence.stop()
@@ -226,7 +226,7 @@ export class Sequence {
 	 */
 	stop(): void {
 		if (this.state === 'idle' || this.state === 'completed') return
-		
+
 		this.cleanup()
 		this.state = 'cancelled'
 		this.options.onCancel?.()
@@ -235,7 +235,7 @@ export class Sequence {
 	/**
 	 * Stop the sequence and clear all scheduled actions.
 	 * After reset, the sequence is empty and ready for new actions.
-	 * 
+	 *
 	 * @example
 	 * ```ts
 	 * sequence.reset()
@@ -285,16 +285,15 @@ export class Sequence {
 	private startAnimation(): void {
 		const animate = () => {
 			if (this.state !== 'running') return
-			
+
 			const now = performance.now()
 			this.elapsed = now - this.startedAt!
-			this.progress = this.totalDuration > 0 
-				? Math.min(100, (this.elapsed / this.totalDuration) * 100)
-				: 0
-			
+			this.progress =
+				this.totalDuration > 0 ? Math.min(100, (this.elapsed / this.totalDuration) * 100) : 0
+
 			this.rafId = requestAnimationFrame(animate)
 		}
-		
+
 		this.rafId = requestAnimationFrame(animate)
 	}
 
@@ -307,7 +306,7 @@ export class Sequence {
 
 	/**
 	 * Check if the sequence is currently running.
-	 * 
+	 *
 	 * @returns true if the sequence is running, false otherwise
 	 */
 	isActive(): boolean {
@@ -316,7 +315,7 @@ export class Sequence {
 
 	/**
 	 * Get the total duration of the sequence in milliseconds.
-	 * 
+	 *
 	 * @returns The time when the last action will execute
 	 */
 	getDuration(): number {
@@ -341,28 +340,28 @@ export class Sequence {
 /**
  * Create a new Sequence instance with optional configuration.
  * This is a convenience function equivalent to `new Sequence(options)`.
- * 
+ *
  * @param options - Optional configuration for the sequence
  * @returns A new Sequence instance
- * 
+ *
  * @example
  * ```svelte
  * <script lang="ts">
  * import { createSequence } from '$lib/utils/sequence.svelte'
- * 
+ *
  * const sequence = createSequence({
  *   onStart: () => console.log('Started'),
  *   onComplete: () => console.log('Completed'),
  *   onCancel: () => console.log('Cancelled'),
  *   interruptible: false
  * })
- * 
+ *
  * sequence
  *   .add(1000, () => fadeIn(), 'Fade in')
  *   .add(2000, () => slideUp(), 'Slide up')
  *   .run()
  * </script>
- * 
+ *
  * <div>
  *   Progress: {sequence.progress.toFixed(1)}%
  *   {#if sequence.currentAction}
@@ -378,30 +377,30 @@ export function createSequence(options?: SequenceOptions): Sequence {
 /**
  * Create and immediately run a sequence with the provided actions.
  * Returns the sequence instance and a cleanup function.
- * 
+ *
  * @param actions - Array of actions with their execution times
  * @param options - Optional configuration for the sequence
  * @returns A tuple of [sequence instance, cleanup function]
- * 
+ *
  * @example
  * ```svelte
  * <script lang="ts">
  * import { runSequence } from '$lib/utils/sequence.svelte'
  * import { onDestroy } from 'svelte'
- * 
+ *
  * const [sequence, cleanup] = runSequence([
  *   { time: 1000, action: () => console.log('1s'), name: 'First' },
  *   { time: 2000, action: () => console.log('2s'), name: 'Second' }
  * ])
- * 
+ *
  * onDestroy(cleanup)
  * </script>
- * 
+ *
  * <div>Current: {sequence.currentAction?.name || 'None'}</div>
  * ```
  */
 export function runSequence(
-	actions: SequenceAction[], 
+	actions: SequenceAction[],
 	options?: SequenceOptions
 ): [Sequence, () => void] {
 	const sequence = new Sequence(options)

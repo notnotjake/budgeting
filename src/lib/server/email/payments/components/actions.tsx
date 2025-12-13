@@ -7,7 +7,7 @@ export const Actions = ({
 	href = '/'
 }) => {
 	return (
-		<Section className="mb-0 mb-8 mt-4">
+		<Section className="mt-4 mb-0 mb-8">
 			<Text className="my-0 text-[14px] text-neutral-700 dark:text-neutral-300">{primaryText}</Text>
 			<Text className="my-0 text-[14px]">
 				<Link

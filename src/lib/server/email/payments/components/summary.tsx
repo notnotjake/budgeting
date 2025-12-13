@@ -33,7 +33,7 @@ export const Summary = ({ details = invoiceDetails }) => {
 
 	return (
 		<Section className="w-full">
-			<Row className="mb-3 mt-2">
+			<Row className="mt-2 mb-3">
 				<Column className="">
 					<Text className="my-2 text-neutral-800 dark:text-neutral-100">
 						{totalItems} {itemText}{' '}
@@ -57,7 +57,7 @@ export const Summary = ({ details = invoiceDetails }) => {
 						<Text className="my-1 font-light text-neutral-800 dark:text-neutral-300">
 							{item.name}
 							{(item.qty > 1 || item.units) && (
-								<span className="ml-1 rounded-full bg-neutral-100 pl-2 pr-2 text-neutral-600 dark:bg-neutral-800 dark:text-neutral-500">
+								<span className="ml-1 rounded-full bg-neutral-100 pr-2 pl-2 text-neutral-600 dark:bg-neutral-800 dark:text-neutral-500">
 									{item.units ? `${item.qty} ${item.units}` : `${item.qty}`}
 								</span>
 							)}

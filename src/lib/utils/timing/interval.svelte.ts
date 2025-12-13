@@ -26,14 +26,14 @@ export type IntervalState = 'idle' | 'running' | 'paused'
  * A reactive interval class for Svelte applications with state tracking and control methods.
  * Provides a more powerful alternative to setInterval with pause/resume capabilities.
  * Uses Svelte runes for reactive state management.
- * 
+ *
  * @example
  * ```svelte
  * <script lang="ts">
  * import { Interval } from '$lib/utils/interval.svelte'
- * 
+ *
  * let count = $state(0)
- * 
+ *
  * const interval = new Interval({
  *   interval: 1000, // tick every second
  *   immediate: false,
@@ -44,13 +44,13 @@ export type IntervalState = 'idle' | 'running' | 'paused'
  *   },
  *   maxTicks: 10 // auto-stop after 10 ticks
  * })
- * 
+ *
  * interval.start() // Start the interval
  * interval.pause() // Pause the interval
  * interval.resume() // Resume from paused state
  * interval.reset() // Reset to initial state
  * </script>
- * 
+ *
  * <div>State: {interval.state}</div>
  * <div>Ticks: {interval.ticks}</div>
  * <div>Elapsed: {(interval.elapsed / 1000).toFixed(1)}s</div>
@@ -67,14 +67,14 @@ export class Interval {
 		onPause?: () => void
 		onStop?: () => void
 	}
-	
+
 	private intervalId?: ReturnType<typeof setInterval>
 	private rafId?: number
 	private startTime?: number
 	private pausedAt?: number
 	private accumulatedTime: number = 0
 	private lastTickTime: number = 0
-	
+
 	// Reactive state using Svelte runes
 	state = $state<IntervalState>('idle')
 	ticks = $state(0)
@@ -84,10 +84,10 @@ export class Interval {
 	nextTickIn = $state(0)
 	timeSinceLastTick = $state(0)
 	averageTickDuration = $state(0)
-	
+
 	private tickDurations: number[] = []
 	private maxDurationHistory = 10
-	
+
 	constructor(options: IntervalOptions) {
 		this.intervalDuration = options.interval
 		this.executeImmediately = options.executeImmediately ?? false
@@ -98,61 +98,61 @@ export class Interval {
 			onPause: options.onPause,
 			onStop: options.onStop
 		}
-		
+
 		if (options.immediate) {
 			this.start()
 		}
 	}
-	
+
 	/**
 	 * Start the interval from the beginning
 	 */
 	start(): void {
 		if (this.state === 'running') return
-		
+
 		this.reset()
 		this.state = 'running'
 		this.startTime = performance.now()
 		this.lastTickTime = this.startTime
 		this.callbacks.onStart?.()
-		
+
 		// Execute immediately if configured
 		if (this.executeImmediately) {
 			this.tick()
 		}
-		
+
 		this.startInterval()
 		this.startAnimation()
 	}
-	
+
 	/**
 	 * Pause the interval, maintaining current state
 	 */
 	pause(): void {
 		if (this.state !== 'running') return
-		
+
 		this.state = 'paused'
 		this.pausedAt = performance.now()
 		this.accumulatedTime += this.pausedAt - this.startTime!
-		
+
 		this.stopInterval()
 		this.stopAnimation()
 		this.callbacks.onPause?.()
 	}
-	
+
 	/**
 	 * Resume the interval from paused state
 	 */
 	resume(): void {
 		if (this.state !== 'paused') return
-		
+
 		this.state = 'running'
 		this.startTime = performance.now()
-		
+
 		// Calculate remaining time until next tick
 		const timeSinceLastTick = this.accumulatedTime - this.lastTickTime
 		const remainingTime = this.intervalDuration - timeSinceLastTick
-		
+
 		// Schedule next tick with adjusted timing
 		if (remainingTime > 0) {
 			setTimeout(() => {
@@ -166,26 +166,26 @@ export class Interval {
 			this.tick()
 			this.startInterval()
 		}
-		
+
 		this.startAnimation()
 	}
-	
+
 	/**
 	 * Stop the interval (alias for reset)
 	 */
 	stop(): void {
 		this.reset()
 	}
-	
+
 	/**
 	 * Reset the interval to initial state
 	 */
 	reset(): void {
 		this.stopInterval()
 		this.stopAnimation()
-		
+
 		const wasRunning = this.state !== 'idle'
-		
+
 		this.state = 'idle'
 		this.ticks = 0
 		this.elapsed = 0
@@ -197,12 +197,12 @@ export class Interval {
 		this.timeSinceLastTick = 0
 		this.tickDurations = []
 		this.averageTickDuration = 0
-		
+
 		if (wasRunning) {
 			this.callbacks.onStop?.()
 		}
 	}
-	
+
 	/**
 	 * Manually trigger a tick (useful for testing or special cases)
 	 */
@@ -211,11 +211,11 @@ export class Interval {
 			await this.tick()
 		}
 	}
-	
+
 	private async tick(): Promise<void> {
 		const now = performance.now()
 		const currentElapsed = this.accumulatedTime + (now - this.startTime!)
-		
+
 		// Track tick duration for averaging
 		if (this.lastTickTime > 0) {
 			const duration = currentElapsed - this.lastTickTime
@@ -223,21 +223,22 @@ export class Interval {
 			if (this.tickDurations.length > this.maxDurationHistory) {
 				this.tickDurations.shift()
 			}
-			this.averageTickDuration = this.tickDurations.reduce((a, b) => a + b, 0) / this.tickDurations.length
+			this.averageTickDuration =
+				this.tickDurations.reduce((a, b) => a + b, 0) / this.tickDurations.length
 		}
-		
+
 		this.ticks++
 		this.lastTickTime = currentElapsed
-		
+
 		// Execute callback
 		await this.callbacks.callback(this.ticks, currentElapsed)
-		
+
 		// Check if we've reached max ticks
 		if (this.maxTicks && this.ticks >= this.maxTicks) {
 			this.stop()
 		}
 	}
-	
+
 	private startInterval(): void {
 		this.intervalId = setInterval(() => {
 			if (this.state === 'running') {
@@ -245,51 +246,51 @@ export class Interval {
 			}
 		}, this.intervalDuration)
 	}
-	
+
 	private stopInterval(): void {
 		if (this.intervalId) {
 			clearInterval(this.intervalId)
 			this.intervalId = undefined
 		}
 	}
-	
+
 	private startAnimation(): void {
 		const animate = () => {
 			if (this.state !== 'running') return
-			
+
 			const now = performance.now()
 			this.elapsed = this.accumulatedTime + (now - this.startTime!)
-			
+
 			// Calculate time since last tick and next tick
 			this.timeSinceLastTick = this.elapsed - this.lastTickTime
 			this.nextTickIn = Math.max(0, this.intervalDuration - this.timeSinceLastTick)
-			
+
 			this.rafId = requestAnimationFrame(animate)
 		}
-		
+
 		this.rafId = requestAnimationFrame(animate)
 	}
-	
+
 	private stopAnimation(): void {
 		if (this.rafId) {
 			cancelAnimationFrame(this.rafId)
 			this.rafId = undefined
 		}
 	}
-	
+
 	/**
 	 * Set a new interval duration (takes effect on next tick)
 	 */
 	setInterval(duration: number): void {
 		this.intervalDuration = duration
-		
+
 		// If running, restart the interval with new duration
 		if (this.state === 'running') {
 			this.stopInterval()
 			this.startInterval()
 		}
 	}
-	
+
 	/**
 	 * Get current interval configuration and state
 	 */
@@ -304,7 +305,7 @@ export class Interval {
 			averageTickDuration: this.averageTickDuration
 		}
 	}
-	
+
 	/**
 	 * Clean up resources (call this when disposing of the interval)
 	 */
@@ -317,17 +318,17 @@ export class Interval {
 /**
  * Create a new Interval instance with the provided options.
  * This is a convenience function equivalent to `new Interval(options)`.
- * 
+ *
  * @param options - Configuration for the interval
  * @returns A new Interval instance
- * 
+ *
  * @example
  * ```svelte
  * <script lang="ts">
  * import { createInterval } from '$lib/utils/interval.svelte'
- * 
+ *
  * let value = $state(0)
- * 
+ *
  * const interval = createInterval({
  *   interval: 1000,
  *   callback: (tick) => {
@@ -336,7 +337,7 @@ export class Interval {
  *   immediate: true
  * })
  * </script>
- * 
+ *
  * <button onclick={() => interval.pause()}>
  *   {interval.isRunning ? 'Pause' : 'Resume'}
  * </button>
@@ -351,22 +352,22 @@ export function createInterval(options: IntervalOptions): Interval {
 /**
  * Create and immediately start an interval that runs a specific number of times.
  * Useful for animations or timed sequences that need to run for a set duration.
- * 
+ *
  * @param interval - Interval duration in milliseconds
  * @param ticks - Number of ticks to execute
  * @param callback - Callback function for each tick
  * @returns A tuple of [interval instance, promise that resolves when complete]
- * 
+ *
  * @example
  * ```svelte
  * <script lang="ts">
  * import { runIntervalTimes } from '$lib/utils/interval.svelte'
- * 
+ *
  * async function animateSteps() {
  *   const [interval, complete] = runIntervalTimes(100, 10, (tick) => {
  *     console.log(`Step ${tick}/10`)
  *   })
- *   
+ *
  *   await complete
  *   console.log('Animation complete!')
  * }
@@ -388,17 +389,20 @@ export function runIntervalTimes(
 				resolve([intervalInstance, Promise.resolve()])
 			}
 		})
-		
+
 		// Return immediately with the interval and a promise
-		resolve([intervalInstance, new Promise((resolveComplete) => {
-			const checkComplete = () => {
-				if (intervalInstance.state === 'idle') {
-					resolveComplete()
-				} else {
-					requestAnimationFrame(checkComplete)
+		resolve([
+			intervalInstance,
+			new Promise((resolveComplete) => {
+				const checkComplete = () => {
+					if (intervalInstance.state === 'idle') {
+						resolveComplete()
+					} else {
+						requestAnimationFrame(checkComplete)
+					}
 				}
-			}
-			checkComplete()
-		})])
+				checkComplete()
+			})
+		])
 	})
 }

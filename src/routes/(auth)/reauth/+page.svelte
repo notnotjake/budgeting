@@ -39,19 +39,19 @@
 			<!-- Message-->
 			<div class="w-full flex-col items-start justify-center px-5 pt-5">
 				<h2
-					class="tracking-tight-md animate-fade-in-scale text-[1.33rem] font-[550] leading-loose text-black"
+					class="animate-fade-in-scale text-[1.33rem] leading-loose font-[550] tracking-tight-md text-black"
 				>
 					{title}
 				</h2>
 				<p
-					class="animate-fade-in-scale text-[1.05rem] font-[430] leading-4 tracking-[-0.015em] text-neutral-500"
+					class="animate-fade-in-scale text-[1.05rem] leading-4 font-[430] tracking-[-0.015em] text-neutral-500"
 				>
 					{description}
 				</p>
 			</div>
 		</div>
 
-		<div class="flex w-full flex-col items-center gap-7 pb-3 pt-14">
+		<div class="flex w-full flex-col items-center gap-7 pt-14 pb-3">
 			{#if data.passkeyAvailable}
 				<PasskeyButton />
 			{/if}

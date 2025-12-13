@@ -40,7 +40,7 @@
 
 <ul use:parent class="number-list debug p-10">
 	{#each list as element, index (element)}
-		<li data-index={index} class="number debug mt-1 bg-neutral-100 pl-2">
+		<li data-index={index} class="number mt-1 debug bg-neutral-100 pl-2">
 			{element}
 		</li>
 	{/each}
