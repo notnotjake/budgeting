@@ -109,7 +109,6 @@
 {:else if href}
 	<a
 		{href}
-		{disabled}
 		onclick={(e) => {
 			if (onClick) {
 				onClick(e)

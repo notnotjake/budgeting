@@ -170,8 +170,12 @@
 {#if adaptSize}
 	<div
 		class={createClass(classProp, 'relative', initialized ? 'overflow-hidden' : '')}
-		style:width={initialized ? `${containerWidth.current}px` : 'fit-content'}
-		style:height={initialized ? `${containerHeight.current}px` : 'fit-content'}
+		style:width={initialized
+			? `${containerWidth?.current ?? defaultContentWidth}px`
+			: 'fit-content'}
+		style:height={initialized
+			? `${containerHeight?.current ?? defaultContentHeight}px`
+			: 'fit-content'}
 		style:transform="scaleX({$scaleX}) scaleY({$scaleY})"
 	>
 		{#if isActive}

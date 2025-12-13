@@ -7,6 +7,16 @@
 
 export {}
 
+// Parse arguments
+const args = process.argv.slice(2)
+const errorsOnly = args.includes('-e') || args.includes('--errors')
+const warningsOnly = args.includes('-w') || args.includes('--warnings')
+
+if (errorsOnly && warningsOnly) {
+	console.error('Cannot use both -e and -w flags together')
+	process.exit(1)
+}
+
 const GROUP_THRESHOLD = 5
 const DOMINANT_BRANCH_RATIO = 0.8 // If one branch has 80%+ of files, go deeper into it
 
@@ -49,8 +59,19 @@ type FileEntry = { path: string; errors: number; warnings: number }
 
 // Filter to files with issues and convert to relative paths
 const filesWithIssues: FileEntry[] = [...fileStats.entries()]
-	.filter(([, s]) => s.errors > 0 || s.warnings > 0)
-	.map(([file, stats]) => ({ path: file.replace(cwd + '/', ''), ...stats }))
+	.filter(([, s]) => {
+		if (errorsOnly) return s.errors > 0
+		if (warningsOnly) return s.warnings > 0
+		return s.errors > 0 || s.warnings > 0
+	})
+	.map(([file, stats]) => {
+		const filtered = {
+			path: file.replace(cwd + '/', ''),
+			errors: errorsOnly || !warningsOnly ? stats.errors : 0,
+			warnings: warningsOnly || !errorsOnly ? stats.warnings : 0
+		}
+		return filtered
+	})
 
 if (filesWithIssues.length === 0) {
 	console.log('✓ No issues found')
@@ -82,8 +103,8 @@ function findCommonPrefix(paths: string[]): string {
 
 function formatStats(errors: number, warnings: number): string {
 	const parts: string[] = []
-	if (errors > 0) parts.push(`${errors} error${errors > 1 ? 's' : ''}`)
-	if (warnings > 0) parts.push(`${warnings} warning${warnings > 1 ? 's' : ''}`)
+	if (!warningsOnly && errors > 0) parts.push(`${errors} error${errors > 1 ? 's' : ''}`)
+	if (!errorsOnly && warnings > 0) parts.push(`${warnings} warning${warnings > 1 ? 's' : ''}`)
 	return `[${parts.join(', ')}]`
 }
 
@@ -223,8 +244,9 @@ for (let i = 0; i < outputItems.length; i++) {
 	if (i < outputItems.length - 1) console.log('')
 }
 
-console.log(
-	`\nTotal: ${totalErrors} errors, ${totalWarnings} warnings in ${filesWithIssues.length} files`
-)
+const summaryParts: string[] = []
+if (!warningsOnly) summaryParts.push(`${totalErrors} errors`)
+if (!errorsOnly) summaryParts.push(`${totalWarnings} warnings`)
+console.log(`\nTotal: ${summaryParts.join(', ')} in ${filesWithIssues.length} files`)
 
 process.exit(proc.exitCode ?? 0)

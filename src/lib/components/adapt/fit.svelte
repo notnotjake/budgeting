@@ -7,7 +7,7 @@
 
 	interface Props {
 		/** Content to be displayed with adaptive sizing */
-		children?: Snippet
+		children: Snippet
 		/** CSS class for the container */
 		class?: string
 		/** Spring stiffness for size animations */
@@ -68,8 +68,16 @@
 </script>
 
 <div
-	style:height={!applyY ? 'unset' : !initialized ? 'fit-content' : `${containerHeight.current}px`}
-	style:width={!applyX ? 'unset' : !initialized ? 'fit-content' : `${containerWidth.current}px`}
+	style:height={!applyY
+		? 'unset'
+		: !initialized
+			? 'fit-content'
+			: `${containerHeight?.current ?? 0}px`}
+	style:width={!applyX
+		? 'unset'
+		: !initialized
+			? 'fit-content'
+			: `${containerWidth?.current ?? 0}px`}
 	class={createClass(classProp, 'relative', initialized ? 'overflow-hidden' : '')}
 >
 	<div

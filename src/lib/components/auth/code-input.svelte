@@ -41,10 +41,12 @@
 		delayMs: 50,
 		timeoutMs: 5000
 	})
+	// svelte-ignore state_referenced_locally
 	const sendCodeForm = reauth ? sendReauthCodeForm : sendLoginCodeForm
 	let sendLoginCodeFormElement = $state<HTMLFormElement>()
 	let sendReauthCodeFormElement = $state<HTMLFormElement>()
 
+	// svelte-ignore state_referenced_locally
 	let codeSent = $state(codeSentInitially)
 	let emailSentSuccessToast = $state(false)
 

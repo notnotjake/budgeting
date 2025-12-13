@@ -85,6 +85,7 @@
 		}
 	}
 
+	// svelte-ignore state_referenced_locally
 	registerAction(async () => {
 		await removeAllSessions()
 	})
