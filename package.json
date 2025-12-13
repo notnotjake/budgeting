@@ -17,8 +17,8 @@
 		"build": "bunx --bun vite build",
 		"start": "bun run ./build",
 		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
-		"format": "prettier --write .",
-		"lint": "prettier --check . && eslint ."
+		"prettier": "prettier --write .",
+		"eslint": "eslint ."
 	},
 	"devDependencies": {
 		"@eslint/compat": "^2.0.0",
