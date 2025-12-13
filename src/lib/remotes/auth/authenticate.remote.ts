@@ -11,7 +11,7 @@ import {
 	type PublicKeyCredentialRequestOptionsJSON
 } from '@simplewebauthn/server'
 
-import { delay } from '$utils/timing'
+import { MinimumDelay } from '$utils/timing'
 
 export const logout = command(async () => {
 	const event = getRequestEvent()
@@ -101,6 +101,8 @@ export const startLogin = form(
 		timezone: z.string().optional()
 	}),
 	async ({ identifier: identifierRaw, timezone }) => {
+		const delayed = new MinimumDelay(125)
+
 		const event = getRequestEvent()
 		await Auth.ratelimit.expensive(event)
 
@@ -123,6 +125,7 @@ export const startLogin = form(
 		const userResult = await AuthCore.getUser({ identifier })
 
 		if (!userResult.success || userResult.data === undefined) {
+			await delayed.wait()
 			throw error(500, 'Failed to get user')
 		}
 
@@ -137,6 +140,7 @@ export const startLogin = form(
 		}
 
 		if (passkeyAvailable) {
+			await delayed.wait()
 			return {
 				identifier: identifier,
 				codeSent: false,
@@ -152,6 +156,7 @@ export const startLogin = form(
 			timezone: timezone
 		})
 
+		await delayed.wait()
 		return {
 			identifier: identifier,
 			codeSent: true,
@@ -168,8 +173,6 @@ export const sendLoginCode = form(
 	async ({ identifier: identifierRaw, timezone }) => {
 		const event = getRequestEvent()
 		await Auth.ratelimit.expensive(event)
-
-		await delay(300)
 
 		const { locals } = event
 
@@ -204,8 +207,6 @@ export const sendReauthCode = form(
 	async ({ timezone }) => {
 		const event = getRequestEvent()
 		await Auth.ratelimit.expensive(event)
-
-		await delay(300)
 
 		const { locals } = event
 

@@ -5,7 +5,6 @@ import Auth from '$lib/server/auth'
 import AuthCore from '$lib/server/auth/core'
 import { AuthEmails } from '$lib/server/auth'
 import { unwrap } from '$utils/structured-response'
-import { delay } from '$utils/timing'
 
 export const getUser = query(async () => {
 	const event = getRequestEvent()
@@ -128,8 +127,6 @@ export const verifyEmailChange = form(
 		if (!session || !user) {
 			throw error(401, 'Action requires you to reauthenticate')
 		}
-
-		await delay(2000)
 
 		// Get the pending challenge for this session
 		const challenge = unwrap(
