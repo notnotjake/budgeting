@@ -31,7 +31,7 @@ export const updateUserName = form(
 		const { user } = event.locals
 
 		if (!user) {
-			throw error(401)
+			throw error(401, 'Action requires you to reauthenticate')
 		}
 
 		if (name === user.name) {
@@ -67,7 +67,7 @@ export const startEmailChange = form(
 		const { session, user } = event.locals
 
 		if (!session || !user || !hasRecentAuth(event)) {
-			throw error(401, 'Please reauthenticate')
+			throw error(401, 'Action requires you to reauthenticate')
 		}
 
 		// Reject emails containing colon (reserved for internal use)
@@ -126,7 +126,7 @@ export const verifyEmailChange = form(
 		const { session, user } = event.locals
 
 		if (!session || !user) {
-			throw error(401)
+			throw error(401, 'Action requires you to reauthenticate')
 		}
 
 		await delay(2000)
@@ -206,7 +206,7 @@ export const deleteUserAccount = command(async () => {
 	const { session, user } = event.locals
 
 	if (!session || !user || !hasRecentAuth(event)) {
-		throw error(401, 'Please reauthenticate')
+		throw error(401, 'Action requires you to reauthenticate')
 	}
 
 	// delete user
@@ -234,7 +234,7 @@ function hasRecentAuth(event: RequestEvent) {
 	const { locals } = event
 
 	if (!locals.session || !locals.user) {
-		throw error(401, 'Requires recent authentication. Please reauthenticate and try again')
+		throw error(401, 'Action requires you to reauthenticate')
 	}
 
 	const buffer = 3 * 60 * 1000 // 3 mins in ms

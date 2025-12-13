@@ -70,12 +70,7 @@
 	{...verifyEmailChange.enhance(async (opts) =>
 		verifyEmailChangeForm.enhance(opts, {
 			onReturn: async ({ result }) => {
-				if (result.success === false) {
-					codeValue = ''
-					triggerShake()
-					await delay(1300)
-					verifyEmailChangeForm.reset()
-				} else if (result.success === true) {
+				if (result.success) {
 					await delay(3000)
 					onSuccess()
 				}
