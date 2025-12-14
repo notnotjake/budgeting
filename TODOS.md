@@ -1,7 +1,5 @@
 welcome page
 
-- redirect to welcome not working
-- change name doesnt work (or update) on first try
 - improve wording for add passky label
 - show welcome message after redirecting from welcome
 

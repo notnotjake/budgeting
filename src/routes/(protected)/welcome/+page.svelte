@@ -72,22 +72,22 @@
 					class="z-10 w-full rounded-3xl bg-neutral-900 px-8 py-10 text-neutral-100 shadow-[inset_0_1px_1.5px_rgba(255,255,255,0.09),inset_0_-1px_4px_rgba(255,255,255,0.03)]"
 					in:fly={{ y: 80, duration: 250, delay: 500 }}
 				>
-					{#await getUserPromise}
-						<div class="flex min-h-64 items-center justify-center">
-							<p class="text-neutral-500">Loading...</p>
-						</div>
-					{:then user}
-						<div class="flex flex-col items-center gap-8">
-							<!-- Profile Picture -->
+					<div class="flex flex-col items-center gap-8">
+						<!-- Profile Picture -->
+						{#await getUserPromise}
+							<div class="flex h-20 w-20 items-center justify-center rounded-full bg-neutral-800">
+								<p class="text-sm text-neutral-500">...</p>
+							</div>
+						{:then user}
 							<ProfilePic profilePic={user.profilePic} />
+						{/await}
 
-							<!-- Name -->
-							<EditName />
+						<!-- Name -->
+						<EditName />
 
-							<!-- Passkey -->
-							<AddPasskey />
-						</div>
-					{/await}
+						<!-- Passkey -->
+						<AddPasskey />
+					</div>
 				</div>
 
 				<!-- Done button -->
