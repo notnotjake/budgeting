@@ -50,7 +50,7 @@
 
 <!-- Account -->
 <Section title="Account Settings">
-	<DialogItem icon={IconUserCircle} title="Login Method" hint={user.identifier ?? ''}>
+	<DialogItem icon={IconUserCircle} title="Login Method" hint={user.identifier ?? ''} protected>
 		{#snippet content({ close })}
 			<LoginMethod {close} />
 		{/snippet}
@@ -86,7 +86,7 @@
 
 	<Divider />
 
-	<DialogItem icon={IconTrashFilled} title="Delete Account">
+	<DialogItem icon={IconTrashFilled} title="Delete Account" protected>
 		{#snippet content({ close })}
 			<DeleteAccount {close} />
 		{/snippet}

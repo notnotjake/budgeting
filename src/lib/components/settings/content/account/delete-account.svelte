@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { onMount } from 'svelte'
 	import { goto } from '$app/navigation'
 	import { resolve } from '$app/paths'
 	import { Dialog } from 'bits-ui'
@@ -10,23 +9,12 @@
 		IconAlertTriangleFilled
 	} from '@tabler/icons-svelte'
 	import DialogHeader from '../../components/dialog-header.svelte'
-	import { getDialogContext } from '../../dialog-context'
 	import { scale } from 'svelte/transition'
 	import { AdaptSwap, AdaptFit } from '$ui/adapt'
 	import { SuspenseText } from '$ui/feedback'
 	import { deleteUserAccount } from '$remotes/auth/user.remote'
 
 	let { close }: { close: () => void } = $props()
-
-	const { requireRecentAuth } = getDialogContext()
-
-	onMount(async () => {
-		const authed = await requireRecentAuth()
-
-		if (!authed) {
-			close()
-		}
-	})
 
 	type Step = {
 		heading: string

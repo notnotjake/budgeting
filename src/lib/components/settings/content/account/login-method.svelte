@@ -105,8 +105,6 @@
 	}
 
 	onMount(async () => {
-		await checkReauth()
-
 		await tick()
 		startEmailChangeForm.reset()
 		startEmailChange.fields.newEmail.set(user.identifier)

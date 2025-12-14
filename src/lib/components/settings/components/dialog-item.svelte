@@ -4,6 +4,7 @@
 	import { Dialog } from 'bits-ui'
 	import { fade } from 'svelte/transition'
 	import { IconDotsVertical } from '@tabler/icons-svelte'
+	import { SuspenseSpinner } from '$ui/feedback'
 	import { getDialogContext } from '../dialog-context'
 
 	type Props = {
@@ -11,18 +12,32 @@
 		icon: TablerIcon
 		title: string
 		hint?: string | null
+		protected?: boolean
 	}
 
-	let { content, icon: Icon, title, hint }: Props = $props()
+	let { content, icon: Icon, title, hint, protected: requiresReauth = false }: Props = $props()
 
 	let open = $state(false)
+	let checkingAuth = $state(false)
 	let innerHeight = $state<number>(0)
 
 	const close = () => {
 		open = false
 	}
 
-	const { setNestedDialogHeight, scrollToTop } = getDialogContext()
+	const { setNestedDialogHeight, scrollToTop, requireRecentAuth } = getDialogContext()
+
+	async function handleTriggerClick() {
+		if (requiresReauth) {
+			checkingAuth = true
+			const authed = await requireRecentAuth()
+			checkingAuth = false
+
+			if (!authed) return
+		}
+
+		open = true
+	}
 
 	$effect(() => {
 		if (open) {
@@ -40,7 +55,8 @@
 </script>
 
 <Dialog.Root bind:open>
-	<Dialog.Trigger
+	<button
+		onclick={handleTriggerClick}
 		class="w-full rounded-2xl px-3 py-2 transition-all duration-200 hover:bg-neutral-800/80"
 	>
 		<div class="flex h-10 items-center gap-2">
@@ -56,11 +72,15 @@
 
 			<div class="flex grow items-center justify-end gap-3">
 				<div class="h-fit w-fit origin-center transition-transform">
-					<IconDotsVertical class="text-neutral-300 hover:text-neutral-100" />
+					{#if checkingAuth}
+						<SuspenseSpinner size={20} thickness={10} speed="fast" />
+					{:else}
+						<IconDotsVertical class="text-neutral-300 hover:text-neutral-100" />
+					{/if}
 				</div>
 			</div>
 		</div>
-	</Dialog.Trigger>
+	</button>
 	<Dialog.Content forceMount preventScroll={false} interactOutsideBehavior="ignore">
 		{#snippet child({ props, open })}
 			{#if open}

@@ -1,4 +1,3 @@
-- dialog loading ui to wait for reauth
 - change email let password managers know of change
 - configure proper migrations for railway deployment
 - visual oddity when opening passkey context menu, the settings title goes behind the profile pic
