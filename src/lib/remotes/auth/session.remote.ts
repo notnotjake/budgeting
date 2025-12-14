@@ -26,6 +26,25 @@ export const getUserSessions = query(async () => {
 	}
 })
 
+export const getSessionCount = query(async () => {
+	const event = getRequestEvent()
+	await Auth.ratelimit.standard(event)
+
+	const { session, user } = event.locals
+
+	if (!session || !user) {
+		throw error(401, 'Unauthorized')
+	}
+
+	const result = await AuthCore.listAllUserSessions(user.id)
+
+	if (!result.success) {
+		throw error(500)
+	}
+
+	return result.data?.length ?? 0
+})
+
 export const invalidateSession = command(z.string(), async (sessionId) => {
 	const event = getRequestEvent()
 	await Auth.ratelimit.standard(event)
@@ -44,6 +63,7 @@ export const invalidateSession = command(z.string(), async (sessionId) => {
 
 	// Update the sessions list
 	await getUserSessions().refresh()
+	await getSessionCount().refresh()
 })
 
 export const invalidateAllSessions = command(async () => {
@@ -67,4 +87,5 @@ export const invalidateAllSessions = command(async () => {
 
 	// Update the sessions list
 	await getUserSessions().refresh()
+	await getSessionCount().refresh()
 })

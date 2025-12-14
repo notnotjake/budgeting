@@ -1,7 +1,9 @@
-- change email flow
+- change email let password managers know of change
 
 - hint text on passkeys and sessions (currently hard coded)
   maybe should have a remote for settings context that handles user name, email, profile pic, and these hints and other settings.
+
+- configure proper migrations for railway deployment
 
 - visual oddity when opening passkey context menu, the settings title goes behind the profile pic
 

@@ -88,7 +88,7 @@
 			</div>
 
 			<DropdownMenu.Content
-				class="w-44 rounded-[1.15rem] bg-black p-[0.25rem] shadow-lg outline-none"
+				class="w-44 rounded-[1.15rem] bg-black p-1 shadow-lg outline-none"
 				side="left"
 				align="center"
 				sideOffset={8}
