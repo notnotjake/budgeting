@@ -27,7 +27,13 @@
 
 	let passkeyCountPromise = $derived(getPasskeyCount())
 	let passkeyCount = $derived(await passkeyCountPromise)
-	let passkeyHint = $derived(passkeyCount === 1 ? '1 Passkey' : `${passkeyCount} Passkeys`)
+	let passkeyHint = $derived(
+		passkeyCount === 0
+			? 'No Passkeys'
+			: passkeyCount === 1
+				? '1 Passkey'
+				: `${passkeyCount} Passkeys`
+	)
 
 	let sessionCountPromise = $derived(getSessionCount())
 	let sessionCount = $derived(await sessionCountPromise)
