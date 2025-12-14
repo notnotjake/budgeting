@@ -37,9 +37,6 @@ export const startReauth = query(
 		timezone: z.string().optional()
 	}),
 	async ({ timezone }) => {
-		// TODO: Remove this test delay
-		await delay(1000)
-
 		const event = getRequestEvent()
 		const { locals } = event
 
