@@ -170,8 +170,8 @@
 						class={createClass(
 							'absolute inset-0 z-10 flex h-full w-full items-center justify-center rounded-xl transition-all duration-150',
 							resultSuccess
-								? 'translate-y-0 bg-green-200/20 opacity-100 backdrop-blur'
-								: 'tbackdrop-blur-none translate-y-full bg-transparent opacity-0'
+								? 'translate-y-0 bg-green-200/40 opacity-100 backdrop-blur'
+								: 'translate-y-full bg-transparent opacity-0 backdrop-blur-none'
 						)}
 					>
 						<div class={createClass('flex h-full w-full items-center justify-center')}>
