@@ -16,12 +16,8 @@
 	const { requireRecentAuth } = getDialogContext()
 
 	function getBrowserName(): string {
-		try {
-			const result = UAParser(navigator.userAgent)
-			return result.browser.name || ''
-		} catch {
-			return ''
-		}
+		const result = UAParser(navigator.userAgent)
+		return result.browser.name || ''
 	}
 
 	let name = $state('')
@@ -64,8 +60,7 @@
 			} else {
 				error = true
 			}
-		} catch (e) {
-			console.error('Error adding passkey:', e)
+		} catch {
 			pending = false
 			error = true
 		}

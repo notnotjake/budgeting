@@ -17,35 +17,29 @@ export const startPasskeyRegistration = query(async () => {
 		throw error(401)
 	}
 
-	try {
-		const options = await generateRegistrationOptions({
-			rpName: Auth.passkeys.rpName,
-			rpID: Auth.passkeys.rpID,
-			timeout: Auth.durations.challengePasskeyMaxAge,
-			userName: user.identifier,
-			userDisplayName: user.name
-		})
+	const options = await generateRegistrationOptions({
+		rpName: Auth.passkeys.rpName,
+		rpID: Auth.passkeys.rpID,
+		timeout: Auth.durations.challengePasskeyMaxAge,
+		userName: user.identifier,
+		userDisplayName: user.name
+	})
 
-		const expiresAt = new Date(Date.now() + Auth.durations.challengePasskeyMaxAge)
+	const expiresAt = new Date(Date.now() + Auth.durations.challengePasskeyMaxAge)
 
-		const result = await AuthCore.createChallenge({
-			identifier: user.identifier,
-			sessionId: session.id,
-			type: 'passkey_register',
-			credential: options.challenge,
-			expiresAt
-		})
+	const result = await AuthCore.createChallenge({
+		identifier: user.identifier,
+		sessionId: session.id,
+		type: 'passkey_register',
+		credential: options.challenge,
+		expiresAt
+	})
 
-		if (!result.success) {
-			console.error('Failed to create passkey registration challenge')
-			throw error(500)
-		}
-
-		return { success: true, options }
-	} catch (e) {
-		console.error('Error in startPasskeyRegistration:', e)
-		throw e
+	if (!result.success) {
+		throw error(500)
 	}
+
+	return { success: true, options }
 })
 
 export const verifyPasskeyRegistration = command(
@@ -63,56 +57,48 @@ export const verifyPasskeyRegistration = command(
 			throw error(401)
 		}
 
-		try {
-			const challenge = await AuthCore.getChallenge({
-				type: 'passkey_register',
-				sessionId: session.id
+		const challenge = await AuthCore.getChallenge({
+			type: 'passkey_register',
+			sessionId: session.id
+		})
+
+		if (!challenge.success || !challenge.data || !challenge.data.credential) {
+			throw error(500)
+		}
+
+		const attempt = await verifyRegistrationResponse({
+			response: registration,
+			expectedChallenge: challenge.data.credential,
+			expectedOrigin: Auth.passkeys.expectedOrigin,
+			expectedRPID: Auth.passkeys.rpID,
+			requireUserVerification: true
+		})
+
+		if (attempt.verified) {
+			const createPasskeyResult = await AuthCore.createPasskey({
+				name,
+				userId: user.id,
+				passkeyId: attempt.registrationInfo?.credential.id,
+				publicKey: attempt.registrationInfo?.credential.publicKey
 			})
 
-			if (!challenge.success || !challenge.data || !challenge.data.credential) {
-				console.error('Failed to get passkey registration challenge')
+			if (!createPasskeyResult.success) {
 				throw error(500)
 			}
 
-			const attempt = await verifyRegistrationResponse({
-				response: registration,
-				expectedChallenge: challenge.data.credential,
-				expectedOrigin: Auth.passkeys.expectedOrigin,
-				expectedRPID: Auth.passkeys.rpID,
-				requireUserVerification: true
+			await AuthCore.cleanupChallengesByType({
+				type: 'passkey_register',
+				sessionId: session.id,
+				identifier: user.identifier
 			})
 
-			if (attempt.verified) {
-				const createPasskeyResult = await AuthCore.createPasskey({
-					name,
-					userId: user.id,
-					passkeyId: attempt.registrationInfo?.credential.id,
-					publicKey: attempt.registrationInfo?.credential.publicKey
-				})
+			await getUserPasskeys().refresh()
+			await getPasskeyCount().refresh()
 
-				if (!createPasskeyResult.success) {
-					console.error('Failed to create passkey in database')
-					throw error(500)
-				}
-
-				await AuthCore.cleanupChallengesByType({
-					type: 'passkey_register',
-					sessionId: session.id,
-					identifier: user.identifier
-				})
-
-				await getUserPasskeys().refresh()
-				await getPasskeyCount().refresh()
-
-				return { success: true }
-			}
-
-			console.error('Passkey verification failed - attempt not verified')
-			throw error(500)
-		} catch (e) {
-			console.error('Error in verifyPasskeyRegistration:', e)
-			throw e
+			return { success: true }
 		}
+
+		throw error(500)
 	}
 )
 
