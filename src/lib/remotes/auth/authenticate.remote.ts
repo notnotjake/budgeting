@@ -11,7 +11,7 @@ import {
 	type PublicKeyCredentialRequestOptionsJSON
 } from '@simplewebauthn/server'
 
-import { MinimumDelay } from '$utils/timing'
+import { MinimumDelay, delay } from '$utils/timing'
 
 export const logout = command(async () => {
 	const event = getRequestEvent()
@@ -37,6 +37,9 @@ export const startReauth = query(
 		timezone: z.string().optional()
 	}),
 	async ({ timezone }) => {
+		// TODO: Remove this test delay
+		await delay(1000)
+
 		const event = getRequestEvent()
 		const { locals } = event
 
