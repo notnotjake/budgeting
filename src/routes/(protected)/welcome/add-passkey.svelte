@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { startRegistration } from '@simplewebauthn/browser'
 	import { startPasskeyRegistration, verifyPasskeyRegistration } from '$remotes/auth/passkey.remote'
+	import { UAParser } from 'ua-parser-js'
 
 	import { createClass } from '@opensky/style'
 	import { scale } from 'svelte/transition'
@@ -8,6 +9,11 @@
 	import { AdaptSwap } from '$ui/adapt'
 	import { SuspenseSpinner } from '$ui/feedback'
 	import IconPasskey from '$lib/components/auth/passkey-icon.svelte'
+
+	function getBrowserName(): string {
+		const result = UAParser(navigator.userAgent)
+		return result.browser.name || ''
+	}
 
 	let isAdding = $state(false)
 	let name = $state('')
@@ -19,8 +25,15 @@
 
 	function startAdding() {
 		isAdding = true
+		name = getBrowserName()
 		// Focus input after transition
-		setTimeout(() => nameInput?.focus(), 100)
+		setTimeout(() => {
+			nameInput?.focus()
+			// Select all text so user can easily replace
+			if (nameInput instanceof HTMLInputElement) {
+				nameInput.select()
+			}
+		}, 100)
 	}
 
 	function cancel() {
@@ -95,7 +108,7 @@
 					bind:value={name}
 					maxlength="64"
 					bind:this={nameInput}
-					placeholder="Name (browser or password manager)"
+					placeholder="Passkey name"
 					class="min-w-0 grow border-none bg-transparent font-medium text-white outline-none placeholder:text-neutral-500"
 				/>
 

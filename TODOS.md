@@ -1,6 +1,3 @@
-welcome page
-
-- improve wording for add passky label
 - show welcome message after redirecting from welcome
 
 - change email let password managers know of change

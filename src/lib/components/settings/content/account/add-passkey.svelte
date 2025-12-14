@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { startRegistration } from '@simplewebauthn/browser'
 	import { startPasskeyRegistration, verifyPasskeyRegistration } from '$remotes/auth/passkey.remote'
+	import { UAParser } from 'ua-parser-js'
 
 	import { onMount } from 'svelte'
 	import { createClass } from '@opensky/style'
@@ -13,6 +14,11 @@
 	let { close }: { close: () => void } = $props()
 
 	const { requireRecentAuth } = getDialogContext()
+
+	function getBrowserName(): string {
+		const result = UAParser(navigator.userAgent)
+		return result.browser.name || ''
+	}
 
 	let name = $state('')
 	let nameInput = $state<HTMLElement>()
@@ -30,8 +36,12 @@
 		}
 
 		checkingAuth = false
+		name = getBrowserName()
 		await new Promise((r) => setTimeout(r, 0))
 		nameInput?.focus()
+		if (nameInput instanceof HTMLInputElement) {
+			nameInput.select()
+		}
 	})
 
 	async function addPasskey() {
@@ -81,7 +91,7 @@
 					bind:value={name}
 					maxlength="64"
 					bind:this={nameInput}
-					placeholder="Name (browser or password manager)"
+					placeholder="Passkey name"
 					class="grow border-none font-medium outline-none"
 				/>
 
