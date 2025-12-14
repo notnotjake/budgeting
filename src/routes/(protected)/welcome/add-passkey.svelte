@@ -6,7 +6,7 @@
 	import { scale } from 'svelte/transition'
 	import { IconX, IconArrowRight, IconCheck } from '@tabler/icons-svelte'
 	import { AdaptSwap } from '$ui/adapt'
-	import { SuspenseSpinner, SuspenseText } from '$ui/feedback'
+	import { SuspenseSpinner } from '$ui/feedback'
 	import IconPasskey from '$lib/components/auth/passkey-icon.svelte'
 
 	let isAdding = $state(false)
