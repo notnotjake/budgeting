@@ -1,5 +1,7 @@
 <script lang="ts">
 	import { getUser } from '$remotes/auth/user.remote'
+	import { getPasskeyCount } from '$remotes/auth/passkey.remote'
+	import { getSessionCount } from '$remotes/auth/session.remote'
 
 	import {
 		IconUserCircle,
@@ -22,6 +24,22 @@
 
 	let getUserPromise = $derived(getUser())
 	let user = $derived(await getUserPromise)
+
+	let passkeyCountPromise = $derived(getPasskeyCount())
+	let passkeyCount = $derived(await passkeyCountPromise)
+	let passkeyHint = $derived(
+		passkeyCount === 0
+			? 'No Passkeys'
+			: passkeyCount === 1
+				? '1 Passkey'
+				: `${passkeyCount} Passkeys`
+	)
+
+	let sessionCountPromise = $derived(getSessionCount())
+	let sessionCount = $derived(await sessionCountPromise)
+	let sessionHint = $derived(
+		sessionCount === 1 ? 'Signed in 1 place' : `Signed in ${sessionCount} places`
+	)
 </script>
 
 <!-- Profile -->
@@ -44,7 +62,7 @@
 		id="account-passkeys"
 		icon={IconKeyFilled}
 		title="Passkeys"
-		hint="1 Passkey"
+		hint={passkeyHint}
 		actionButtonText="Add Passkey"
 	>
 		{#snippet content({ registerAction })}
@@ -58,7 +76,7 @@
 		id="account-sessions"
 		icon={IconDeviceIpadHorizontalPin}
 		title="Sessions"
-		hint="Signed in 3 places"
+		hint={sessionHint}
 		actionButtonText="Remove All"
 	>
 		{#snippet content({ registerAction })}

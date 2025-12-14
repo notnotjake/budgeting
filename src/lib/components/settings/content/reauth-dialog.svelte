@@ -70,6 +70,7 @@
 									bind:start={startReauth}
 									onSuccess={handleSuccess}
 									onCancel={handleCancel}
+									suppressRedirect={true}
 								/>
 							</div>
 

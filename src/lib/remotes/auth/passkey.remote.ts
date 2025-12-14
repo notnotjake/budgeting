@@ -93,6 +93,7 @@ export const verifyPasskeyRegistration = command(
 			})
 
 			await getUserPasskeys().refresh()
+			await getPasskeyCount().refresh()
 
 			return { success: true }
 		}
@@ -115,6 +116,25 @@ export const getUserPasskeys = query(async () => {
 
 	if (keysResult.success) {
 		return keysResult?.data
+	} else {
+		throw error(500)
+	}
+})
+
+export const getPasskeyCount = query(async () => {
+	const event = getRequestEvent()
+	await Auth.ratelimit.standard(event)
+
+	const { session, user } = event.locals
+
+	if (!session || !user) {
+		throw error(401)
+	}
+
+	const keysResult = await AuthCore.listUserPasskeys({ userId: user.id })
+
+	if (keysResult.success) {
+		return keysResult.data?.length ?? 0
 	} else {
 		throw error(500)
 	}
@@ -149,6 +169,7 @@ export const renamePasskey = query(
 		}
 
 		await getUserPasskeys().refresh()
+		await getPasskeyCount().refresh()
 
 		return { success: true }
 	}
@@ -183,6 +204,7 @@ export const deletePasskey = command(
 		}
 
 		await getUserPasskeys().refresh()
+		await getPasskeyCount().refresh()
 
 		return { success: true }
 	}

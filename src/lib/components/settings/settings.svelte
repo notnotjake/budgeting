@@ -3,6 +3,7 @@
 	import { createClass } from '@opensky/style'
 	import { slide } from 'svelte/transition'
 
+	import { startReauth } from '$remotes/auth/authenticate.remote'
 	import { setDialogContext } from './dialog-context'
 	import Toolbar from './components/toolbar.svelte'
 	import Content from './content/index.svelte'
@@ -24,8 +25,19 @@
 	let showReauthDialog = $state(false)
 	let reauthResolve = $state<((success: boolean) => void) | null>(null)
 
-	// Opens reauth dialog and returns promise that resolves on user action
-	const requireRecentAuth = (): Promise<boolean> => {
+	// Checks if user has recent auth, opens reauth dialog if not
+	const requireRecentAuth = async (): Promise<boolean> => {
+		try {
+			const result = await startReauth({
+				timezone: Intl.DateTimeFormat().resolvedOptions().timeZone
+			})
+			if (result.recentAuth) {
+				return true
+			}
+		} catch {
+			// If check fails, proceed to show dialog
+		}
+
 		return new Promise((resolve) => {
 			reauthResolve = resolve
 			showReauthDialog = true
