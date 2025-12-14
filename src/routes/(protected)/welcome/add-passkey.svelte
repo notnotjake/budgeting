@@ -11,8 +11,12 @@
 	import IconPasskey from '$lib/components/auth/passkey-icon.svelte'
 
 	function getBrowserName(): string {
-		const result = UAParser(navigator.userAgent)
-		return result.browser.name || ''
+		try {
+			const result = UAParser(navigator.userAgent)
+			return result.browser.name || ''
+		} catch {
+			return ''
+		}
 	}
 
 	let isAdding = $state(false)
@@ -58,7 +62,8 @@
 			} else {
 				error = true
 			}
-		} catch {
+		} catch (e) {
+			console.error('Error adding passkey:', e)
 			pending = false
 			error = true
 		}
