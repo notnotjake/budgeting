@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { goto } from '$app/navigation'
 	import { onMount, tick } from 'svelte'
 	import { sendLoginCode, sendReauthCode, verifyLoginCode } from '$remotes/auth/authenticate.remote'
 	import { createEnhancedForm } from '@opensky/remotes'
@@ -108,8 +107,7 @@
 						if (reauth && onSuccess) {
 							onSuccess()
 						} else if (result.redirectUrl) {
-							// eslint-disable-next-line svelte/no-navigation-without-resolve
-							goto(result.redirectUrl, { invalidateAll: true })
+							window.location.href = result.redirectUrl
 						}
 					}
 				},
