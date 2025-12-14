@@ -11,8 +11,7 @@
 		IconTrash,
 		IconPencil,
 		IconX,
-		IconArrowRight,
-		IconCheck
+		IconArrowRight
 	} from '@tabler/icons-svelte'
 	import { AdaptSwap } from '$ui/adapt'
 	import { SuspenseSpinner } from '$ui/feedback'
