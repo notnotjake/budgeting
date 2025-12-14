@@ -81,7 +81,7 @@
 					bind:value={name}
 					maxlength="64"
 					bind:this={nameInput}
-					placeholder="Name Passkey"
+					placeholder="Name (browser or password manager)"
 					class="grow border-none font-medium outline-none"
 				/>
 

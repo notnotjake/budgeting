@@ -79,13 +79,13 @@
 		</button>
 	{:else}
 		<div
-			class="flex w-full flex-col items-center rounded-3xl bg-neutral-800 px-3 py-3"
+			class="flex w-full flex-col items-center gap-2 rounded-3xl bg-neutral-800 px-3 py-3"
 			in:scale={{ start: 0.95, duration: 150 }}
 		>
 			<div class="flex w-full items-center gap-2">
 				<button
 					onclick={cancel}
-					class="aspect-square rounded-full p-2 text-neutral-400 hover:bg-neutral-700 hover:text-neutral-100 active:scale-95"
+					class="aspect-square shrink-0 rounded-full p-2 text-neutral-400 hover:bg-neutral-700 hover:text-neutral-100 active:scale-95"
 				>
 					<IconX size={20} />
 				</button>
@@ -95,20 +95,16 @@
 					bind:value={name}
 					maxlength="64"
 					bind:this={nameInput}
-					placeholder="Name your passkey"
-					class="grow border-none bg-transparent font-medium text-white outline-none placeholder:text-neutral-600"
+					placeholder="Name (browser or password manager)"
+					class="min-w-0 grow border-none bg-transparent font-medium text-white outline-none placeholder:text-neutral-500"
 				/>
-
-				{#if error}
-					<p class="pr-1.5 text-sm whitespace-nowrap text-rose-500">Error, try again</p>
-				{/if}
 
 				<AdaptSwap bind:isActive={pending}>
 					<button
 						onclick={async () => await addPasskey()}
 						disabled={name.length < 3}
 						class={createClass(
-							'rounded-full px-4 py-2 transition-all active:scale-[0.97]',
+							'shrink-0 rounded-full px-4 py-2 transition-all active:scale-[0.97]',
 							name.length >= 3
 								? 'bg-blue-vibrant-light text-white shadow-[inset_0.5px_0.5px_0_rgba(255,255,255,0.3),inset_-0.5px_-0.5px_0_rgba(255,255,255,0.15)]'
 								: 'bg-neutral-700 text-neutral-500'
@@ -133,6 +129,10 @@
 					{/snippet}
 				</AdaptSwap>
 			</div>
+
+			{#if error}
+				<p class="text-sm text-rose-500">Error, try again</p>
+			{/if}
 		</div>
 	{/if}
 </div>

@@ -109,7 +109,7 @@
 							onSuccess()
 						} else if (result.redirectUrl) {
 							// eslint-disable-next-line svelte/no-navigation-without-resolve
-							goto(result.redirectUrl)
+							goto(result.redirectUrl, { invalidateAll: true })
 						}
 					}
 				},
