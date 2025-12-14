@@ -12,6 +12,7 @@
 
 	import { Suspense } from '$ui/feedback'
 	import ResendEmailButton from './resend-email-button.svelte'
+	import { handleLoginSuccess } from './login-user'
 
 	type Props = {
 		codeSent: boolean
@@ -107,7 +108,7 @@
 						if (reauth && onSuccess) {
 							onSuccess()
 						} else if (result.redirectUrl) {
-							window.location.href = result.redirectUrl
+							handleLoginSuccess(result.redirectUrl)
 						}
 					}
 				},

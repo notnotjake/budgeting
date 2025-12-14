@@ -2,6 +2,7 @@
 	import { onMount, tick } from 'svelte'
 	import { startLoginPasskey, verifyLoginPasskey } from '$remotes/auth/authenticate.remote'
 	import { startAuthentication } from '@simplewebauthn/browser'
+	import { handleLoginSuccess } from './login-user'
 
 	async function tryLoginPasskey() {
 		try {
@@ -14,7 +15,7 @@
 			const result = await verifyLoginPasskey({ attestation: authenticationResponse })
 
 			if (result.success && result.redirectUrl) {
-				window.location.href = result.redirectUrl
+				handleLoginSuccess(result.redirectUrl)
 			}
 		} catch (e) {
 			console.error(e)

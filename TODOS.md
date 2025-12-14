@@ -1,7 +1,4 @@
-- ensure we are discarding lastSeenAt when logging out / changed accounts
 - dialog loading ui to wait for reauth
-- show welcome message after redirecting from welcome
-
 - change email let password managers know of change
 - configure proper migrations for railway deployment
 - visual oddity when opening passkey context menu, the settings title goes behind the profile pic

@@ -9,6 +9,7 @@
 	import { IconReload } from '@tabler/icons-svelte'
 	import IconPasskey from './passkey-icon.svelte'
 	import { Suspense } from '$ui/feedback'
+	import { handleLoginSuccess } from './login-user'
 
 	type Props = {
 		identifier?: string
@@ -51,7 +52,7 @@
 				if (reauth && onSuccess) {
 					onSuccess()
 				} else if (result.redirectUrl) {
-					window.location.href = result.redirectUrl
+					handleLoginSuccess(result.redirectUrl)
 				}
 			}
 		} catch (e) {
