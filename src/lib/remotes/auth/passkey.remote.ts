@@ -140,7 +140,7 @@ export const getPasskeyCount = query(async () => {
 	}
 })
 
-export const renamePasskey = query(
+export const renamePasskey = command(
 	z.object({
 		passkeyId: z.string(),
 		newName: z.string().min(2).max(32)

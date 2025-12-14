@@ -1,5 +1,5 @@
 - ensure we are discarding lastSeenAt when logging out / changed accounts
-- passkeys not working in prod
+- dialog loading ui to wait for reauth
 - show welcome message after redirecting from welcome
 
 - change email let password managers know of change
