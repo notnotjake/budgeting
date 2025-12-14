@@ -52,7 +52,7 @@
 	}
 </script>
 
-<div class="flex w-full flex-col items-center gap-4 pt-4">
+<div class="flex w-full flex-col items-center gap-4 pt-1">
 	<!-- Header -->
 	<div class="flex flex-col items-center gap-1">
 		<h3 class="text-lg font-semibold text-neutral-100">Secure your account</h3>

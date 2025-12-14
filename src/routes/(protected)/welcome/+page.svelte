@@ -73,17 +73,21 @@
 					in:fly={{ y: 80, duration: 250, delay: 500 }}
 				>
 					<div class="flex flex-col items-center gap-8">
-						<!-- Profile Picture -->
-						{#await getUserPromise}
-							<div class="flex h-20 w-20 items-center justify-center rounded-full bg-neutral-800">
-								<p class="text-sm text-neutral-500">...</p>
-							</div>
-						{:then user}
-							<ProfilePic profilePic={user.profilePic} />
-						{/await}
+						<div class="flex w-full flex-col items-center gap-4">
+							<!-- Profile Picture -->
+							{#await getUserPromise}
+								<div class="flex h-20 w-20 items-center justify-center rounded-full bg-neutral-800">
+									<p class="text-sm text-neutral-500">...</p>
+								</div>
+							{:then user}
+								<ProfilePic profilePic={user.profilePic} />
+							{/await}
 
-						<!-- Name -->
-						<EditName />
+							<!-- Name -->
+							<EditName />
+						</div>
+
+						<div class="h-1 w-full rounded-full bg-neutral-800"></div>
 
 						<!-- Passkey -->
 						<AddPasskey />
