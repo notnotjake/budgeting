@@ -58,8 +58,9 @@
 		<form
 			{...updateUserName.preflight(updateUserNameSchema).enhance(async (opts) =>
 				updateUserNameForm.enhance(opts, {
-					onReturn: ({ result }) => {
+					onReturn: async ({ result }) => {
 						if (result.success) {
+							await getUser().refresh()
 							editingName = false
 						}
 					}

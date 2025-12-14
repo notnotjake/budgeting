@@ -23,7 +23,7 @@ const DEFAULT_CONFIG: AuthConfig = {
 	redirects: {
 		afterLogin: '/app',
 		afterLogout: '/',
-		afterAccountCreated: '/app/welcome'
+		afterAccountCreated: '/welcome'
 	},
 	durations: {
 		recentAuthWindow: 10 * MIN_IN_MS,

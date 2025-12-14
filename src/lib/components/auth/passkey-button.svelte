@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { goto } from '$app/navigation'
 	import { onMount, tick } from 'svelte'
 	import { startLoginPasskey, verifyLoginPasskey } from '$remotes/auth/authenticate.remote'
 	import { startAuthentication } from '@simplewebauthn/browser'
@@ -52,8 +51,7 @@
 				if (reauth && onSuccess) {
 					onSuccess()
 				} else if (result.redirectUrl) {
-					// eslint-disable-next-line svelte/no-navigation-without-resolve
-					goto(result.redirectUrl)
+					window.location.href = result.redirectUrl
 				}
 			}
 		} catch (e) {

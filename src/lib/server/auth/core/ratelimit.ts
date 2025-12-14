@@ -8,12 +8,21 @@ import type { RatelimitContext, RatelimitResult, RatelimitCallback } from '../ty
  */
 function buildContext(event: RequestEvent): RatelimitContext {
 	const forwarded = event.request.headers.get('x-forwarded-for')
-	const ip = forwarded?.split(',')[0]?.trim() || event.getClientAddress() || 'unknown'
+	let ip = forwarded?.split(',')[0]?.trim()
+
+	if (!ip) {
+		try {
+			ip = event.getClientAddress()
+		} catch {
+			ip = 'unknown'
+		}
+	}
+
 	return {
 		event,
 		user: event.locals.user ?? null,
 		session: event.locals.session ?? null,
-		ip
+		ip: ip || 'unknown'
 	}
 }
 
