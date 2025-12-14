@@ -3,17 +3,13 @@ import { sendAuthEmail } from '$lib/server/email'
 import ratelimit from '$lib/server/ratelimit'
 
 import { site } from '$lib/site-config'
-import { NODE_ENV } from '$env/static/private'
+import { NODE_ENV, PASSKEY_RPID, PASSKEY_ORIGIN } from '$env/static/private'
 
-// Setup passkey values
+// Setup passkey values - use env vars if set, otherwise fall back to site config
 const rpName = site.name
-let rpID: string = site.host
-let expectedOrigin: string = site.url
-
-if (NODE_ENV === 'development') {
-	rpID = 'localhost'
-	expectedOrigin = 'http://localhost:5173'
-}
+const rpID = PASSKEY_RPID || (NODE_ENV === 'development' ? 'localhost' : site.host)
+const expectedOrigin =
+	PASSKEY_ORIGIN || (NODE_ENV === 'development' ? 'http://localhost:5173' : site.url)
 
 // Timing Constants:
 // const DAY_IN_MS = 24 * 60 * 60 * 1000
