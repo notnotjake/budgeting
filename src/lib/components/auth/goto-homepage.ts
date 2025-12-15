@@ -1,0 +1,8 @@
+import { goto } from '$app/navigation'
+import { resolve } from '$app/paths'
+
+export const handleGotoHomepage = async (durationMs: number) => {
+	const expiresAt = new Date(Date.now() + durationMs)
+	document.cookie = `homepageIntent=true; expires=${expiresAt.toUTCString()}; path=/`
+	goto(resolve('/'))
+}

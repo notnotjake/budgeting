@@ -1,12 +1,13 @@
 <script lang="ts">
 	import { onMount, onDestroy } from 'svelte'
 	import { handleLogout } from '$ui/auth/logout'
+	import { handleGotoHomepage } from '$ui/auth/goto-homepage'
 	import { getUser } from '$remotes/auth/user.remote'
 
 	import { createClass } from '@opensky/style'
 	import { fade } from 'svelte/transition'
 	import { createSequence, delay } from '$lib/utils/timing'
-	import { IconSettings, IconDots, IconLogout } from '@tabler/icons-svelte'
+	import { IconSettings, IconDots, IconLogout, IconLink } from '@tabler/icons-svelte'
 	import type { Icon as TablerIcon } from '@tabler/icons-svelte'
 	import { Adapt } from '$ui/adapt'
 	import { DropdownMenu } from 'bits-ui'
@@ -130,6 +131,9 @@
 		collisionPadding={8}
 	>
 		{@render dropdownMenuItem('Settings', IconSettings, openSettings)}
+		{@render dropdownMenuItem('Homepage', IconLink, () => {
+			handleGotoHomepage(1000 * 60 * 90) // 90 mins
+		})}
 		{@render dropdownMenuItem('Logout', IconLogout, () => {
 			try {
 				handleLogout()
