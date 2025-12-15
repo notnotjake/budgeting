@@ -7,4 +7,8 @@ export const load: ServerLoad = async (event) => {
 	if (event.locals.user && !hasHomepageIntent) {
 		throw redirect(303, Auth.redirects.afterLogin)
 	}
+
+	return {
+		loggedIn: !!event.locals.user
+	}
 }

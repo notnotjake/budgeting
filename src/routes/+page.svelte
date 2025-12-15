@@ -1,10 +1,16 @@
 <script lang="ts">
 	import { Button } from '$ui/input'
+
+	let { data } = $props()
+
+	let loggedIn = $derived(data.loggedIn ?? false)
 </script>
 
 <div class="mx-auto flex min-h-full max-w-160 flex-col gap-2 bg-neutral-50 px-6 py-8">
 	<div class="W-full flex justify-end">
-		<Button href="/login" style="primary" rounded="full" class="w-fit bg-neutral-600">Login</Button>
+		<Button href="/login" style="primary" rounded="full" class="w-fit bg-neutral-600"
+			>{loggedIn ? 'App' : 'Login'}</Button
+		>
 	</div>
 
 	<h1 class="text-lg font-medium">SvelteKit Example</h1>
