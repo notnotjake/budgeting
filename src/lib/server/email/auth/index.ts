@@ -126,7 +126,7 @@ export async function accountDeletionCompleted({ email }: sendAccountDeletionCom
 		{
 			from: SEND_FROM,
 			to: email,
-			subject: 'Email Changed',
+			subject: 'Account Deleted',
 			react: AccountDeleted({ email })
 		},
 		`User ${email} deleted`
