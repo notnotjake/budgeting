@@ -6,6 +6,7 @@ import { handleProtected } from './hooks/protected'
 import { requireSession, requireAuthenticatedUser, requireRecentAuth } from './api/protect'
 import { cleanupChallenges, cleanupSessions } from './api/cleanup'
 import { createRatelimiter } from './core/ratelimit'
+import { initCallbacks } from './core/callbacks'
 
 import { NODE_ENV } from '$env/static/private'
 
@@ -95,8 +96,12 @@ const config: AuthConfig = {
 	durations: { ...DEFAULT_CONFIG.durations, ...userConfig.durations },
 	passkeys: { ...DEFAULT_CONFIG.passkeys, ...userConfig.passkeys },
 	emails: { ...DEFAULT_CONFIG.emails, ...userConfig.emails },
-	ratelimit: { ...DEFAULT_CONFIG.ratelimit, ...userConfig.ratelimit }
+	ratelimit: { ...DEFAULT_CONFIG.ratelimit, ...userConfig.ratelimit },
+	callbacks: userConfig.callbacks
 }
+
+// Initialize callbacks with resolved config
+initCallbacks(config.callbacks)
 
 const Auth = {
 	routes: config.routes,
@@ -154,4 +159,4 @@ export function defineConfig(userConfig: AuthConfigInput): AuthConfigInput {
 }
 
 // Re-export types for use in remotes
-export type { RatelimitResult, RatelimitContext } from './types'
+export type { RatelimitResult, RatelimitContext, CallbackConfig } from './types'

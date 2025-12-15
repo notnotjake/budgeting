@@ -7,6 +7,7 @@ import { StructuredResponse as Response } from '$utils/structured-response'
 import { ERROR_MESSAGE } from './errors'
 import { randomUUID } from 'crypto'
 import { normalizeIdentifierInput } from './utils'
+import { AuthCallbacks } from './callbacks'
 
 /**
  * Creates a new user with the provided identifier and name.
@@ -34,6 +35,8 @@ export async function createUser({
 				locked: false
 			})
 			.returning()
+
+		AuthCallbacks.onNewUser(result)
 
 		return Response.succeed(result)
 	} catch (e) {
@@ -67,8 +70,20 @@ export async function updateUser({
 			updateData.name = newName
 		}
 
+		// Track previous identifier for callback if changing
+		let previousIdentifier: string | undefined
+
 		if (newIdentifier !== undefined) {
 			updateData.identifier = normalizeIdentifierInput(newIdentifier)
+
+			// Fetch current identifier before update for callback
+			const [currentUser] = await db
+				.select({ identifier: table.user.identifier })
+				.from(table.user)
+				.where(eq(table.user.id, userId))
+				.limit(1)
+
+			previousIdentifier = currentUser?.identifier
 		}
 
 		if (Object.keys(updateData).length === 0) {
@@ -83,6 +98,11 @@ export async function updateUser({
 
 		if (!updatedUser) {
 			return Response.fail(ERROR_MESSAGE.CORE.USER_NOT_FOUND)
+		}
+
+		// Trigger callback if identifier was changed
+		if (previousIdentifier !== undefined && previousIdentifier !== updatedUser.identifier) {
+			AuthCallbacks.onChangeIdentifier(updatedUser, previousIdentifier)
 		}
 
 		return Response.succeed(updatedUser)
@@ -101,11 +121,13 @@ export async function updateUser({
  */
 export async function deleteUser({ userId }: { userId: string }): Promise<Response<never>> {
 	try {
-		const result = await db.delete(table.user).where(eq(table.user.id, userId)).returning()
+		const [deletedUser] = await db.delete(table.user).where(eq(table.user.id, userId)).returning()
 
-		if (result.length === 0) {
+		if (!deletedUser) {
 			return Response.fail(ERROR_MESSAGE.CORE.USER_NOT_FOUND)
 		}
+
+		AuthCallbacks.onDeleteAccount(deletedUser)
 
 		return Response.succeed()
 	} catch (e) {

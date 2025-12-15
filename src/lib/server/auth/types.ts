@@ -1,5 +1,5 @@
 import type { RequestEvent } from '@sveltejs/kit'
-import type { User, Session } from './schema'
+import type { Session, User } from './schema'
 
 /**
  * Result returned by ratelimit callbacks.
@@ -162,6 +162,7 @@ export type AuthConfig = {
 		sendAccountDeletionCompleted: (params: { email: string }) => Promise<void>
 	}
 	ratelimit: RatelimitConfig
+	callbacks?: CallbackConfig
 }
 
 // Partial config type for user input (all properties optional)
@@ -233,6 +234,7 @@ export type AuthConfigInput = {
 		sendAccountDeletionCompleted?: (params: { email: string }) => Promise<void>
 	}
 	ratelimit?: Partial<RatelimitConfig>
+	callbacks?: CallbackConfig
 }
 
 export type sendCodeParams = {
@@ -250,4 +252,50 @@ export type sendEmailDidChangeParams = {
 
 export type sendAccountDeletionCompletedParams = {
 	email: string
+}
+
+/**
+ * Optional callbacks for auth lifecycle events.
+ *
+ * These are fire-and-forget side effects - they do not block the auth flow
+ * and errors are logged but never propagate. Use these to trigger application
+ * logic like scheduling onboarding emails, analytics, cleanup tasks, etc.
+ *
+ * @example
+ * ```ts
+ * callbacks: {
+ *   onNewUser: (user) => {
+ *     scheduleOnboardingEmail(user.identifier, { delay: '1 day' })
+ *   },
+ *   onDeleteAccount: (user) => {
+ *     cleanupUserStorage(user.id)
+ *   }
+ * }
+ * ```
+ */
+export type CallbackConfig = {
+	/**
+	 * Called when a user successfully logs in (authenticates a session).
+	 * @param user - The authenticated user
+	 */
+	onLogin?: (user: User) => Promise<void> | void
+
+	/**
+	 * Called when a new user account is created.
+	 * @param user - The newly created user
+	 */
+	onNewUser?: (user: User) => Promise<void> | void
+
+	/**
+	 * Called when a user account is deleted.
+	 * @param user - The deleted user (captured before deletion)
+	 */
+	onDeleteAccount?: (user: User) => Promise<void> | void
+
+	/**
+	 * Called when a user's identifier (email) is changed.
+	 * @param user - The user with the updated identifier
+	 * @param previousIdentifier - The identifier before the change
+	 */
+	onChangeIdentifier?: (user: User, previousIdentifier: string) => Promise<void> | void
 }

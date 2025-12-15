@@ -8,6 +8,7 @@ import { StructuredResponse as Response } from '$utils/structured-response'
 import Auth from '$lib/server/auth'
 import { ERROR_MESSAGE } from './errors'
 import { generateToken, hashToken } from './utils'
+import { AuthCallbacks } from './callbacks'
 
 /**
  * Creates a new session for a user or an unauthenticated visitor.
@@ -137,6 +138,8 @@ export async function authenticateSession({
 
 			return inserted
 		})
+
+		AuthCallbacks.onLogin(user)
 
 		return Response.succeed({ session: newAuthenticatedSession, rawSessionToken })
 	} catch (e) {

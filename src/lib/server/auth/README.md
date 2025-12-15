@@ -23,7 +23,9 @@ You will want to migrate once you've setup the schema.
 
 Edit config options in `$lib/server/auth/config.ts`
 
-Emails and passkeys options must be configured. Addiitional options are optional including routes, redirects and durations.
+Emails and passkeys options must be configured. Additional options are optional including routes, redirects, durations, and callbacks.
+
+Optional callbacks are available for auth lifecycle events: `onLogin`, `onNewUser`, `onDeleteAccount`, and `onChangeIdentifier`. These are fire-and-forget side effects useful for triggering application logic like scheduling emails or analytics.
 
 ##### Add hooks
 

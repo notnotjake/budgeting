@@ -209,7 +209,6 @@ export const deleteUserAccount = command(async () => {
 	// delete user
 	const result = await AuthCore.deleteUser({ userId: user.id })
 
-	console.log(result)
 	if (!result.success) {
 		throw error(500)
 	}
