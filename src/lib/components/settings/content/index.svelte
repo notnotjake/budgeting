@@ -8,7 +8,8 @@
 		IconKeyFilled,
 		IconDeviceIpadHorizontalPin,
 		IconTrashFilled,
-		IconCreditCard
+		IconCreditCard,
+		IconUsers
 	} from '@tabler/icons-svelte'
 	import AccordionItem from '$ui/settings/components/accordion-item.svelte'
 	import DialogItem from '$ui/settings/components/dialog-item.svelte'
@@ -58,12 +59,25 @@
 		actionButtonText="Upgrade"
 	>
 		{#snippet hintSnippet()}
-			<div class="flex gap-2 tracking-tight-sm">
+			<!-- <div class="flex gap-2 tracking-tight-sm">
 				<p class="font-bold">Pro</p>
 				<p>Monthly</p>
+			</div> -->
+
+			<div class="flex gap-1.5 rounded-full tracking-tight-md">
+				<p class="font-bold text-orange-500">Expired</p>
+				<p class="text-white/70">Resubscribe Now</p>
 			</div>
 		{/snippet}
 
+		{#snippet content()}
+			<p>Next payment: Mar 18, 2026</p>
+		{/snippet}
+	</AccordionItem>
+
+	<Divider />
+
+	<AccordionItem id="team" icon={IconUsers} title="Team" hint="3 Members" actionButtonText="Invite">
 		{#snippet content()}
 			<p>Next payment: Mar 18, 2026</p>
 		{/snippet}
