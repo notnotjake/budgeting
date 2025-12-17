@@ -7,7 +7,8 @@
 		IconUserCircle,
 		IconKeyFilled,
 		IconDeviceIpadHorizontalPin,
-		IconTrashFilled
+		IconTrashFilled,
+		IconCreditCard
 	} from '@tabler/icons-svelte'
 	import AccordionItem from '$ui/settings/components/accordion-item.svelte'
 	import DialogItem from '$ui/settings/components/dialog-item.svelte'
@@ -47,6 +48,27 @@
 	<ProfilePic profilePic={user.profilePic} />
 	<ProfileName />
 </div>
+
+<Section title="Billing">
+	<AccordionItem
+		id="billing"
+		icon={IconCreditCard}
+		title="Billing"
+		hint="Pro Monthly"
+		actionButtonText="Upgrade"
+	>
+		{#snippet hintSnippet()}
+			<div class="flex gap-2 tracking-tight-sm">
+				<p class="font-bold">Pro</p>
+				<p>Monthly</p>
+			</div>
+		{/snippet}
+
+		{#snippet content()}
+			<p>Next payment: Mar 18, 2026</p>
+		{/snippet}
+	</AccordionItem>
+</Section>
 
 <!-- Account -->
 <Section title="Account Settings">
