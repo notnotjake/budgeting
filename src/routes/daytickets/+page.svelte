@@ -3,6 +3,7 @@
 	import { wipeVertical } from '$ui/transition'
 	import { IconMessageChatbotFilled } from '@tabler/icons-svelte'
 	import ControlStrip from './control-strip.svelte'
+	import Section from './section.svelte'
 </script>
 
 <!-- Overscroll Top -->
@@ -21,7 +22,7 @@
 </div>
 
 <div
-	class="relative flex min-h-screen bg-linear-to-b from-[#F1F1F3] to-[#EDEBED] dark:bg-neutral-950 dark:from-neutral-950 dark:to-neutral-950"
+	class="relative flex min-h-screen flex-col bg-linear-to-b from-[#F1F1F3] to-[#EDEBED] dark:bg-neutral-950 dark:from-neutral-950 dark:to-neutral-950"
 >
 	<div class="relative z-10 mx-auto flex h-full min-h-screen w-xl flex-col items-center px-2">
 		<h1
@@ -33,5 +34,9 @@
 		</h1>
 
 		<ControlStrip />
+
+		<div class="flex px-10 py-10">
+			<Section />
+		</div>
 	</div>
 </div>

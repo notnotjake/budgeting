@@ -33,13 +33,15 @@
 			{@render tooltipContent('Account')}
 		</Tooltip.Root>
 
-		<div class="mx-1 h-full min-h-8 w-0.5 rounded-full bg-neutral-200"></div>
+		<div
+			class="mx-1 ml-2 h-full min-h-8 w-0.5 rounded-full bg-neutral-200 dark:bg-neutral-700"
+		></div>
 
 		<!-- Date -->
 		<Tooltip.Root>
 			<Tooltip.Trigger>
 				<button
-					class="flex w-fit shrink-0 cursor-pointer items-center gap-1 rounded-full bg-neutral-300/0 px-3 py-2 will-change-transform hover:bg-neutral-200/80 active:scale-95 dark:bg-neutral-700/0 dark:hover:bg-neutral-700/50"
+					class="flex min-h-8 w-fit shrink-0 cursor-pointer items-center gap-1 rounded-full bg-neutral-300/0 px-3 will-change-transform hover:bg-neutral-200/80 active:scale-95 dark:bg-neutral-700/0 dark:hover:bg-neutral-700/80"
 				>
 					<IconCalendarWeekFilled size={22} class="shrink-0 grow text-rose-600" />
 					<p
@@ -60,19 +62,31 @@
 		<!-- Builder -->
 		<Tooltip.Root>
 			<Tooltip.Trigger>
-				<Label.Root
-					class="flex h-full min-h-8 cursor-pointer items-center gap-1 rounded-lg px-2 focus-within:bg-neutral-200/80 hover:bg-neutral-200/80"
-				>
-					<IconBuildings size={22} class="shrink-0 grow text-sky-500" />
-					<InputAdapting
-						class="w-fit outline-none selection:bg-sky-200 selection:text-blue-600  placeholder:font-medium placeholder:tracking-tight-md placeholder:text-neutral-800 focus:placeholder:text-neutral-500"
-						type="text"
-						placeholderIsMinWidth={true}
-						maxWidth="var(--container-3xs)"
-						bind:value={builder}
-						placeholder="Builder"
-					/>
-				</Label.Root>
+				{#snippet child({ props })}
+					<label
+						{...props}
+						tabindex="-1"
+						class={createClass(
+							'flex h-full min-h-8 cursor-pointer items-center gap-1 rounded-lg px-2 focus-within:bg-neutral-200/80 hover:bg-neutral-200/80',
+							'dark:focus-within:bg-neutral-700/80 dark:hover:bg-neutral-700/80'
+						)}
+					>
+						<IconBuildings size={22} class="shrink-0 grow text-sky-500" />
+						<InputAdapting
+							class={createClass(
+								'w-fit outline-none selection:bg-sky-200 selection:text-blue-600 placeholder:font-medium placeholder:tracking-tight-md',
+								'dark:text-white dark:selection:bg-sky-500 dark:selection:text-white',
+								'placeholder:text-neutral-800 focus:placeholder:text-neutral-500',
+								'dark:placeholder:text-neutral-100 dark:focus:placeholder:text-neutral-400'
+							)}
+							type="text"
+							placeholderIsMinWidth={true}
+							maxWidth="var(--container-3xs)"
+							bind:value={builder}
+							placeholder="Builder"
+						/>
+					</label>
+				{/snippet}
 			</Tooltip.Trigger>
 			{@render tooltipContent('Edit Builder')}
 		</Tooltip.Root>
@@ -80,19 +94,31 @@
 		<!-- Lot -->
 		<Tooltip.Root>
 			<Tooltip.Trigger>
-				<Label.Root
-					class="flex h-full min-h-8 cursor-pointer items-center gap-1 rounded-lg px-2 focus-within:bg-neutral-200/80 hover:bg-neutral-200/80"
-				>
-					<IconMapPinFilled size={22} class="shrink-0 grow text-indigo-400" />
-					<InputAdapting
-						class="w-fit outline-none selection:bg-sky-200 selection:text-blue-600  placeholder:font-medium placeholder:tracking-tight-md placeholder:text-neutral-800 focus:placeholder:text-neutral-500"
-						type="text"
-						placeholderIsMinWidth={true}
-						maxWidth="var(--container-3xs)"
-						bind:value={lot}
-						placeholder="Lot"
-					/>
-				</Label.Root>
+				{#snippet child({ props })}
+					<label
+						{...props}
+						tabindex="-1"
+						class={createClass(
+							'flex h-full min-h-8 cursor-pointer items-center gap-1 rounded-lg px-2 focus-within:bg-neutral-200/80 hover:bg-neutral-200/80',
+							'dark:focus-within:bg-neutral-700/80 dark:hover:bg-neutral-700/80'
+						)}
+					>
+						<IconMapPinFilled size={22} class="shrink-0 grow text-indigo-400" />
+						<InputAdapting
+							class={createClass(
+								'w-fit outline-none selection:bg-sky-200 selection:text-blue-600 placeholder:font-medium placeholder:tracking-tight-md',
+								'dark:text-white dark:selection:bg-sky-500 dark:selection:text-white',
+								'placeholder:text-neutral-800 focus:placeholder:text-neutral-500',
+								'dark:placeholder:text-neutral-100 dark:focus:placeholder:text-neutral-400'
+							)}
+							type="text"
+							placeholderIsMinWidth={true}
+							maxWidth="var(--container-3xs)"
+							bind:value={lot}
+							placeholder="Lot"
+						/>
+					</label>
+				{/snippet}
 			</Tooltip.Trigger>
 			{@render tooltipContent('Edit Lot')}
 		</Tooltip.Root>
@@ -100,24 +126,36 @@
 		<!-- Billing -->
 		<Tooltip.Root>
 			<Tooltip.Trigger>
-				<Label.Root
-					class="flex h-full min-h-8 cursor-pointer items-center gap-1 rounded-lg px-2 focus-within:bg-neutral-200/80 hover:bg-neutral-200/80"
-				>
-					<IconReceiptDollarFilled size={22} class="shrink-0 grow text-green-600" />
-					<InputAdapting
-						class="w-fit outline-none selection:bg-sky-200 selection:text-blue-600  placeholder:font-medium placeholder:tracking-tight-md placeholder:text-neutral-800 focus:placeholder:text-neutral-500"
-						type="text"
-						placeholderIsMinWidth={true}
-						maxWidth="var(--container-3xs)"
-						bind:value={billing}
-						placeholder="Billing"
-					/>
-				</Label.Root>
+				{#snippet child({ props })}
+					<label
+						{...props}
+						tabindex="-1"
+						class={createClass(
+							'flex h-full min-h-8 cursor-pointer items-center gap-1 rounded-lg px-2 focus-within:bg-neutral-200/80 hover:bg-neutral-200/80',
+							'dark:focus-within:bg-neutral-700/80 dark:hover:bg-neutral-700/80'
+						)}
+					>
+						<IconReceiptDollarFilled size={22} class="shrink-0 grow text-green-600" />
+						<InputAdapting
+							class={createClass(
+								'w-fit outline-none selection:bg-sky-200 selection:text-blue-600 placeholder:font-medium placeholder:tracking-tight-md',
+								'dark:text-white dark:selection:bg-sky-500 dark:selection:text-white',
+								'placeholder:text-neutral-800 focus:placeholder:text-neutral-500',
+								'dark:placeholder:text-neutral-100 dark:focus:placeholder:text-neutral-400'
+							)}
+							type="text"
+							placeholderIsMinWidth={true}
+							maxWidth="var(--container-3xs)"
+							bind:value={billing}
+							placeholder="Billing"
+						/>
+					</label>
+				{/snippet}
 			</Tooltip.Trigger>
 			{@render tooltipContent('Edit Billing')}
 		</Tooltip.Root>
 
-		<div class="mx-1 h-full min-h-8 w-0.5 rounded-full bg-neutral-200"></div>
+		<div class="mx-1 h-full min-h-8 w-0.5 rounded-full bg-neutral-200 dark:bg-neutral-700"></div>
 
 		<Tooltip.Root>
 			<Tooltip.Trigger>
@@ -146,7 +184,7 @@
 	</Tooltip.Provider>
 </div>
 
-{#snippet tooltipContent(text)}
+{#snippet tooltipContent(text: string)}
 	<Tooltip.Content side="bottom" sideOffset={5} align="center">
 		<div class="rounded-2xl bg-neutral-900 px-3 py-2 text-[0.9rem] font-semibold text-neutral-50">
 			{text}
