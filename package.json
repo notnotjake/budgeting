@@ -61,6 +61,7 @@
 		"@simplewebauthn/server": "^13.2.2",
 		"@tabler/icons-svelte": "^3.35.0",
 		"@upstash/ratelimit": "2.0.7",
+		"autumn-js": "^0.1.48",
 		"bits-ui": "^2.14.4",
 		"croner": "^9.1.0",
 		"drizzle-orm": "^0.45.1",
