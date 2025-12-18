@@ -1,8 +1,8 @@
-import { AUTMUMN_SECRET_KEY } from '$env/static/private'
+import { AUTUMN_SECRET_KEY } from '$env/static/private'
 import { Autumn } from 'autumn-js'
 
 const autumn = new Autumn({
-	secretKey: AUTMUMN_SECRET_KEY
+	secretKey: AUTUMN_SECRET_KEY
 })
 
 type AutumnCustomer = {
