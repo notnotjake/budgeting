@@ -20,23 +20,32 @@
 	let { title, items }: Props = $props()
 
 	let isCollapsed = $state(false)
+
+	function handleDblClick(e: MouseEvent) {
+		// Don't toggle if double-clicking the icon selection
+		if ((e.target as HTMLElement).closest('[data-icon-selection]')) return
+		isCollapsed = !isCollapsed
+	}
 </script>
 
-<div class="flex w-fit flex-col">
+<div class="flex w-full flex-col" data-section>
 	<!-- Section Header Row -->
 	<div class="relative z-30">
 		<ContextMenu.Root>
-			<ContextMenu.Trigger class="group relative z-30 flex w-full items-center">
+			<ContextMenu.Trigger
+				class="group relative z-30 flex w-full items-center"
+				ondblclick={handleDblClick}
+			>
 				<IconSelection />
 
-				<div class="flex grow items-baseline">
-					<p class="text-[1.1rem] font-semibold tracking-tight-md">{title}</p>
+				<div class="flex min-w-0 grow cursor-default items-baseline">
+					<p class="truncate text-[1.1rem] font-semibold tracking-tight-md">{title}</p>
 
 					<div class="grow"></div>
 
 					<p
 						class={createClass(
-							'tracking-tight-sm text-neutral-700 opacity-0 transition-opacity delay-75 duration-150 group-hover:opacity-100',
+							'shrink-0 tracking-tight-sm text-neutral-700 opacity-0 transition-opacity delay-75 duration-150 select-none group-hover:opacity-100',
 							isCollapsed && 'opacity-100'
 						)}
 					>
@@ -92,7 +101,7 @@
 
 	<!-- Section Contents -->
 	{#if !isCollapsed}
-		<div class="relative z-10 w-fit rounded-xl bg-white/50 shadow-2xs">
+		<div class="relative z-10 w-full rounded-xl bg-white/50 shadow-2xs">
 			{#each items as item (item.id)}
 				<ItemRow name={item.name} cost={item.cost} quantityType={item.quantityType} />
 			{/each}

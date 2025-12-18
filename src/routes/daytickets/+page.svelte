@@ -10,7 +10,7 @@
 </script>
 
 <!-- Overscroll Top -->
-<div class="overscroll-top bg-blue-200 dark:bg-neutral-950"></div>
+<div class="overscroll-top bg-[#F1F1F3] dark:bg-neutral-950"></div>
 
 <!-- Overscroll Bottom -->
 <div class="overscroll-bottom bg-[#EDEBED] dark:bg-neutral-950"></div>
@@ -27,7 +27,7 @@
 <div
 	class="relative flex min-h-screen flex-col bg-linear-to-b from-[#F1F1F3] to-[#EDEBED] dark:bg-neutral-950 dark:from-neutral-950 dark:to-neutral-950"
 >
-	<div class="relative z-10 mx-auto flex h-full min-h-screen w-xl flex-col items-center px-2">
+	<div class="relative z-10 flex h-full min-h-screen w-full flex-col items-center px-4">
 		<h1
 			class={createClass(
 				'pt-18 pb-8 text-center text-xl text-black transition-all duration-150 dark:text-white'
@@ -38,9 +38,11 @@
 
 		<ControlStrip />
 
-		<div class="flex flex-col gap-6 px-10 py-10">
+		<div class="w-full columns-3 gap-6 py-10">
 			{#each sections as section (section.id)}
-				<Section title={section.title} items={section.items} />
+				<div class="mb-6 break-inside-avoid">
+					<Section title={section.title} items={section.items} />
+				</div>
 			{/each}
 		</div>
 	</div>

@@ -48,6 +48,7 @@
 
 <Popover.Root>
 	<Popover.Trigger
+		data-icon-selection
 		class="rounded-lg px-1 py-1 hover:bg-neutral-300 data-[state=open]:bg-neutral-300"
 	>
 		<SelectedIcon size={22} class="text-neutral-700" />
@@ -57,6 +58,7 @@
 		side="bottom"
 		sideOffset={5}
 		align="center"
+		collisionPadding={5}
 		class="flex w-fit rounded-2xl bg-black p-1 shadow-lg outline-none"
 	>
 		<RadioGroup.Root bind:value={selectedValue} class="grid grid-cols-4 gap-1">

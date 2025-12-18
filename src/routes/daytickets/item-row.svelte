@@ -17,14 +17,52 @@
 			const currentLabel = inputRef?.closest('label')
 			if (!currentLabel) return
 
-			const targetLabel =
+			const siblingLabel =
 				e.key === 'ArrowDown'
 					? currentLabel.nextElementSibling
 					: currentLabel.previousElementSibling
 
-			if (targetLabel) {
-				const targetInput = targetLabel.querySelector('input')
+			// If there's a sibling in the same section, focus it
+			if (siblingLabel) {
+				const targetInput = siblingLabel.querySelector('input')
 				targetInput?.focus()
+				return
+			}
+
+			// Otherwise, try to move to adjacent section
+			const currentSection = currentLabel.closest('[data-section]')
+			if (!currentSection) return
+
+			const adjacentSection =
+				e.key === 'ArrowDown'
+					? currentSection.nextElementSibling
+					: currentSection.previousElementSibling
+
+			if (adjacentSection) {
+				const labels = adjacentSection.querySelectorAll('label')
+				const targetLabel = e.key === 'ArrowDown' ? labels[0] : labels[labels.length - 1]
+				const targetInput = targetLabel?.querySelector('input')
+				targetInput?.focus()
+			}
+		}
+
+		if (e.key === 'Tab') {
+			const currentLabel = inputRef?.closest('label')
+			if (!currentLabel) return
+
+			const currentSection = currentLabel.closest('[data-section]')
+			if (!currentSection) return
+
+			const targetSection = e.shiftKey
+				? currentSection.previousElementSibling
+				: currentSection.nextElementSibling
+
+			if (targetSection) {
+				e.preventDefault()
+				const firstInput = targetSection.querySelector('label input')
+				if (firstInput instanceof HTMLInputElement) {
+					firstInput.focus()
+				}
 			}
 		}
 	}
