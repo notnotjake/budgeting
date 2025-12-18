@@ -4,6 +4,9 @@
 	import { IconMessageChatbotFilled } from '@tabler/icons-svelte'
 	import ControlStrip from './control-strip.svelte'
 	import Section from './section.svelte'
+	import { getItems } from '../play/items.remote'
+
+	const sections = await getItems()
 </script>
 
 <!-- Overscroll Top -->
@@ -35,8 +38,10 @@
 
 		<ControlStrip />
 
-		<div class="flex px-10 py-10">
-			<Section />
+		<div class="flex flex-col gap-6 px-10 py-10">
+			{#each sections as section (section.id)}
+				<Section title={section.title} items={section.items} />
+			{/each}
 		</div>
 	</div>
 </div>
