@@ -54,26 +54,28 @@
 		<SelectedIcon size={22} class="text-neutral-700" />
 	</Popover.Trigger>
 
-	<Popover.Content
-		side="bottom"
-		sideOffset={5}
-		align="center"
-		collisionPadding={5}
-		class="flex w-fit rounded-2xl bg-black p-1 shadow-lg outline-none"
-	>
-		<RadioGroup.Root bind:value={selectedValue} class="grid grid-cols-4 gap-1">
-			{#each icons as { value, component: Icon } (value)}
-				{@const isSelected = selectedValue === value}
-				<RadioGroup.Item
-					{value}
-					class={createClass(
-						'rounded-xl p-1.5 text-neutral-300',
-						isSelected && 'bg-neutral-700 text-neutral-50'
-					)}
-				>
-					<Icon />
-				</RadioGroup.Item>
-			{/each}
-		</RadioGroup.Root>
-	</Popover.Content>
+	<Popover.Portal>
+		<Popover.Content
+			side="bottom"
+			sideOffset={5}
+			align="center"
+			collisionPadding={5}
+			class="z-50 flex w-fit rounded-2xl bg-black p-1 shadow-lg outline-none"
+		>
+			<RadioGroup.Root bind:value={selectedValue} class="grid grid-cols-4 gap-1">
+				{#each icons as { value, component: Icon } (value)}
+					{@const isSelected = selectedValue === value}
+					<RadioGroup.Item
+						{value}
+						class={createClass(
+							'rounded-xl p-1.5 text-neutral-300',
+							isSelected && 'bg-neutral-700 text-neutral-50'
+						)}
+					>
+						<Icon />
+					</RadioGroup.Item>
+				{/each}
+			</RadioGroup.Root>
+		</Popover.Content>
+	</Popover.Portal>
 </Popover.Root>
