@@ -94,7 +94,7 @@
 		{...restProps}
 	/>
 	<div bind:this={sizerRef} class="autosize-sizer">
-		{value || ''}
+		{value ?? ''}
 	</div>
 	{#if placeholder}
 		<div bind:this={placeHolderSizerRef} class="autosize-sizer">

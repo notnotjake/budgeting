@@ -1,9 +1,7 @@
 <script lang="ts">
 	import { onMount, onDestroy } from 'svelte'
 	import { goto } from '$app/navigation'
-	import { resolve } from '$app/paths'
 	import { handleLogout } from '$ui/auth/logout'
-	import { handleGotoHomepage } from '$ui/auth/goto-homepage'
 	import { getUser } from '$remotes/auth/user.remote'
 
 	import { createClass } from '@opensky/style'
