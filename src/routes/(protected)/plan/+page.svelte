@@ -2,21 +2,12 @@
 	import { RadioGroup } from 'bits-ui'
 	import Button from '$ui/input/button.svelte'
 	import { createClass } from '@opensky/style'
-	import { createFonts, LoadFonts, url } from '$utils/fonts'
-
-	let { data } = $props()
-
-	const Fonts = createFonts()
-
-	Fonts.Face('Runde', {
-		src: url('/open-runde-bold.woff2'),
-		preload: true
-	})
+	import { Runde } from '$ui/fonts'
 
 	let selectedPlan = $state<'monthly' | 'yearly'>('yearly')
 </script>
 
-<LoadFonts {Fonts} />
+<Runde />
 
 <div
 	class="relative flex h-full min-h-full w-full flex-col items-center justify-center bg-black px-7 py-5 text-center"
