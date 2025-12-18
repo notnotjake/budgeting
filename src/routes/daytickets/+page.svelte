@@ -7,6 +7,18 @@
 	import { getItems } from '../play/items.remote'
 
 	const sections = await getItems()
+
+	// Distribute sections into 3 columns, with extras going to earlier columns
+	const columnCount = 3
+	const basePerColumn = Math.floor(sections.length / columnCount)
+	const remainder = sections.length % columnCount
+
+	const columns = Array.from({ length: columnCount }, (_, colIndex) => {
+		const extraItem = colIndex < remainder ? 1 : 0
+		const startIndex = colIndex * basePerColumn + Math.min(colIndex, remainder)
+		const count = basePerColumn + extraItem
+		return sections.slice(startIndex, startIndex + count)
+	})
 </script>
 
 <!-- Overscroll Top -->
@@ -38,10 +50,12 @@
 
 		<ControlStrip />
 
-		<div class="w-full columns-3 gap-6 py-10">
-			{#each sections as section (section.id)}
-				<div class="mb-6 break-inside-avoid">
-					<Section title={section.title} items={section.items} />
+		<div class="grid w-full max-w-280 grid-cols-3 gap-6 py-10">
+			{#each columns as column (column)}
+				<div class="flex flex-col gap-6">
+					{#each column as section (section.id)}
+						<Section title={section.title} items={section.items} />
+					{/each}
 				</div>
 			{/each}
 		</div>

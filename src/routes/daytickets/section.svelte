@@ -4,6 +4,7 @@
 	import IconSelection from './icons.svelte'
 	import ItemRow from './item-row.svelte'
 	import { createClass } from '@opensky/style'
+	import { wipeVertical } from '$ui/transition'
 
 	type Item = {
 		id: number
@@ -101,7 +102,10 @@
 
 	<!-- Section Contents -->
 	{#if !isCollapsed}
-		<div class="relative z-10 w-full rounded-xl bg-white/50 shadow-2xs">
+		<div
+			transition:wipeVertical={{ duration: 250 }}
+			class="relative z-10 w-full rounded-xl bg-white/50 shadow-2xs"
+		>
 			{#each items as item (item.id)}
 				<ItemRow name={item.name} cost={item.cost} quantityType={item.quantityType} />
 			{/each}

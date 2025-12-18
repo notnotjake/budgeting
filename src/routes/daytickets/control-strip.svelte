@@ -8,7 +8,7 @@
 		IconReceiptDollarFilled,
 		IconArrowBackUp
 	} from '@tabler/icons-svelte'
-	import { Tooltip, Label } from 'bits-ui'
+	import { Tooltip } from 'bits-ui'
 	import InputAdapting from '$ui/input/input-adapting.svelte'
 
 	let isSubmitAvailable = $state(false)
@@ -24,11 +24,15 @@
 	<Tooltip.Provider delayDuration={400}>
 		<Tooltip.Root>
 			<Tooltip.Trigger>
-				<button
-					class="flex aspect-square h-8 w-8 items-center justify-center rounded-full bg-linear-to-b from-orange-400 to-orange-600 p-2"
-				>
-					<p class="font-semibold tracking-tight text-white/80">SP</p>
-				</button>
+				{#snippet child({ props })}
+					<button
+						{...props}
+						tabindex="-1"
+						class="flex aspect-square h-8 w-8 items-center justify-center rounded-full bg-linear-to-b from-orange-400 to-orange-600 p-2"
+					>
+						<p class="font-semibold tracking-tight text-white/80">SP</p>
+					</button>
+				{/snippet}
 			</Tooltip.Trigger>
 			{@render tooltipContent('Account')}
 		</Tooltip.Root>
@@ -159,25 +163,33 @@
 
 		<Tooltip.Root>
 			<Tooltip.Trigger>
-				<IconArrowBackUp class="mr-2 ml-1 text-neutral-500" />
+				{#snippet child({ props })}
+					<button {...props} tabindex="-1" class="mr-2 ml-1 text-neutral-500">
+						<IconArrowBackUp />
+					</button>
+				{/snippet}
 			</Tooltip.Trigger>
 			{@render tooltipContent('Undo/Clear')}
 		</Tooltip.Root>
 
 		<Tooltip.Root>
 			<Tooltip.Trigger>
-				<button
-					onclick={() => {}}
-					class={createClass(
-						'z-50 -mr-1 flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center rounded-full bg-neutral-500 p-1.5 shadow-md transition-all',
-						'active:scale-95',
-						isSubmitAvailable
-							? 'bg-neutral-800 text-white shadow-md dark:bg-neutral-300 dark:text-neutral-900'
-							: 'bg-neutral-300/70 text-neutral-400 shadow-none dark:bg-neutral-700 dark:text-neutral-500'
-					)}
-				>
-					<IconArrowUp stroke={3} size={26} />
-				</button>
+				{#snippet child({ props })}
+					<button
+						{...props}
+						tabindex="-1"
+						onclick={() => {}}
+						class={createClass(
+							'z-50 -mr-1 flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center rounded-full bg-neutral-500 p-1.5 shadow-md transition-all',
+							'active:scale-95',
+							isSubmitAvailable
+								? 'bg-neutral-800 text-white shadow-md dark:bg-neutral-300 dark:text-neutral-900'
+								: 'bg-neutral-300/70 text-neutral-400 shadow-none dark:bg-neutral-700 dark:text-neutral-500'
+						)}
+					>
+						<IconArrowUp stroke={3} size={26} />
+					</button>
+				{/snippet}
 			</Tooltip.Trigger>
 			{@render tooltipContent('Ready to Submit')}
 		</Tooltip.Root>
