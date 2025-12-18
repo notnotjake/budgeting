@@ -14,7 +14,7 @@ export const proMonthly = product({
 	group: 'Pro',
 	items: [
 		priceItem({
-			price: 40,
+			price: 29.99,
 			interval: 'month'
 		}),
 
@@ -37,7 +37,7 @@ export const proYearly = product({
 	group: 'Pro',
 	items: [
 		priceItem({
-			price: 400,
+			price: 300,
 			interval: 'year'
 		}),
 
