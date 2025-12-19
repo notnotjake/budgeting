@@ -1,6 +1,4 @@
 import { query, getRequestEvent } from '$app/server'
-import { redirect } from '@sveltejs/kit'
-import { z } from 'zod'
 
 import { AUTUMN_SECRET_KEY } from '$env/static/private'
 import { Autumn } from 'autumn-js'
