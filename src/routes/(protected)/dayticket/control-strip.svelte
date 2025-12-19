@@ -8,10 +8,11 @@
 		IconReceiptDollarFilled,
 		IconArrowBackUp
 	} from '@tabler/icons-svelte'
-	import { Tooltip } from 'bits-ui'
+	import { Tooltip, Popover } from 'bits-ui'
 	import InputAdapting from '$ui/input/input-adapting.svelte'
 	import { Time, CalendarDate, today, getLocalTimeZone, isSameDay } from '@internationalized/date'
 	import { wipeHorizontal } from '$ui/transition'
+	import DatePicker from './date.svelte'
 
 	type Props = {
 		togglePanel: () => void
@@ -19,6 +20,7 @@
 	let { togglePanel }: Props = $props()
 
 	let isSubmitAvailable = $state(false)
+	let datePickerOpen = $state(false)
 
 	let date = $state(today(getLocalTimeZone()))
 	let builder = $state('')
@@ -55,32 +57,53 @@
 		<div class="ml-1 h-full min-h-8 w-0.5 rounded-full bg-neutral-200 dark:bg-neutral-700"></div>
 
 		<!-- Date -->
-		<Tooltip.Root>
-			<Tooltip.Trigger>
-				{#snippet child({ props })}
-					<button
-						{...props}
-						class="flex min-h-8 w-fit shrink-0 cursor-pointer items-center gap-1 rounded-full bg-neutral-300/0 px-3 will-change-transform hover:bg-neutral-200/80 active:scale-95 dark:bg-neutral-700/0 dark:hover:bg-neutral-700/80"
-					>
-						<IconCalendarWeekFilled size={22} class="shrink-0 grow text-rose-600" />
-						{#if isToday}
-							<p
-								transition:wipeHorizontal={{ duration: 125 }}
-								class="w-fit shrink-0 grow font-normal whitespace-nowrap text-neutral-500 dark:text-neutral-400"
-							>
-								Today
-							</p>
-						{/if}
-						<p
-							class="w-fit shrink-0 grow font-medium whitespace-nowrap text-neutral-800 dark:text-neutral-200"
-						>
-							{dateString}
-						</p>
-					</button>
-				{/snippet}
-			</Tooltip.Trigger>
-			{@render tooltipContent('Change Date')}
-		</Tooltip.Root>
+		<Popover.Root bind:open={datePickerOpen}>
+			<Tooltip.Root disabled={datePickerOpen}>
+				<Tooltip.Trigger>
+					{#snippet child({ props: tooltipProps })}
+						<Popover.Trigger>
+							{#snippet child({ props: popoverProps })}
+								<button
+									{...tooltipProps}
+									{...popoverProps}
+									class={createClass(
+										'flex min-h-8 w-fit shrink-0 cursor-pointer items-center gap-1 rounded-full bg-neutral-300/0 px-3 will-change-transform hover:bg-neutral-200/80 active:scale-95 dark:bg-neutral-700/0 dark:hover:bg-neutral-700/80',
+										datePickerOpen && 'bg-neutral-200/80'
+									)}
+								>
+									<IconCalendarWeekFilled size={22} class="shrink-0 grow text-rose-600" />
+									{#if isToday}
+										<p
+											transition:wipeHorizontal={{ duration: 125 }}
+											class="w-fit shrink-0 grow font-normal whitespace-nowrap text-neutral-500 dark:text-neutral-400"
+										>
+											Today
+										</p>
+									{/if}
+									<p
+										class="w-fit shrink-0 grow font-medium whitespace-nowrap text-neutral-800 dark:text-neutral-200"
+									>
+										{dateString}
+									</p>
+								</button>
+							{/snippet}
+						</Popover.Trigger>
+					{/snippet}
+				</Tooltip.Trigger>
+				{@render tooltipContent('Change Date')}
+			</Tooltip.Root>
+			<Popover.Portal>
+				<Popover.Content
+					side="top"
+					sideOffset={4}
+					align="start"
+					class="z-100 w-96"
+					trapFocus={false}
+				>
+					<DatePicker bind:selectedDate={date} bind:expanded={datePickerOpen} />
+				</Popover.Content>
+			</Popover.Portal>
+		</Popover.Root>
 
 		<!-- Builder -->
 		<Tooltip.Root>

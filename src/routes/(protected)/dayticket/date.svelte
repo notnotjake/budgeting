@@ -23,7 +23,7 @@
 	}: {
 		selectedDate?: CalendarDate
 		onSelectedDateChange?: (date: CalendarDate) => void
-		expanded: Boolean
+		expanded?: boolean
 	} = $props()
 
 	// Local state
@@ -138,10 +138,11 @@
 		const isFuture = date.compare(todayDate) > 0
 
 		return createClass(
-			'relative h-12 w-full flex items-center justify-center text-[1.1rem] font-medium rounded-full transition-all cursor-pointer dark:text-neutral-300 text-neutral-700 active:scale-95 bg-transparent hover:bg-neutral-400/50 dark:hover:bg-neutral-700/50',
-			isToday && 'text-rose-500 font-bold',
-			isFuture && 'text-neutral-500/80',
-			isSelected && 'text-white/80'
+			'relative h-12 w-full flex items-center justify-center text-[1.1rem] font-medium rounded-full transition-all cursor-pointer active:scale-95',
+			'text-neutral-200 bg-transparent hover:bg-neutral-400/50',
+			isToday && 'text-rose-600 font-bold',
+			isFuture && 'text-neutral-600',
+			isSelected && 'text-sky-100'
 		)
 	}
 
@@ -156,23 +157,25 @@
 	})
 </script>
 
-<div class="w-full overflow-hidden rounded-4xl bg-neutral-300 px-4 py-4 dark:bg-neutral-700/25">
+<div
+	class="w-full overflow-hidden rounded-3xl bg-neutral-800 py-2 shadow-[inset_0_1px_1.5px_rgba(255,255,255,0.09),inset_0_-1px_4px_rgba(255,255,255,0.03)]"
+>
 	<!-- Header -->
-	<div class="pb-2">
+	<div class="border-b border-neutral-600 px-2 pb-2">
 		<div class="flex items-center gap-3">
 			<!-- Left side - Month and Date -->
 			<button
 				onclick={() => {
 					expanded = false
 				}}
-				class="flex aspect-square h-9 items-center justify-center rounded-full bg-gradient-to-b from-blue-500 to-sky-500 active:scale-95"
+				class="flex aspect-square h-9 items-center justify-center rounded-full hover:bg-neutral-600 active:scale-95"
 			>
 				<IconCheck class="text-white/80" stroke={3} />
 			</button>
 
 			<div>
 				<p
-					class="shrink-0 text-xl font-medium tracking-tight-sm whitespace-nowrap text-neutral-800 dark:text-neutral-300"
+					class="shrink-0 text-xl font-medium tracking-tight-sm whitespace-nowrap text-neutral-100"
 				>
 					{formatDate(selectedDate)}
 				</p>
@@ -185,28 +188,28 @@
 				{#if !isSameDay(selectedDate, todayDate)}
 					<button
 						onclick={goToToday}
-						class="flex gap-2 rounded-full bg-gradient-to-b from-red-500/15 to-rose-500/15 px-4 py-2 pl-3 active:scale-95"
+						class="flex items-center gap-1.5 rounded-full bg-linear-to-b from-red-500/15 to-rose-500/15 px-4 py-2 pl-3 active:scale-95"
 						aria-label="Go to today"
 					>
-						<IconRestore size={18} stroke={2.5} class="text-rose-600" />
-						<p class="font-mono text-sm font-medium tracking-tight text-rose-600">Today</p>
+						<IconRestore size={16} stroke={2.5} class="text-rose-500" />
+						<p class="font-mono text-sm font-semibold tracking-tight text-rose-500">Today</p>
 					</button>
 				{/if}
 
 				<button
 					onclick={goToPrevious}
-					class="rounded-full p-2 transition-colors hover:bg-neutral-400/50 dark:hover:bg-neutral-700"
+					class="rounded-full p-2 text-neutral-300 transition-colors hover:bg-neutral-700"
 					aria-label="Previous period"
 				>
-					<IconChevronLeft size={21} stroke={2.5} class="text-neutral-700 dark:text-neutral-300" />
+					<IconChevronLeft size={21} stroke={2.5} />
 				</button>
 
 				<button
 					onclick={goToNext}
-					class="rounded-full p-2 transition-colors hover:bg-neutral-400/50 dark:hover:bg-neutral-700"
+					class="rounded-full p-2 text-neutral-300 transition-colors hover:bg-neutral-700"
 					aria-label="Next period"
 				>
-					<IconChevronRight size={21} stroke={2.5} class="text-neutral-700 dark:text-neutral-300" />
+					<IconChevronRight size={21} stroke={2.5} />
 				</button>
 			</div>
 		</div>
@@ -220,12 +223,17 @@
 		style="scroll-snap-type: x mandatory; -ms-overflow-style: none; scrollbar-width: none;"
 	>
 		{#each allPeriods as period (period.weeksOffset)}
-			<div class="min-w-full flex-shrink-0" style="scroll-snap-align: start;">
+			<div class="min-w-full shrink-0 px-4" style="scroll-snap-align: start;">
 				<div class="h-full w-full">
 					<!-- Weekday Headers -->
 					<div class="grid grid-cols-7 gap-1">
-						{#each weekdays as day}
-							<div class="py-2 text-center text-[0.85rem] font-medium text-neutral-500 uppercase">
+						{#each weekdays as day (day)}
+							<div
+								class={createClass(
+									'py-2 text-center text-[0.85rem] font-medium text-neutral-400 uppercase',
+									(day === 'Sun' || day === 'Sat') && 'text-neutral-500'
+								)}
+							>
 								{day}
 							</div>
 						{/each}
@@ -233,13 +241,13 @@
 
 					<!-- Date Grid -->
 					<div class="space-y-1">
-						{#each period.weeks as week, weekIndex}
+						{#each period.weeks as week (week)}
 							<div class="grid grid-cols-7 gap-1">
-								{#each week as date}
+								{#each week as date (date)}
 									<button onclick={() => selectDate(date)} class={getDateClasses(date)}>
 										<div
 											class={createClass(
-												'absolute inset-0 z-0 h-full w-full rounded-full bg-gradient-to-b from-blue-500/80 to-sky-500/80 transition-opacity',
+												'absolute inset-0 z-0 h-full w-full rounded-full bg-linear-to-b from-blue-500 to-sky-500 transition-opacity',
 												isSameDay(date, selectedDate) ? 'opacity-100' : 'opacity-0'
 											)}
 										></div>
