@@ -5,6 +5,7 @@
 	import ItemRow from './item-row.svelte'
 	import { createClass } from '@opensky/style'
 	import { wipeVertical } from '$ui/transition'
+	import { updateSectionCollapsed } from '$lib/remotes/tickets/section.remote'
 
 	type Item = {
 		id: string
@@ -17,17 +18,23 @@
 		sectionId: string
 		title: string
 		icon: string | null
+		collapsed: boolean | null
 		items: Item[]
 	}
 
-	let { sectionId, title, icon, items }: Props = $props()
+	let { sectionId, title, icon, collapsed, items }: Props = $props()
 
-	let isCollapsed = $state(false)
+	let isCollapsed = $state(collapsed ?? false)
+
+	async function toggleCollapsed() {
+		isCollapsed = !isCollapsed
+		await updateSectionCollapsed({ sectionId, collapsed: isCollapsed })
+	}
 
 	function handleDblClick(e: MouseEvent) {
 		// Don't toggle if double-clicking the icon selection
 		if ((e.target as HTMLElement).closest('[data-icon-selection]')) return
-		isCollapsed = !isCollapsed
+		toggleCollapsed()
 	}
 </script>
 
@@ -56,12 +63,7 @@
 					</p>
 				</div>
 
-				<button
-					onclick={() => {
-						isCollapsed = !isCollapsed
-					}}
-					class="h-full px-1"
-				>
+				<button onclick={toggleCollapsed} class="h-full px-1">
 					<div
 						class="h-fit w-fit origin-center transition-transform"
 						class:rotate-90={!isCollapsed}

@@ -14,3 +14,14 @@ export const updateSectionIcon = query(
 		return { success: true }
 	}
 )
+
+export const updateSectionCollapsed = query(
+	z.object({
+		sectionId: z.string(),
+		collapsed: z.boolean()
+	}),
+	async ({ sectionId, collapsed }) => {
+		await db.update(sections).set({ collapsed }).where(eq(sections.id, sectionId))
+		return { success: true }
+	}
+)

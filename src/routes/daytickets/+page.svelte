@@ -71,6 +71,7 @@
 							sectionId={section.id}
 							title={section.title}
 							icon={section.icon}
+							collapsed={section.collapsed}
 							items={section.items}
 						/>
 					{/each}
