@@ -44,7 +44,7 @@ export const getItems = query(async () => {
 			})
 		}
 
-		if (row.items.id) {
+		if (row.items?.id) {
 			sectionsMap.get(row.id)!.items.push(row.items)
 		}
 	}
