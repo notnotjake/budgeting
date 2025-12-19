@@ -1,14 +1,17 @@
-import { drizzle } from 'drizzle-orm/postgres-js'
-import postgres from 'postgres'
+import { SQL } from 'bun'
+import { drizzle } from 'drizzle-orm/bun-sql'
+
 import * as schema from '../../src/lib/server/db/schema'
+import { relations } from '../../src/lib/server/db/schema/relations'
+
 import { seedInventory } from './inventory'
 
 if (!process.env.DB_URL) throw new Error('DB_URL is not set')
 
-// Create DB connection for seeding
-const client = postgres(process.env.DB_URL)
-const db = drizzle(client, { schema })
+const client = new SQL(process.env.DB_URL)
+const db = drizzle({ client, schema, relations })
 
+// Start Seeding Database
 export async function seed() {
 	console.log('🌱 Seeding database...')
 
