@@ -97,7 +97,7 @@
 				<!-- Done button -->
 				<div in:fly={{ y: 20, duration: 200, delay: 800 }}>
 					<Button
-						href={data.afterLoginRedirect}
+						href="/plan"
 						style="primary"
 						class="bg-white text-neutral-900 hover:bg-neutral-200"
 					>

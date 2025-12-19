@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { IconX, IconFileDownloadFilled } from '@tabler/icons-svelte'
-	import SidebarButton from '$ui/sidebar/sidebar-button.svelte'
 
 	import { getItems } from './items.remote'
 
@@ -8,13 +7,13 @@
 </script>
 
 <div class="absolute z-0 h-full w-full debug object-cover blur-md">
-	<div class="absolute inset-0 z-10 h-full w-full bg-gradient-to-b from-white to-white/0"></div>
+	<div class="absolute inset-0 z-10 h-full w-full bg-linear-to-b from-white to-white/0"></div>
 	<img class="relative z-0 object-cover opacity-60" src="/painting.jpeg" alt="none" />
 </div>
 
 <div class="relative z-10 flex w-full items-center gap-5 px-5 py-2">
 	<button
-		class="flex items-center justify-center rounded-full bg-gradient-to-b from-orange-400 to-orange-600 p-2"
+		class="flex items-center justify-center rounded-full bg-linear-to-b from-orange-400 to-orange-600 p-2"
 	>
 		<p class="font-semibold tracking-tight text-white/80">SP</p>
 	</button>
@@ -29,7 +28,7 @@
 	</div>
 	<div class="flex h-full items-center">
 		<button
-			class="flex gap-2 rounded-full bg-gradient-to-b from-blue-500 to-sky-400 px-6 py-1.5 pl-3 font-medium text-white"
+			class="flex gap-2 rounded-full bg-linear-to-b from-blue-500 to-sky-400 px-6 py-1.5 pl-3 font-medium text-white"
 		>
 			<IconFileDownloadFilled />
 			<p class="font-semibold">Create Report</p>

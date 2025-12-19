@@ -8,6 +8,7 @@
 	import { getDialogContext } from '../dialog-context'
 
 	import { IconChevronRight } from '@tabler/icons-svelte'
+	import ItemRow from './item-row.svelte'
 
 	type Props = {
 		content: Snippet<[{ registerAction: (fn: () => void | Promise<void>) => void }]>
@@ -15,10 +16,11 @@
 		icon: TablerIcon
 		title: string
 		hint?: string | null
+		hintSnippet?: Snippet
 		actionButtonText?: string
 	}
 
-	let { content, id, icon: Icon, title, hint, actionButtonText }: Props = $props()
+	let { content, id, icon: Icon, title, hint, hintSnippet, actionButtonText }: Props = $props()
 
 	const { accordionValue } = getDialogContext()
 	let isOpen = $derived(accordionValue() === id)
@@ -52,14 +54,9 @@
 	<AdaptFit class="w-full" innerClass="w-full" direction="y">
 		<Accordion.Header>
 			<Accordion.Trigger class="flex w-full flex-col gap-3">
+				<!-- Row item -->
 				<div class="flex h-10 items-center gap-2">
-					<div class="flex w-7 justify-start text-neutral-500">
-						<Icon size={24} />
-					</div>
-					<h2 class="text-[1.2rem] font-medium tracking-tight text-neutral-50">{title}</h2>
-					{#if !isOpen}
-						<p transition:fade={{ duration: 150 }} class="text-neutral-400">{hint}</p>
-					{/if}
+					<ItemRow icon={Icon} {title} showHint={!isOpen} {hint} {hintSnippet} />
 
 					<div class="grow"></div>
 
@@ -80,6 +77,7 @@
 					</div>
 				</div>
 
+				<!-- Divider line -->
 				{#if isOpen}
 					<div class="h-px w-full bg-neutral-500/30"></div>
 				{/if}

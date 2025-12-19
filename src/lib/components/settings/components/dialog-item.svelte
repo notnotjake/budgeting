@@ -6,16 +6,25 @@
 	import { IconDotsVertical } from '@tabler/icons-svelte'
 	import { SuspenseSpinner } from '$ui/feedback'
 	import { getDialogContext } from '../dialog-context'
+	import ItemRow from './item-row.svelte'
 
 	type Props = {
 		content: Snippet<[{ close: () => void }]>
 		icon: TablerIcon
 		title: string
 		hint?: string | null
+		hintSnippet?: Snippet
 		protected?: boolean
 	}
 
-	let { content, icon: Icon, title, hint, protected: requiresReauth = false }: Props = $props()
+	let {
+		content,
+		icon: Icon,
+		title,
+		hint,
+		hintSnippet,
+		protected: requiresReauth = false
+	}: Props = $props()
 
 	let open = $state(false)
 	let checkingAuth = $state(false)
@@ -59,14 +68,9 @@
 		onclick={handleTriggerClick}
 		class="w-full rounded-2xl px-3 py-2 transition-all duration-200 hover:bg-neutral-800/80"
 	>
+		<!-- Row item -->
 		<div class="flex h-10 items-center gap-2">
-			<div class="flex w-7 justify-start text-neutral-500">
-				<Icon size={24} />
-			</div>
-			<h2 class="text-[1.2rem] font-medium tracking-tight text-neutral-50">{title}</h2>
-			{#if hint}
-				<p transition:fade={{ duration: 150 }} class="text-neutral-400">{hint}</p>
-			{/if}
+			<ItemRow icon={Icon} {title} {hint} {hintSnippet} />
 
 			<div class="grow"></div>
 

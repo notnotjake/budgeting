@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { onMount, onDestroy } from 'svelte'
+	import { goto } from '$app/navigation'
 	import { handleLogout } from '$ui/auth/logout'
-	import { handleGotoHomepage } from '$ui/auth/goto-homepage'
 	import { getUser } from '$remotes/auth/user.remote'
 
 	import { createClass } from '@opensky/style'
@@ -132,7 +132,8 @@
 	>
 		{@render dropdownMenuItem('Settings', IconSettings, openSettings)}
 		{@render dropdownMenuItem('Homepage', IconLink, () => {
-			handleGotoHomepage(1000 * 60 * 90) // 90 mins
+			// eslint-disable-next-line svelte/no-navigation-without-resolve
+			goto('/?homepage')
 		})}
 		{@render dropdownMenuItem('Logout', IconLogout, () => {
 			try {
