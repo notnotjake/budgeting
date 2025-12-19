@@ -14,11 +14,12 @@
 		"db:gen": "drizzle-kit generate",
 		"db:migrate": "drizzle-kit migrate",
 		"db:seed": "db/seed/index.ts",
+		"check:prettier": "prettier --write .",
+		"check:eslint": "eslint . --cache --concurrency auto",
+		"check:svelte": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
+		"check:rabbit": "coderabbit review --base $(git rev-parse --abbrev-ref HEAD)",
 		"build": "bunx --bun vite build",
-		"start": "bun run ./build",
-		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
-		"prettier": "prettier --write .",
-		"eslint": "eslint . --cache --concurrency auto"
+		"start": "bun run ./build"
 	},
 	"devDependencies": {
 		"@eslint/compat": "^2.0.0",
