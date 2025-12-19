@@ -4,6 +4,18 @@ import { sections } from '$lib/server/db/schema'
 import { eq } from 'drizzle-orm'
 import { z } from 'zod'
 
+// Get all sections with their items
+export const getItems = query(async () => {
+	const sectionsWithItems = await db.query.sections.findMany({
+		with: {
+			items: true
+		},
+		orderBy: (sections, { asc }) => asc(sections.title)
+	})
+
+	return sectionsWithItems
+})
+
 export const updateSectionIcon = query(
 	z.object({
 		icon: z.string(),

@@ -52,6 +52,7 @@
 		"@fontsource-variable/inter": "^5.2.8",
 		"@fontsource-variable/jetbrains-mono": "^5.2.8",
 		"@fontsource/sn-pro": "^5.2.5",
+		"@internationalized/date": "^3.10.1",
 		"@opensky/remotes": "^0.0.3",
 		"@opensky/seo": "^1.1.0",
 		"@opensky/style": "^0.1.0",

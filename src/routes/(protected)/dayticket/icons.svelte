@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { Popover, RadioGroup } from 'bits-ui'
 	import { createClass } from '@opensky/style'
-	import { updateSectionIcon } from '$lib/remotes/tickets/section.remote'
+	import { updateSectionIcon } from '$remotes/dayticket.remote'
 
 	import {
 		IconUsers,

@@ -1,10 +1,31 @@
 - change email let password managers know of change
+
 - configure proper migrations for railway deployment
-- visual oddity when opening passkey context menu, the settings title goes behind the profile pic
+
+- in settings: visual glitch of toolbar when opening/closing any bitsui items
+
+- new account, sticky onboarding (stays up until completed)
 
 * reauth full functionality (with preauth and on action return error)
 
-* error handling
+* organization and sharing
+  when you want a resource to be shared between users
+  allow an organization role that can manage users under them
+  needed for billing
+
+- autumn pricing page
+
+- refactor structured response to be more like go and the proposed `?=` typescript behavior
+
+## tools
+
+posthog product analytics: tracking, feature flags, feedback
+
+customer support: featurebase, plain, dovetail
+
+sentry error tracking
+
+axiom/open telemetry logging
 
 ## future
 
@@ -20,10 +41,6 @@
   update user
   ban user
   lock user as admin
-
-* organization and sharing
-  when you want a resource to be shared between users, how can we make that easier
-  allow an organization role that can manage users under them
 
 * multiple sessions
   be logged into multiple accounts on one browser

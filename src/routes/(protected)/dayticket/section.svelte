@@ -5,7 +5,7 @@
 	import ItemRow from './item-row.svelte'
 	import { createClass } from '@opensky/style'
 	import { wipeVertical } from '$ui/transition'
-	import { updateSectionCollapsed } from '$lib/remotes/tickets/section.remote'
+	import { updateSectionCollapsed } from '$remotes/dayticket.remote'
 
 	type Item = {
 		id: string

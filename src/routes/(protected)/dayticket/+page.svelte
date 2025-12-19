@@ -1,10 +1,9 @@
 <script lang="ts">
 	import { createClass } from '@opensky/style'
-	import { wipeVertical } from '$ui/transition'
 	import { IconCirclePlusFilled, IconMessageChatbotFilled } from '@tabler/icons-svelte'
 	import ControlStrip from './control-strip.svelte'
 	import Section from './section.svelte'
-	import { getItems } from '../play/items.remote'
+	import { getItems } from '$remotes/dayticket.remote'
 	import { Dialog } from 'bits-ui'
 	import { fade, slide } from 'svelte/transition'
 
