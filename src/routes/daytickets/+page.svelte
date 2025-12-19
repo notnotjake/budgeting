@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { createClass } from '@opensky/style'
 	import { wipeVertical } from '$ui/transition'
-	import { IconMessageChatbotFilled } from '@tabler/icons-svelte'
+	import { IconCirclePlusFilled, IconMessageChatbotFilled } from '@tabler/icons-svelte'
 	import ControlStrip from './control-strip.svelte'
 	import Section from './section.svelte'
 	import { getItems } from '../play/items.remote'
@@ -65,7 +65,7 @@
 		<!-- Main ContentVisibilityAutoStateChangeEvent -->
 		<div class="grid w-full max-w-280 grid-cols-3 gap-6 py-10">
 			{#each columns as column (column)}
-				<div class="flex flex-col gap-6">
+				<div class="group/col flex flex-col gap-6">
 					{#each column as section (section.id)}
 						<Section
 							sectionId={section.id}
@@ -75,6 +75,13 @@
 							items={section.items}
 						/>
 					{/each}
+
+					<button
+						class="flex min-h-12 w-full items-center justify-center gap-2 rounded-xl bg-neutral-600/10 opacity-0 transition-opacity group-hover/col:opacity-100"
+					>
+						<IconCirclePlusFilled size={20} class="text-neutral-800" />
+						<p class="medium">Add Section</p>
+					</button>
 				</div>
 			{/each}
 		</div>
