@@ -16,17 +16,10 @@
 		sidePanelOpen = !sidePanelOpen
 	}
 
-	// Distribute sections into 3 columns, with extras going to earlier columns
-	const columnCount = 3
-	const basePerColumn = Math.floor(sections.length / columnCount)
-	const remainder = sections.length % columnCount
-
-	const columns = Array.from({ length: columnCount }, (_, colIndex) => {
-		const extraItem = colIndex < remainder ? 1 : 0
-		const startIndex = colIndex * basePerColumn + Math.min(colIndex, remainder)
-		const count = basePerColumn + extraItem
-		return sections.slice(startIndex, startIndex + count)
-	})
+	// Group sections by column, sorted by order within each column
+	const columns = [0, 1, 2].map((colIndex) =>
+		sections.filter((s) => s.column === colIndex).sort((a, b) => a.order.localeCompare(b.order))
+	)
 </script>
 
 <!-- Overscroll Top -->
@@ -74,7 +67,12 @@
 			{#each columns as column (column)}
 				<div class="flex flex-col gap-6">
 					{#each column as section (section.id)}
-						<Section title={section.title} items={section.items} />
+						<Section
+							sectionId={section.id}
+							title={section.title}
+							icon={section.icon}
+							items={section.items}
+						/>
 					{/each}
 				</div>
 			{/each}

@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { Popover, RadioGroup } from 'bits-ui'
-	import type { Icon as TablerIcon } from '@tabler/icons-svelte'
 	import { createClass } from '@opensky/style'
+	import { updateSectionIcon } from '$lib/remotes/tickets/section.remote'
 
 	import {
 		IconUsers,
@@ -41,9 +41,26 @@
 		{ value: 'shield', component: IconShield }
 	] as const
 
-	let selectedValue = $state('box')
+	type IconValue = (typeof icons)[number]['value']
+
+	interface Props {
+		sectionId: string
+		icon?: string | null
+	}
+
+	let { sectionId, icon = 'box' }: Props = $props()
+
+	// Validate icon is a known value, fallback to 'box'
+	const validIcon = icons.some((i) => i.value === icon) ? (icon as IconValue) : 'box'
+
+	let selectedValue = $state<IconValue>(validIcon)
 
 	let SelectedIcon = $derived(icons.find((i) => i.value === selectedValue)?.component ?? IconBox)
+
+	async function handleIconChange(newIcon: string) {
+		selectedValue = newIcon as IconValue
+		await updateSectionIcon({ sectionId, icon: newIcon })
+	}
 </script>
 
 <Popover.Root>
@@ -62,7 +79,11 @@
 			collisionPadding={5}
 			class="z-50 flex w-fit rounded-2xl bg-black p-1 shadow-lg outline-none"
 		>
-			<RadioGroup.Root bind:value={selectedValue} class="grid grid-cols-4 gap-1">
+			<RadioGroup.Root
+				value={selectedValue}
+				onValueChange={handleIconChange}
+				class="grid grid-cols-4 gap-1"
+			>
 				{#each icons as { value, component: Icon } (value)}
 					{@const isSelected = selectedValue === value}
 					<RadioGroup.Item

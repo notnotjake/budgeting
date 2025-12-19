@@ -7,18 +7,20 @@
 	import { wipeVertical } from '$ui/transition'
 
 	type Item = {
-		id: number
+		id: string
 		name: string
 		cost: string
 		quantityType: string
 	}
 
 	type Props = {
+		sectionId: string
 		title: string
+		icon: string | null
 		items: Item[]
 	}
 
-	let { title, items }: Props = $props()
+	let { sectionId, title, icon, items }: Props = $props()
 
 	let isCollapsed = $state(false)
 
@@ -37,7 +39,7 @@
 				class="group relative z-30 flex w-full items-center"
 				ondblclick={handleDblClick}
 			>
-				<IconSelection />
+				<IconSelection {sectionId} {icon} />
 
 				<div class="flex min-w-0 grow cursor-default items-baseline">
 					<p class="truncate text-[1.1rem] font-semibold tracking-tight-md">{title}</p>
