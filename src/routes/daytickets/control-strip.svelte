@@ -11,6 +11,11 @@
 	import { Tooltip } from 'bits-ui'
 	import InputAdapting from '$ui/input/input-adapting.svelte'
 
+	type Props = {
+		togglePanel: () => void
+	}
+	let { togglePanel }: Props = $props()
+
 	let isSubmitAvailable = $state(false)
 
 	let builder = $state('')
@@ -19,7 +24,7 @@
 </script>
 
 <div
-	class="pointer-events-auto flex h-fit w-fit items-center rounded-4xl bg-[#FAF8FB] px-2 py-1 shadow-[inset_0_1px_1.5px_rgba(255,255,255,1),0_1px_1.5px_0px_rgba(0,0,0,0.08),0_2px_30px_11px_rgba(0,0,0,0.04)] dark:bg-[#212121] dark:shadow-[inset_0_1px_1.5px_rgba(255,255,255,0.09),inset_0_-1px_4px_rgba(255,255,255,0.03)]"
+	class="pointer-events-auto flex h-fit w-fit items-center gap-1 rounded-4xl bg-[#FAF8FB] px-2 py-1 shadow-[inset_0_1px_1.5px_rgba(255,255,255,1),0_1px_1.5px_0px_rgba(0,0,0,0.08),0_2px_30px_11px_rgba(0,0,0,0.04)] dark:bg-[#212121] dark:shadow-[inset_0_1px_1.5px_rgba(255,255,255,0.09),inset_0_-1px_4px_rgba(255,255,255,0.03)]"
 >
 	<Tooltip.Provider delayDuration={400}>
 		<Tooltip.Root>
@@ -37,28 +42,29 @@
 			{@render tooltipContent('Account')}
 		</Tooltip.Root>
 
-		<div
-			class="mx-1 ml-2 h-full min-h-8 w-0.5 rounded-full bg-neutral-200 dark:bg-neutral-700"
-		></div>
+		<div class="ml-1 h-full min-h-8 w-0.5 rounded-full bg-neutral-200 dark:bg-neutral-700"></div>
 
 		<!-- Date -->
 		<Tooltip.Root>
 			<Tooltip.Trigger>
-				<button
-					class="flex min-h-8 w-fit shrink-0 cursor-pointer items-center gap-1 rounded-full bg-neutral-300/0 px-3 will-change-transform hover:bg-neutral-200/80 active:scale-95 dark:bg-neutral-700/0 dark:hover:bg-neutral-700/80"
-				>
-					<IconCalendarWeekFilled size={22} class="shrink-0 grow text-rose-600" />
-					<p
-						class="w-fit shrink-0 grow font-normal whitespace-nowrap text-neutral-500 dark:text-neutral-400"
+				{#snippet child({ props })}
+					<button
+						{...props}
+						class="flex min-h-8 w-fit shrink-0 cursor-pointer items-center gap-1 rounded-full bg-neutral-300/0 px-3 will-change-transform hover:bg-neutral-200/80 active:scale-95 dark:bg-neutral-700/0 dark:hover:bg-neutral-700/80"
 					>
-						Today
-					</p>
-					<p
-						class="w-fit shrink-0 grow font-medium whitespace-nowrap text-neutral-800 dark:text-neutral-200"
-					>
-						Dec 17th
-					</p>
-				</button>
+						<IconCalendarWeekFilled size={22} class="shrink-0 grow text-rose-600" />
+						<p
+							class="w-fit shrink-0 grow font-normal whitespace-nowrap text-neutral-500 dark:text-neutral-400"
+						>
+							Today
+						</p>
+						<p
+							class="w-fit shrink-0 grow font-medium whitespace-nowrap text-neutral-800 dark:text-neutral-200"
+						>
+							Dec 17th
+						</p>
+					</button>
+				{/snippet}
 			</Tooltip.Trigger>
 			{@render tooltipContent('Change Date')}
 		</Tooltip.Root>
@@ -159,7 +165,7 @@
 			{@render tooltipContent('Edit Billing')}
 		</Tooltip.Root>
 
-		<div class="mx-1 h-full min-h-8 w-0.5 rounded-full bg-neutral-200 dark:bg-neutral-700"></div>
+		<div class="h-full min-h-8 w-0.5 rounded-full bg-neutral-200 dark:bg-neutral-700"></div>
 
 		<Tooltip.Root>
 			<Tooltip.Trigger>
@@ -178,7 +184,9 @@
 					<button
 						{...props}
 						tabindex="-1"
-						onclick={() => {}}
+						onclick={() => {
+							togglePanel?.()
+						}}
 						class={createClass(
 							'z-50 -mr-1 flex h-10 w-10 shrink-0 cursor-pointer items-center justify-center rounded-full bg-neutral-500 p-1.5 shadow-md transition-all',
 							'active:scale-95',
@@ -197,7 +205,7 @@
 </div>
 
 {#snippet tooltipContent(text: string)}
-	<Tooltip.Content side="bottom" sideOffset={5} align="center">
+	<Tooltip.Content side="bottom" sideOffset={5} align="center" class="z-200">
 		<div class="rounded-2xl bg-neutral-900 px-3 py-2 text-[0.9rem] font-semibold text-neutral-50">
 			{text}
 		</div>
