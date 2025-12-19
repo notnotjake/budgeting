@@ -1,12 +1,5 @@
 <script lang="ts">
-	import {
-		IconChevronLeft,
-		IconCheck,
-		IconChevronRight,
-		IconArrowBack,
-		IconCircleCaretRightFilled,
-		IconRestore
-	} from '@tabler/icons-svelte'
+	import { IconChevronLeft, IconCheck, IconChevronRight, IconRestore } from '@tabler/icons-svelte'
 	import {
 		CalendarDate,
 		startOfWeek,
@@ -164,16 +157,7 @@
 	<div class="border-b border-neutral-600 px-2 pb-2">
 		<div class="flex items-center gap-3">
 			<!-- Left side - Month and Date -->
-			<button
-				onclick={() => {
-					expanded = false
-				}}
-				class="flex aspect-square h-9 items-center justify-center rounded-full hover:bg-neutral-600 active:scale-95"
-			>
-				<IconCheck class="text-white/80" stroke={3} />
-			</button>
-
-			<div>
+			<div class="pl-3">
 				<p
 					class="shrink-0 text-xl font-medium tracking-tight-sm whitespace-nowrap text-neutral-100"
 				>
