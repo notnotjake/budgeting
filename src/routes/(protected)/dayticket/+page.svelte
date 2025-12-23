@@ -6,6 +6,7 @@
 	import { getItems } from '$remotes/dayticket.remote'
 	import { Dialog } from 'bits-ui'
 	import { fade, slide } from 'svelte/transition'
+	import PrecisionPicker from './precision-picker.svelte'
 
 	const sections = await getItems()
 

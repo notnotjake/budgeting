@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { createClass } from '@opensky/style'
 	import { useDragAndDrop } from 'fluid-dnd/svelte'
 	import { type DragStartEventData, type DragEndEventData } from 'fluid-dnd'
 
@@ -8,65 +9,95 @@
 		name: string
 	}
 
-	const items = $state<Item[]>([
+	const column1 = $state<Item[]>([
 		{ id: 1, order: 1, name: 'One' },
 		{ id: 2, order: 2, name: 'Two' },
-		{ id: 3, order: 3, name: 'Three' },
-		{ id: 4, order: 4, name: 'Four' }
+		{ id: 3, order: 3, name: 'Three' }
+	])
+	const column2 = $state<Item[]>([
+		{ id: 4, order: 1, name: 'Four' },
+		{ id: 5, order: 2, name: 'Five' },
+		{ id: 6, order: 3, name: 'Six' }
+	])
+	const column3 = $state<Item[]>([
+		{ id: 7, order: 1, name: 'Seven' },
+		{ id: 8, order: 2, name: 'Eight' },
+		{ id: 9, order: 3, name: 'Nine' }
 	])
 
-	const testList = $state<Item[]>([
-		{ id: 1, order: 1, name: 'Test 1' },
-		{ id: 2, order: 2, name: 'Test 2' },
-		{ id: 3, order: 3, name: 'Test 3' }
-	])
-
-	const [sortableList] = useDragAndDrop(items, {
+	const [dndColumn1] = useDragAndDrop(column1, {
+		droppableGroup: 'columns',
 		onDragStart,
-		onDragEnd
+		onDragEnd,
+		draggingClass: 'dragging',
+		handlerSelector: '.handler'
 	})
+	const [dndColumn2] = useDragAndDrop(column2, {
+		droppableGroup: 'columns',
+		onDragStart,
+		onDragEnd,
+		draggingClass: 'dragging',
+		handlerSelector: '.handler'
+	})
+	const [dndColumn3] = useDragAndDrop(column3, {
+		droppableGroup: 'columns',
+		onDragStart,
+		onDragEnd,
+		draggingClass: 'dragging',
+		handlerSelector: '.handler'
+	})
+
+	let isDragging = $state<Item | null>(null)
+
 	function onDragStart(data: DragStartEventData<Item>) {
+		isDragging = data.value
 		console.log(data)
 	}
 	function onDragEnd(data: DragEndEventData<Item>) {
+		isDragging = null
 		console.log(data)
 	}
-
-	let droppableGroup = $state<HTMLElement | null>(null)
-	const list = $state([1, 2, 3])
-	const [parent] = useDragAndDrop(testList, {
-		droppableGroup: 'group1',
-		onDragStart,
-		onDragEnd
-	})
-
-	function addNew() {
-		const sortedList = Array.from(list).sort((a, b) => a - b)
-		const newValue = sortedList[sortedList.length - 1] + 1
-		list.push(newValue)
-	}
-
-	// $inspect(items)
 </script>
 
-<ul use:parent class="number-list debug p-10">
-	{#each list as element, index (element)}
-		<li data-index={index} class="number mt-1 debug bg-neutral-100 pl-2">
-			{element}
-		</li>
-	{/each}
-</ul>
+<p>{isDragging ? 'Dragging' : 'Idle'}</p>
 
-<button
-	onclick={() => {
-		addNew()
-	}}>Add</button
->
+<div class="flex gap-2">
+	<div use:dndColumn1 class="m-5 flex w-lg flex-col gap-1">
+		{#each column1 as item, index (item.id)}
+			<div data-index={index} class="flex gap-2 border-2 border-neutral-300">
+				<div class="handler">::</div>
+				<p>
+					{item.name}
+				</p>
+			</div>
+		{/each}
+	</div>
 
-<div bind:this={droppableGroup}>
-	<div use:sortableList class="flex flex-col gap-1">
-		{#each items as item, index (item.id)}
-			<p data-index={index} class="rounded-sm bg-neutral-200 p-2">{item.name} ({index})</p>
+	<div use:dndColumn2 class="m-5 flex w-lg flex-col gap-1">
+		{#each column2 as item, index (item.id)}
+			<div data-index={index} class="flex gap-2 border-2 border-neutral-300">
+				<div class="handler">::</div>
+				<p>
+					{item.name}
+				</p>
+			</div>
+		{/each}
+	</div>
+
+	<div use:dndColumn3 class="m-5 flex w-lg flex-col gap-1">
+		{#each column3 as item, index (item.id)}
+			<div data-index={index} class="flex gap-2 border-2 border-neutral-300">
+				<div class="handler">::</div>
+				<p>
+					{item.name}
+				</p>
+			</div>
 		{/each}
 	</div>
 </div>
+
+<style>
+	.dragging {
+		background: var(--color-neutral-200);
+	}
+</style>

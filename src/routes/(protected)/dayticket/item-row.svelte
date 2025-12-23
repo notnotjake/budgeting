@@ -3,6 +3,9 @@
 	import { IconPencil } from '@tabler/icons-svelte'
 	import { createClass } from '@opensky/style'
 
+	import PrecisionPicker from './precision-picker.svelte'
+	import { wipeVertical } from '$ui/transition'
+
 	type Props = {
 		name: string
 		cost: string
@@ -127,9 +130,9 @@
 
 		<!-- Editing UI -->
 		{#if isEditing}
-			<div class="flex justify-end px-3 py-2 text-white">
+			<div transition:wipeVertical class="flex justify-start px-3 py-2 text-white">
+				<PrecisionPicker />
 				<p>Unit</p>
-				<p>Precision</p>
 			</div>
 		{/if}
 	</ContextMenu.Trigger>
