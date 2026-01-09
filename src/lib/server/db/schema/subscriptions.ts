@@ -11,6 +11,7 @@ export const subscriptions = pgTable('subscriptions', {
 		.references(() => user.id, { onDelete: 'cascade' }),
 	name: text('name').notNull(),
 	company: text('company'),
+	account: text('account'),
 	amount: decimal('amount', { precision: 10, scale: 2 }).notNull(),
 	frequency: text('frequency', { enum: ['day', 'month'] }).notNull(),
 	frequencyInterval: integer('frequency_interval').notNull(),
