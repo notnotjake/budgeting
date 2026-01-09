@@ -1,5 +1,5 @@
 export const site = {
-	name: 'Spring',
-	url: 'https://usespring.app',
-	host: 'usespring.app' // Used as RP_ID for passkeys
+	name: 'Budgeting',
+	url: 'https://local.com', // TODO: update
+	host: 'local.com' // Used as RP_ID for passkeys
 } as const
