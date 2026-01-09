@@ -118,35 +118,38 @@
 					<p class="text-sm text-neutral-400">Add your first subscription using the toolbar above.</p>
 				</div>
 			{:else}
-				<div class="grid gap-4">
+				<div class="divide-y divide-neutral-300 dark:divide-neutral-700">
 					{#each subscriptions as sub (sub.id)}
 						<ContextMenu.Root>
 							<ContextMenu.Trigger>
 								<div
-									class="grid grid-cols-[1fr_auto_auto] items-center gap-4 rounded-xl bg-white/80 p-4 shadow-[0_1px_3px_rgba(0,0,0,0.05),0_1px_2px_rgba(0,0,0,0.1)] backdrop-blur-sm dark:bg-neutral-900/80"
+									class="grid grid-cols-[1fr_auto_auto_auto] items-center gap-6 py-4"
 									transition:fade
 								>
-									<div>
-										<h3 class="font-semibold text-neutral-900 dark:text-white">{sub.name}</h3>
+									<div class="min-w-0">
+										<h3 class="truncate font-medium text-neutral-900 dark:text-white">{sub.name}</h3>
 										{#if sub.company}
-											<p class="text-sm text-neutral-500">{sub.company}</p>
+											<p class="truncate text-sm text-neutral-500">{sub.company}</p>
 										{/if}
 									</div>
-									<div class="text-right">
+									<div class="text-sm text-neutral-500">
 										{#if sub.account}
-											<p class="text-sm font-medium text-cyan-600 dark:text-cyan-400">{sub.account}</p>
+											{sub.account}
 										{/if}
 									</div>
+									<div class="text-sm text-neutral-500">
+										{new Date(sub.dueDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+									</div>
 									<div class="text-right">
-										<p class="font-medium text-neutral-900 dark:text-white">
+										<p class="tabular-nums font-medium text-neutral-900 dark:text-white">
 											${Number(sub.amount).toFixed(2)}
 										</p>
-										<p class="text-xs text-neutral-500">
+										<p class="text-xs text-neutral-400">
 											{sub.frequency === 'day' && sub.frequencyInterval === 7
 												? 'Weekly'
 												: sub.frequency === 'month' && sub.frequencyInterval === 12
 													? 'Yearly'
-													: 'Monthly'} &bull; Due {new Date(sub.dueDate).toLocaleDateString()}
+													: 'Monthly'}
 										</p>
 									</div>
 								</div>
