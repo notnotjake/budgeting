@@ -22,7 +22,7 @@
 		CalendarDate
 	} from '@internationalized/date'
 	import { wipeHorizontal } from '$ui/transition'
-	import DatePicker from '../dayticket/date.svelte'
+	import DatePicker from './date.svelte'
 	import { goto } from '$app/navigation'
 
 	type Props = {
