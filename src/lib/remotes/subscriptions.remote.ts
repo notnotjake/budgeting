@@ -1,7 +1,7 @@
 import { query, command, getRequestEvent } from '$app/server'
 import { db } from '$lib/server/db'
 import { subscriptions } from '$lib/server/db/schema/subscriptions'
-import { eq, asc, isNotNull } from 'drizzle-orm'
+import { eq, asc, and } from 'drizzle-orm'
 import { z } from 'zod'
 import { error } from '@sveltejs/kit'
 
@@ -48,9 +48,10 @@ export const createSubscription = command(
 		account: z.string().optional(),
 		amount: z.number().positive(),
 		frequency: z.enum(['day', 'month']),
+		frequencyInterval: z.number().int().positive(),
 		dueDate: z.string()
 	}),
-	async ({ name, company, account, amount, frequency, dueDate }) => {
+	async ({ name, company, account, amount, frequency, frequencyInterval, dueDate }) => {
 		const event = getRequestEvent()
 		const { user } = event.locals
 
@@ -70,13 +71,82 @@ export const createSubscription = command(
 			account,
 			amount: amount.toString(),
 			frequency,
-			frequencyInterval: 1,
+			frequencyInterval,
 			dueDate: parsedDate,
 			startDate: parsedDate
 		})
 
 		await getSubscriptions().refresh()
 		await getAccounts().refresh()
+
+		return { success: true }
+	}
+)
+
+export const deleteSubscription = command(
+	z.object({
+		id: z.string()
+	}),
+	async ({ id }) => {
+		const event = getRequestEvent()
+		const { user } = event.locals
+
+		if (!user) {
+			throw error(401, 'Unauthorized')
+		}
+
+		await db
+			.delete(subscriptions)
+			.where(and(eq(subscriptions.id, id), eq(subscriptions.userId, user.id)))
+
+		await getSubscriptions().refresh()
+		await getAccounts().refresh()
+
+		return { success: true }
+	}
+)
+
+export const pauseSubscription = command(
+	z.object({
+		id: z.string()
+	}),
+	async ({ id }) => {
+		const event = getRequestEvent()
+		const { user } = event.locals
+
+		if (!user) {
+			throw error(401, 'Unauthorized')
+		}
+
+		await db
+			.update(subscriptions)
+			.set({ pauseDate: new Date() })
+			.where(and(eq(subscriptions.id, id), eq(subscriptions.userId, user.id)))
+
+		await getSubscriptions().refresh()
+
+		return { success: true }
+	}
+)
+
+export const cancelSubscription = command(
+	z.object({
+		id: z.string()
+	}),
+	async ({ id }) => {
+		const event = getRequestEvent()
+		const { user } = event.locals
+
+		if (!user) {
+			throw error(401, 'Unauthorized')
+		}
+
+		await db
+			.update(subscriptions)
+			.set({ endDate: new Date() })
+			.where(and(eq(subscriptions.id, id), eq(subscriptions.userId, user.id)))
+
+		await getSubscriptions().refresh()
 
 		return { success: true }
 	}
