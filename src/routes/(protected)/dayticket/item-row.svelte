@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { ContextMenu } from 'bits-ui'
-	import { IconPencil } from '@tabler/icons-svelte'
+	import { IconPencil, IconTrash } from '@tabler/icons-svelte'
 	import { createClass } from '@opensky/style'
 
 	import PrecisionPicker from './precision-picker.svelte'
@@ -147,6 +147,14 @@
 			>
 				<IconPencil class="text-neutral-200" />
 				<p class="px-1.5 font-medium text-neutral-200">Edit</p>
+			</div>
+		</ContextMenu.Item>
+		<ContextMenu.Item class="outline-none" onSelect={() => {}}>
+			<div
+				class="flex cursor-pointer gap-2 rounded-[0.9rem] px-2 py-1.5 pr-3 text-rose-500 hover:bg-rose-600/30"
+			>
+				<IconTrash class="text-rose-500" />
+				<p class="px-1.5 font-medium text-rose-500">Remove</p>
 			</div>
 		</ContextMenu.Item>
 	</ContextMenu.Content>

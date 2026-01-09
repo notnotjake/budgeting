@@ -4,7 +4,7 @@
 	import { createClass } from '@opensky/style'
 	import { Runde } from '$ui/fonts'
 
-	let selectedPlan = $state<'monthly' | 'yearly'>('yearly')
+	let selectedPlan = $state<'monthly' | 'yearly'>('monthly')
 </script>
 
 <Runde />
@@ -35,7 +35,8 @@
 								class={createClass(
 									'flex items-center rounded-full px-5 py-2',
 									checked ? 'bg-neutral-800' : 'bg-none',
-									checked && ''
+									checked &&
+										'shadow-[inset_0.5px_0.5px_0_rgba(255,255,255,0.2),inset_-0.5px_-0.5px_0_rgba(255,255,255,0.1)]'
 								)}
 							>
 								<p>Monthly</p>
@@ -49,7 +50,8 @@
 								class={createClass(
 									'flex items-center gap-1.5 rounded-full px-4 py-2 pr-2',
 									checked ? 'bg-neutral-800' : 'bg-none',
-									checked && ''
+									checked &&
+										'shadow-[inset_0.5px_0.5px_0_rgba(255,255,255,0.2),inset_-0.5px_-0.5px_0_rgba(255,255,255,0.1)]'
 								)}
 							>
 								<p>Yearly</p>

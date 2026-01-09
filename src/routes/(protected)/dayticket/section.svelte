@@ -1,11 +1,18 @@
 <script lang="ts">
 	import { ContextMenu } from 'bits-ui'
-	import { IconChevronRight, IconPencil, IconPlus, IconListDetails } from '@tabler/icons-svelte'
+	import {
+		IconChevronRight,
+		IconPencil,
+		IconPlus,
+		IconListDetails,
+		IconCheck,
+		IconArrowBackUp
+	} from '@tabler/icons-svelte'
 	import IconSelection from './icons.svelte'
 	import ItemRow from './item-row.svelte'
 	import { createClass } from '@opensky/style'
 	import { wipeVertical } from '$ui/transition'
-	import { updateSectionCollapsed } from '$remotes/dayticket.remote'
+	import { updateSectionCollapsed, updateSectionTitle } from '$remotes/dayticket.remote'
 
 	type Item = {
 		id: string
@@ -25,6 +32,9 @@
 	let { sectionId, title, icon, collapsed, items }: Props = $props()
 
 	let isCollapsed = $state(collapsed ?? false)
+	let isEditingName = $state(false)
+	let editedTitle = $state(title)
+	let titleInputRef = $state<HTMLInputElement>()
 
 	async function toggleCollapsed() {
 		isCollapsed = !isCollapsed
@@ -35,6 +45,34 @@
 		// Don't toggle if double-clicking the icon selection
 		if ((e.target as HTMLElement).closest('[data-icon-selection]')) return
 		toggleCollapsed()
+	}
+
+	async function startEditingName() {
+		editedTitle = title
+		isEditingName = true
+		await new Promise((r) => setTimeout(r, 0))
+		titleInputRef?.focus()
+		titleInputRef?.select()
+	}
+
+	async function confirmEditName() {
+		if (editedTitle.trim() && editedTitle !== title) {
+			await updateSectionTitle({ sectionId, title: editedTitle.trim() })
+		}
+		isEditingName = false
+	}
+
+	function cancelEditName() {
+		editedTitle = title
+		isEditingName = false
+	}
+
+	function handleTitleKeydown(e: KeyboardEvent) {
+		if (e.key === 'Enter') {
+			confirmEditName()
+		} else if (e.key === 'Escape') {
+			cancelEditName()
+		}
 	}
 </script>
 
@@ -49,7 +87,34 @@
 				<IconSelection {sectionId} {icon} />
 
 				<div class="flex min-w-0 grow cursor-default items-baseline">
-					<p class="truncate text-[1.1rem] font-semibold tracking-tight-md">{title}</p>
+					<div
+						class="flex items-center justify-between rounded-lg debug {isEditingName &&
+							'border border-blue-500 bg-neutral-300'}"
+					>
+						<input
+							type="text"
+							bind:this={titleInputRef}
+							bind:value={editedTitle}
+							onkeydown={handleTitleKeydown}
+							disabled={!isEditingName}
+							class="min-w-0 truncate debug bg-transparent text-[1.1rem] font-semibold tracking-tight-md outline-none disabled:cursor-default"
+						/>
+
+						{#if isEditingName}
+							<button
+								onclick={cancelEditName}
+								class="rounded-md p-0.5 text-neutral-500 hover:bg-neutral-200 active:scale-95"
+							>
+								<IconArrowBackUp size={18} />
+							</button>
+							<button
+								onclick={confirmEditName}
+								class="ml-1 rounded-md p-0.5 text-green-600 hover:bg-green-100 active:scale-95"
+							>
+								<IconCheck size={18} />
+							</button>
+						{/if}
+					</div>
 
 					<div class="grow"></div>
 
@@ -76,7 +141,7 @@
 			<ContextMenu.Content
 				class="relative z-40 w-44 rounded-[1.15rem] bg-black p-1 shadow-lg outline-none"
 			>
-				<ContextMenu.Item class="outline-none">
+				<ContextMenu.Item class="outline-none" onSelect={startEditingName}>
 					<div
 						class="flex cursor-pointer gap-2 rounded-[0.9rem] px-2 py-1.5 pr-3 text-white hover:bg-neutral-600/80"
 					>
