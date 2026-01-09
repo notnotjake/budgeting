@@ -11,7 +11,7 @@ import {
 	type PublicKeyCredentialRequestOptionsJSON
 } from '@simplewebauthn/server'
 
-import { MinimumDelay, delay } from '$utils/timing'
+import { MinimumDelay } from '$utils/timing'
 
 export const logout = command(async () => {
 	const event = getRequestEvent()

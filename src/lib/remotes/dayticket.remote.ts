@@ -37,3 +37,14 @@ export const updateSectionCollapsed = query(
 		return { success: true }
 	}
 )
+
+export const updateSectionTitle = query(
+	z.object({
+		sectionId: z.string(),
+		title: z.string().min(1).max(100)
+	}),
+	async ({ sectionId, title }) => {
+		await db.update(sections).set({ title }).where(eq(sections.id, sectionId))
+		return { success: true }
+	}
+)
