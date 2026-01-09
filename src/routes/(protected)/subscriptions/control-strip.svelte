@@ -8,9 +8,10 @@
 		IconTagFilled,
 		IconArrowBackUp,
 		IconRepeat,
-		IconArrowLeft
+		IconArrowLeft,
+		IconCreditCard
 	} from '@tabler/icons-svelte'
-	import { Tooltip, Popover } from 'bits-ui'
+	import { Tooltip, Popover, Combobox } from 'bits-ui'
 	import InputAdapting from '$ui/input/input-adapting.svelte'
 	import { today, getLocalTimeZone, isSameDay, parseDate, CalendarDate } from '@internationalized/date'
 	import { wipeHorizontal } from '$ui/transition'
@@ -21,21 +22,44 @@
 		onSubmit: (data: {
 			name: string
 			company: string | undefined
+			account: string | undefined
 			amount: number
 			dueDate: string
 			frequency: 'day' | 'month'
 		}) => Promise<void>
 		isSubmitting?: boolean
+		accounts?: string[]
 	}
-	let { onSubmit, isSubmitting = false }: Props = $props()
+	let { onSubmit, isSubmitting = false, accounts = [] }: Props = $props()
 
 	let datePickerOpen = $state(false)
+	let accountComboboxOpen = $state(false)
 
 	let date = $state(today(getLocalTimeZone()))
 	let name = $state('')
 	let company = $state('')
+	let account = $state('')
+	let accountInputValue = $state('')
 	let amount = $state('')
 	let frequency = $state<'day' | 'month'>('month')
+
+	// Build combobox items from existing accounts + current input if it's new
+	let accountItems = $derived.by(() => {
+		const items = accounts.map((a) => ({ value: a, label: a }))
+		const trimmedInput = accountInputValue.trim()
+		// Add the current input as an option if it's not empty and not already in the list
+		if (trimmedInput && !accounts.some((a) => a.toLowerCase() === trimmedInput.toLowerCase())) {
+			items.unshift({ value: trimmedInput, label: `Add "${trimmedInput}"` })
+		}
+		return items
+	})
+
+	// Filter items based on input
+	let filteredAccountItems = $derived.by(() => {
+		const trimmedInput = accountInputValue.trim().toLowerCase()
+		if (!trimmedInput) return accountItems
+		return accountItems.filter((item) => item.value.toLowerCase().includes(trimmedInput))
+	})
 
 	let isSubmitAvailable = $derived(name.trim() !== '' && amount.trim() !== '' && parseFloat(amount) > 0)
 
@@ -52,6 +76,7 @@
 		await onSubmit({
 			name: name.trim(),
 			company: company.trim() || undefined,
+			account: account.trim() || undefined,
 			amount: parseFloat(amount),
 			dueDate: date.toString(),
 			frequency
@@ -60,6 +85,8 @@
 		// Reset form
 		name = ''
 		company = ''
+		account = ''
+		accountInputValue = ''
 		amount = ''
 		date = today(getLocalTimeZone())
 		frequency = 'month'
@@ -68,6 +95,8 @@
 	const clearForm = () => {
 		name = ''
 		company = ''
+		account = ''
+		accountInputValue = ''
 		amount = ''
 		date = today(getLocalTimeZone())
 		frequency = 'month'
@@ -164,6 +193,59 @@
 			</Tooltip.Trigger>
 			{@render tooltipContent('Company (Optional)')}
 		</Tooltip.Root>
+
+		<!-- Account -->
+		<Combobox.Root
+			type="single"
+			bind:value={account}
+			bind:inputValue={accountInputValue}
+			bind:open={accountComboboxOpen}
+			items={filteredAccountItems}
+		>
+			<Tooltip.Root disabled={accountComboboxOpen}>
+				<Tooltip.Trigger>
+					{#snippet child({ props: tooltipProps })}
+						<div
+							{...tooltipProps}
+							class={createClass(
+								'flex h-full min-h-8 cursor-pointer items-center gap-1 rounded-lg px-2 focus-within:bg-neutral-200/80 hover:bg-neutral-200/80',
+								'dark:focus-within:bg-neutral-700/80 dark:hover:bg-neutral-700/80'
+							)}
+						>
+							<IconCreditCard size={22} class="shrink-0 text-cyan-500" />
+							<Combobox.Input
+								class={createClass(
+									'w-20 bg-transparent outline-none selection:bg-sky-200 selection:text-blue-600 placeholder:font-medium placeholder:tracking-tight-md',
+									'dark:text-white dark:selection:bg-sky-500 dark:selection:text-white',
+									'placeholder:text-neutral-800 focus:placeholder:text-neutral-500',
+									'dark:placeholder:text-neutral-100 dark:focus:placeholder:text-neutral-400'
+								)}
+								placeholder="Account"
+							/>
+						</div>
+					{/snippet}
+				</Tooltip.Trigger>
+				{@render tooltipContent('Account/Card (Optional)')}
+			</Tooltip.Root>
+			<Combobox.Portal>
+				<Combobox.Content
+					class="z-300 max-h-60 w-48 overflow-y-auto rounded-xl bg-white p-1 shadow-lg dark:bg-neutral-800"
+					sideOffset={4}
+				>
+					{#each filteredAccountItems as item (item.value)}
+						<Combobox.Item
+							value={item.value}
+							label={item.value}
+							class="cursor-pointer rounded-lg px-3 py-2 text-sm text-neutral-700 outline-none hover:bg-neutral-100 data-[highlighted]:bg-neutral-100 dark:text-neutral-200 dark:hover:bg-neutral-700 dark:data-[highlighted]:bg-neutral-700"
+						>
+							{item.label}
+						</Combobox.Item>
+					{:else}
+						<div class="px-3 py-2 text-sm text-neutral-500">Type to add a new account</div>
+					{/each}
+				</Combobox.Content>
+			</Combobox.Portal>
+		</Combobox.Root>
 
 		<div class="h-full min-h-8 w-0.5 rounded-full bg-neutral-200 dark:bg-neutral-700"></div>
 

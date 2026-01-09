@@ -1,15 +1,17 @@
 <script lang="ts">
-	import { getSubscriptions, createSubscription } from '$remotes/subscriptions.remote'
+	import { getSubscriptions, getAccounts, createSubscription } from '$remotes/subscriptions.remote'
 	import { fade } from 'svelte/transition'
 	import { createClass } from '@opensky/style'
 	import ControlStrip from './control-strip.svelte'
 
 	let isSubmitting = $state(false)
 	let subscriptionsPromise = $state(getSubscriptions())
+	let accountsPromise = $state(getAccounts())
 
 	async function handleSubmit(data: {
 		name: string
 		company: string | undefined
+		account: string | undefined
 		amount: number
 		dueDate: string
 		frequency: 'day' | 'month'
@@ -17,8 +19,9 @@
 		isSubmitting = true
 		try {
 			await createSubscription(data)
-			// Refresh subscriptions list
+			// Refresh subscriptions and accounts lists
 			subscriptionsPromise = getSubscriptions()
+			accountsPromise = getAccounts()
 		} catch (e) {
 			console.error('Failed to create subscription', e)
 			alert('Failed to create subscription')
@@ -45,17 +48,25 @@
 	>
 		<h1
 			class={createClass(
-				'pt-18 pb-8 text-center text-xl text-black transition-all duration-150 dark:text-white'
+				'pt-18 text-center text-xl text-black transition-all duration-150 dark:text-white'
 			)}
 		>
 			Subscriptions
 		</h1>
+		{#await subscriptionsPromise then subscriptions}
+			{@const total = subscriptions.reduce((sum, sub) => sum + Number(sub.amount), 0)}
+			<p class="pb-8 text-sm tabular-nums text-neutral-400 dark:text-neutral-500">
+				${total.toFixed(2)}/mo
+			</p>
+		{/await}
 
 		<!-- Toolbar Group -->
 		<div
 			class="sticky top-0 z-200 flex w-full items-center justify-center bg-linear-to-b from-[#F1F1F3] to-transparent pt-2 pb-8 dark:from-neutral-950"
 		>
-			<ControlStrip onSubmit={handleSubmit} {isSubmitting} />
+			{#await accountsPromise then accounts}
+				<ControlStrip onSubmit={handleSubmit} {isSubmitting} {accounts} />
+			{/await}
 		</div>
 
 		<!-- Subscriptions List -->
@@ -72,13 +83,18 @@
 					<div class="grid gap-4">
 						{#each subscriptions as sub (sub.id)}
 							<div
-								class="flex items-center justify-between rounded-xl bg-white/80 p-4 shadow-[0_1px_3px_rgba(0,0,0,0.05),0_1px_2px_rgba(0,0,0,0.1)] backdrop-blur-sm dark:bg-neutral-900/80"
+								class="grid grid-cols-[1fr_auto_auto] items-center gap-4 rounded-xl bg-white/80 p-4 shadow-[0_1px_3px_rgba(0,0,0,0.05),0_1px_2px_rgba(0,0,0,0.1)] backdrop-blur-sm dark:bg-neutral-900/80"
 								transition:fade
 							>
 								<div>
 									<h3 class="font-semibold text-neutral-900 dark:text-white">{sub.name}</h3>
 									{#if sub.company}
 										<p class="text-sm text-neutral-500">{sub.company}</p>
+									{/if}
+								</div>
+								<div class="text-right">
+									{#if sub.account}
+										<p class="text-sm font-medium text-cyan-600 dark:text-cyan-400">{sub.account}</p>
 									{/if}
 								</div>
 								<div class="text-right">
