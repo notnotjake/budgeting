@@ -27,7 +27,7 @@
 				Track your subscriptions in one place. See what you're paying, when it's due, and never be surprised by a charge again.
 			</p>
 			<div class="mt-8 flex gap-3">
-				<Button href={loggedIn ? '/subscriptions' : '/login'} style="primary" rounded="full" class="bg-neutral-900 px-6 py-2.5">
+				<Button href={loggedIn ? '/app' : '/login'} style="primary" rounded="full" class="bg-neutral-900 px-6 py-2.5">
 					Get Started
 				</Button>
 			</div>

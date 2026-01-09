@@ -4,11 +4,9 @@
 		IconArrowUp,
 		IconCalendarWeekFilled,
 		IconBuildingStore,
-		IconCurrencyDollar,
 		IconTagFilled,
 		IconArrowBackUp,
 		IconRepeat,
-		IconArrowLeft,
 		IconCreditCard,
 		IconReceiptDollarFilled
 	} from '@tabler/icons-svelte'
@@ -23,7 +21,6 @@
 	} from '@internationalized/date'
 	import { wipeHorizontal } from '$ui/transition'
 	import DatePicker from './date.svelte'
-	import { goto } from '$app/navigation'
 
 	type Props = {
 		onSubmit: (data: {
@@ -124,25 +121,6 @@
 	class="pointer-events-auto flex h-fit w-fit items-center gap-1 rounded-4xl bg-[#FAF8FB] px-2 py-1 shadow-[inset_0_1px_1.5px_rgba(255,255,255,1),0_1px_1.5px_0px_rgba(0,0,0,0.08),0_2px_30px_11px_rgba(0,0,0,0.04)] dark:bg-[#212121] dark:shadow-[inset_0_1px_1.5px_rgba(255,255,255,0.09),inset_0_-1px_4px_rgba(255,255,255,0.03)]"
 >
 	<Tooltip.Provider delayDuration={600}>
-		<!-- Back to App -->
-		<Tooltip.Root>
-			<Tooltip.Trigger>
-				{#snippet child({ props })}
-					<button
-						{...props}
-						tabindex="-1"
-						onclick={() => goto('/app')}
-						class="flex aspect-square h-8 w-8 items-center justify-center rounded-full bg-linear-to-b from-blue-400 to-blue-600 p-2 transition-transform active:scale-95"
-					>
-						<IconArrowLeft size={18} class="text-white/90" stroke={2.5} />
-					</button>
-				{/snippet}
-			</Tooltip.Trigger>
-			{@render tooltipContent('Back to App')}
-		</Tooltip.Root>
-
-		<div class="ml-1 h-full min-h-8 w-0.5 rounded-full bg-neutral-200 dark:bg-neutral-700"></div>
-
 		<!-- Subscription Name -->
 		<Tooltip.Root>
 			<Tooltip.Trigger>
