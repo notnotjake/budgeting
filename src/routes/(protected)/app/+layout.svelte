@@ -16,15 +16,16 @@
 
 <!-- Overscroll Top -->
 <div
-	class="overscroll-top"
-	class:bg-neutral-950={settingsShown}
-	class:bg-[#F1F1F3]={!settingsShown}
+	class="overscroll-top bg-[#F1F1F3] dark:bg-neutral-950"
+	class:!bg-neutral-950={settingsShown}
 ></div>
 
 <!-- Overscroll Bottom -->
 <div class="overscroll-bottom bg-[#EDEBED] dark:bg-neutral-950"></div>
 
-<div class="min-h-screen w-full bg-linear-to-b from-[#F1F1F3] to-[#EDEBED] dark:from-neutral-950 dark:to-neutral-950">
+<div
+	class="min-h-screen w-full bg-linear-to-b from-[#F1F1F3] to-[#EDEBED] dark:from-neutral-950 dark:to-neutral-950"
+>
 	<Dialog.Root bind:open={settingsShown}>
 		<Dialog.Portal>
 			<Dialog.Overlay forceMount>

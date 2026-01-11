@@ -9,15 +9,6 @@ const redis = new RedisClient(REDIS_URL)
 // Then wrap in our adapter
 const bunRedis = new BunRedisAdapter(redis)
 
-// Test the connection
-try {
-	await redis.set('test:connection', 'connected')
-	const result = await redis.get('test:connection')
-	console.log('[Redis] Connection test successful:', result)
-} catch (error) {
-	console.error('[Redis] Connection test failed:', error)
-}
-
 type AnyAlgorithm =
 	| ReturnType<typeof Ratelimit.fixedWindow>
 	| ReturnType<typeof Ratelimit.slidingWindow>

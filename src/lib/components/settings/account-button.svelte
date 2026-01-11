@@ -86,7 +86,7 @@
 	<DropdownMenu.Trigger class="outline-none">
 		<div
 			class={createClass(
-				'flex items-center justify-center gap-2 rounded-[3rem] bg-neutral-200 transition-all duration-200',
+				'flex items-center justify-center gap-2 rounded-[3rem] bg-neutral-200 transition-all duration-200 dark:bg-neutral-800',
 				swapActive && 'bg-neutral-900 shadow-md',
 				menuOpen && 'bg-neutral-700'
 			)}
