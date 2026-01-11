@@ -12,15 +12,9 @@
 	} from '@tabler/icons-svelte'
 	import { Tooltip, Popover } from 'bits-ui'
 	import InputAdapting from '$ui/input/input-adapting.svelte'
-	import {
-		today,
-		getLocalTimeZone,
-		isSameDay,
-		parseDate,
-		CalendarDate
-	} from '@internationalized/date'
+	import { today, getLocalTimeZone, isSameDay } from '@internationalized/date'
 	import { wipeHorizontal } from '$ui/transition'
-	import DatePicker from './date.svelte'
+	import DatePicker from '$lib/components/date-picker.svelte'
 
 	type Props = {
 		onSubmit: (data: {
@@ -48,17 +42,11 @@
 	let frequencyOption = $state<'weekly' | 'monthly' | 'yearly'>('monthly')
 	let frequencyDropdownOpen = $state(false)
 
-	// Filter accounts based on input
 	let filteredAccounts = $derived.by(() => {
 		const trimmedInput = account.trim().toLowerCase()
 		if (!trimmedInput) return accounts
 		return accounts.filter((a) => a.toLowerCase().includes(trimmedInput))
 	})
-
-	// Check if current input exactly matches an existing account
-	let isExactMatch = $derived(
-		accounts.some((a) => a.toLowerCase() === account.trim().toLowerCase())
-	)
 
 	let isSubmitAvailable = $derived(
 		name.trim() !== '' && amount.trim() !== '' && parseFloat(amount) > 0
@@ -71,22 +59,31 @@
 			.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })
 	)
 
-	// Convert frequency option to db values
-	function getFrequencyValues(option: 'weekly' | 'monthly' | 'yearly') {
-		switch (option) {
-			case 'weekly':
-				return { frequency: 'day' as const, frequencyInterval: 7 }
-			case 'monthly':
-				return { frequency: 'month' as const, frequencyInterval: 1 }
-			case 'yearly':
-				return { frequency: 'month' as const, frequencyInterval: 12 }
-		}
+	function capitalize(str: string): string {
+		return str.charAt(0).toUpperCase() + str.slice(1)
 	}
 
-	const handleSubmit = async () => {
+	let frequencyLabel = $derived(capitalize(frequencyOption))
+
+	const frequencyMap = {
+		weekly: { frequency: 'day' as const, frequencyInterval: 7 },
+		monthly: { frequency: 'month' as const, frequencyInterval: 1 },
+		yearly: { frequency: 'month' as const, frequencyInterval: 12 }
+	}
+
+	function clearForm(): void {
+		name = ''
+		company = ''
+		account = ''
+		amount = ''
+		date = today(getLocalTimeZone())
+		frequencyOption = 'monthly'
+	}
+
+	async function handleSubmit(): Promise<void> {
 		if (!isSubmitAvailable || isSubmitting) return
 
-		const { frequency, frequencyInterval } = getFrequencyValues(frequencyOption)
+		const { frequency, frequencyInterval } = frequencyMap[frequencyOption]
 
 		await onSubmit({
 			name: name.trim(),
@@ -98,22 +95,7 @@
 			frequencyInterval
 		})
 
-		// Reset form
-		name = ''
-		company = ''
-		account = ''
-		amount = ''
-		date = today(getLocalTimeZone())
-		frequencyOption = 'monthly'
-	}
-
-	const clearForm = () => {
-		name = ''
-		company = ''
-		account = ''
-		amount = ''
-		date = today(getLocalTimeZone())
-		frequencyOption = 'monthly'
+		clearForm()
 	}
 </script>
 
@@ -339,7 +321,7 @@
 						>
 							<IconRepeat size={20} class="shrink-0 text-neutral-500" />
 							<p class="font-medium text-neutral-800 dark:text-neutral-200">
-								{frequencyOption === 'weekly' ? 'Weekly' : frequencyOption === 'monthly' ? 'Monthly' : 'Yearly'}
+								{frequencyLabel}
 							</p>
 						</button>
 						{#if frequencyDropdownOpen}
@@ -360,7 +342,7 @@
 											frequencyDropdownOpen = false
 										}}
 									>
-										{option.charAt(0).toUpperCase() + option.slice(1)}
+										{capitalize(option)}
 									</button>
 								{/each}
 							</div>
