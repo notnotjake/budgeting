@@ -47,6 +47,8 @@
 	let monthInputValue = $state('')
 	let dayInputFocused = $state(false)
 	let dayInputValue = $state('')
+	let monthMeasureWidth = $state(0)
+	let dayMeasureWidth = $state(0)
 
 	// Derive values from the single source of truth: selectedDate
 	const selectedMonthValue = $derived(String(selectedDate.month))
@@ -97,9 +99,14 @@
 		monthInputValue = ''
 	}
 
-	function handleDayFocus() {
+	function handleDayFocus(e: FocusEvent) {
 		dayInputFocused = true
 		dayInputValue = ''
+		// Select text on next tick so the value is set first
+		const input = e.target as HTMLInputElement
+		requestAnimationFrame(() => {
+			input.select()
+		})
 	}
 
 	function handleDayInput(e: Event) {
@@ -251,7 +258,7 @@
 	<div class="border-b border-neutral-600 px-2 pb-2">
 		<div class="flex items-center gap-3">
 			<!-- Left side - Weekday, Month Combobox, Day Input -->
-			<div class="flex items-center gap-1 pl-3">
+			<div class="flex items-center pl-3">
 				<p class="text-xl font-medium tracking-tight-sm text-neutral-100">
 					{formatWeekday(selectedDate)},
 				</p>
@@ -267,13 +274,21 @@
 					}}
 					inputValue={monthDisplayValue}
 				>
-					<Combobox.Input
-						oninput={handleMonthInputChange}
-						onfocus={() => (monthComboboxOpen = true)}
-						tabindex={-1}
-						class="w-12 bg-transparent text-xl font-medium tracking-tight-sm text-neutral-100 focus:outline-none"
-						aria-label="Select month"
-					/>
+					<div class="relative">
+						<span
+							bind:offsetWidth={monthMeasureWidth}
+							class="invisible absolute px-2 py-0.5 text-xl font-medium tracking-tight-sm whitespace-pre"
+							aria-hidden="true">{monthDisplayValue}</span
+						>
+						<Combobox.Input
+							oninput={handleMonthInputChange}
+							onfocus={() => (monthComboboxOpen = true)}
+							tabindex={-1}
+							class="cursor-pointer rounded-lg bg-transparent px-2 py-0.5 text-xl font-medium tracking-tight-sm text-neutral-100 transition-colors hover:bg-neutral-700 focus:bg-blue-500/20 focus:text-blue-500 focus:outline-none"
+							style="width: {monthMeasureWidth}px"
+							aria-label="Select month"
+						/>
+					</div>
 					<Combobox.Content
 						class="z-50 max-h-48 overflow-y-auto rounded-xl border border-neutral-600 bg-neutral-800 p-1 shadow-lg"
 						sideOffset={4}
@@ -298,18 +313,26 @@
 				</Combobox.Root>
 
 				<!-- Day Number Input -->
-				<input
-					type="text"
-					inputmode="numeric"
-					tabindex={-1}
-					class="w-8 bg-transparent text-xl font-medium tracking-tight-sm text-neutral-100 focus:outline-none"
-					value={dayDisplayValue}
-					onfocus={handleDayFocus}
-					oninput={handleDayInput}
-					onblur={handleDayBlur}
-					maxlength="2"
-					aria-label="Enter day"
-				/>
+				<div class="relative">
+					<span
+						bind:offsetWidth={dayMeasureWidth}
+						class="invisible absolute px-2 py-0.5 text-xl font-medium tracking-tight-sm whitespace-pre"
+						aria-hidden="true">{dayDisplayValue}</span
+					>
+					<input
+						type="text"
+						inputmode="numeric"
+						tabindex={-1}
+						class="cursor-pointer rounded-lg bg-transparent px-2 py-0.5 text-xl font-medium tracking-tight-sm text-neutral-100 transition-colors selection:bg-transparent selection:text-blue-500/70 hover:bg-neutral-700 focus:bg-blue-500/20 focus:text-blue-500 focus:outline-none"
+						style="width: {dayMeasureWidth}px"
+						value={dayDisplayValue}
+						onfocus={handleDayFocus}
+						oninput={handleDayInput}
+						onblur={handleDayBlur}
+						maxlength="2"
+						aria-label="Enter day"
+					/>
+				</div>
 			</div>
 
 			<div class="w-full grow"></div>
