@@ -10,7 +10,7 @@
 	import { fade } from 'svelte/transition'
 	import { createClass } from '@opensky/style'
 	import { ContextMenu } from 'bits-ui'
-	import { IconTrash, IconPlayerPause, IconX } from '@tabler/icons-svelte'
+	import { IconTrash, IconPlayerPause, IconX, IconTrashFilled, IconPlayerPauseFilled } from '@tabler/icons-svelte'
 	import ControlStrip from './control-strip.svelte'
 
 	let isSubmitting = $state(false)
@@ -128,7 +128,14 @@
 								>
 									<!-- Name column: two rows -->
 									<div class="row-span-2 flex min-w-0 flex-col justify-center">
-										<h3 class="truncate font-medium text-neutral-900 dark:text-white">{sub.name}</h3>
+										<div class="flex items-center gap-1.5">
+											<h3 class="truncate font-medium text-neutral-900 dark:text-white">{sub.name}</h3>
+											{#if sub.pauseDate}
+												<IconPlayerPauseFilled class="shrink-0 text-orange-500" size={16} />
+											{:else if sub.endDate}
+												<IconTrashFilled class="shrink-0 text-rose-500" size={16} />
+											{/if}
+										</div>
 										{#if sub.company}
 											<p class="truncate text-sm text-neutral-500">{sub.company}</p>
 										{/if}
@@ -139,8 +146,14 @@
 											{sub.account}
 										{/if}
 									</div>
-									<div class="self-baseline text-sm text-neutral-500">
-										{new Date(sub.dueDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+									<div class="self-baseline text-right text-sm">
+										{#if sub.pauseDate}
+											<span class="text-orange-500">Paused</span>
+										{:else if sub.endDate}
+											<span class="text-rose-500">Cancels {new Date(sub.dueDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>
+										{:else}
+											<span class="text-neutral-500">{new Date(sub.dueDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>
+										{/if}
 									</div>
 									<div
 										class="self-baseline text-right"
@@ -151,7 +164,7 @@
 												<span class="absolute inset-0 transition-all duration-300 ease-out group-hover:translate-y-full group-hover:opacity-0 group-hover:blur-[2px]">
 													${Number(sub.amount).toFixed(2)}
 												</span>
-												<span class="absolute inset-0 -translate-y-full opacity-0 blur-[2px] transition-all duration-300 ease-out group-hover:translate-y-0 group-hover:opacity-100 group-hover:blur-none text-neutral-700 dark:text-neutral-400">
+												<span class="absolute inset-0 -translate-y-full opacity-0 blur-[2px] transition-all duration-300 ease-out group-hover:translate-y-0 group-hover:opacity-100 group-hover:blur-none ">
 													${(Number(sub.amount) / 12).toFixed(2)}
 												</span>
 											</p>
