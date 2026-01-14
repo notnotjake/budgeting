@@ -8,6 +8,7 @@
 		pauseSubscription,
 		cancelSubscription
 	} from '$remotes/subscriptions.remote'
+	import { getUserPrefs, updateUserPrefs } from '$remotes/user-prefs.remote'
 	import { fade } from 'svelte/transition'
 	import { createClass } from '@opensky/style'
 	import { ContextMenu, Popover, RadioGroup } from 'bits-ui'
@@ -22,6 +23,24 @@
 	let sortBy = $state<'date' | 'status' | 'price' | 'period'>('date')
 	let sortReversed = $state(false)
 	let sortPopoverOpen = $state(false)
+	let prefsLoaded = $state(false)
+
+	// Load user preferences
+	getUserPrefs().then((prefs) => {
+		sortBy = prefs.subscriptionSortBy
+		sortReversed = prefs.subscriptionSortReversed
+		prefsLoaded = true
+	})
+
+	function handleSortByChange(value: 'date' | 'status' | 'price' | 'period') {
+		sortBy = value
+		updateUserPrefs({ subscriptionSortBy: value })
+	}
+
+	function handleSortReversedToggle() {
+		sortReversed = !sortReversed
+		updateUserPrefs({ subscriptionSortReversed: sortReversed })
+	}
 
 	function sortSubscriptions(subs: typeof subscriptionsPromise extends Promise<infer T> ? T : never) {
 		const sorted = [...subs].sort((a, b) => {
@@ -188,7 +207,7 @@
 							<div class="flex items-center justify-between border-b border-neutral-700 pb-2 mb-2">
 								<span class="pl-2 text-xs font-medium text-neutral-400">Sort by</span>
 								<button
-									onclick={() => (sortReversed = !sortReversed)}
+									onclick={handleSortReversedToggle}
 									class={createClass(
 										'flex size-6 cursor-pointer items-center justify-center rounded-full text-neutral-400 transition-all hover:bg-neutral-700',
 										sortReversed && 'rotate-180'
@@ -197,7 +216,7 @@
 									<IconArrowNarrowUp size={16} />
 								</button>
 							</div>
-							<RadioGroup.Root bind:value={sortBy} class="flex flex-col gap-1">
+							<RadioGroup.Root value={sortBy} onValueChange={(v) => handleSortByChange(v as 'date' | 'status' | 'price' | 'period')} class="flex flex-col gap-1">
 								{#each [
 									{ value: 'date', label: 'Renew Date' },
 									{ value: 'status', label: 'Status' },
@@ -227,7 +246,6 @@
 								{@const isYearly = sub.frequency === 'month' && sub.frequencyInterval === 12}
 								<div
 									class="col-span-4 grid grid-cols-subgrid border-b border-neutral-300 py-4 dark:border-neutral-800"
-									class:group={isYearly}
 									transition:fade
 								>
 									<!-- Row 1: Title, empty, date/status, price -->
@@ -249,7 +267,11 @@
 											<span class="text-neutral-500">{new Date(sub.dueDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>
 										{/if}
 									</div>
-									<div class="self-baseline text-right">
+									<!-- Price column: spans both rows -->
+									<div
+										class="row-span-2 flex flex-col justify-center text-right"
+										class:group={isYearly}
+									>
 										{#if isYearly}
 											<p class="relative h-6 overflow-hidden tabular-nums font-medium text-neutral-900 dark:text-white">
 												<span class="absolute inset-0 transition-all duration-300 ease-out group-hover:translate-y-full group-hover:opacity-0 group-hover:blur-[2px]">
@@ -264,18 +286,6 @@
 												${Number(sub.amount).toFixed(2)}
 											</p>
 										{/if}
-									</div>
-									<!-- Row 2: Subtitle, empty, empty, frequency label -->
-									<div class="min-w-0">
-										{#if sub.company || sub.tag || sub.account}
-											<p class="flex items-center gap-1 truncate text-sm text-neutral-500">
-												{#if sub.company}{sub.company}{/if}{#if sub.company && (sub.tag || sub.account)} &bull; {/if}{#if sub.tag}{sub.tag}{/if}{#if sub.tag && sub.account} &bull; {/if}{#if sub.account}<IconArrowNarrowRight size={16} class="-mr-0.5 text-neutral-500" />{sub.account}{/if}
-											</p>
-										{/if}
-									</div>
-									<div></div>
-									<div></div>
-									<div class="text-right">
 										<p class="relative text-xs text-neutral-400">
 											{#if isYearly}
 												<span class="inline-block transition-opacity duration-300 group-hover:opacity-0">Yearly</span>
@@ -287,6 +297,16 @@
 											{/if}
 										</p>
 									</div>
+									<!-- Row 2: Subtitle, empty, empty -->
+									<div class="min-w-0">
+										{#if sub.company || sub.tag || sub.account}
+											<p class="flex items-center gap-1 truncate text-sm text-neutral-500">
+												{#if sub.company}{sub.company}{/if}{#if sub.company && (sub.tag || sub.account)} &bull; {/if}{#if sub.tag}{sub.tag}{/if}{#if sub.tag && sub.account} &bull; {/if}{#if sub.account}<IconArrowNarrowRight size={16} class="-mr-0.5 text-neutral-500" />{sub.account}{/if}
+											</p>
+										{/if}
+									</div>
+									<div></div>
+									<div></div>
 								</div>
 							</ContextMenu.Trigger>
 							<ContextMenu.Content
