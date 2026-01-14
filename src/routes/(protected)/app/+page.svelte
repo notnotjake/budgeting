@@ -11,7 +11,7 @@
 	import { fade } from 'svelte/transition'
 	import { createClass } from '@opensky/style'
 	import { ContextMenu } from 'bits-ui'
-	import { IconTrash, IconPlayerPause, IconX, IconTrashFilled, IconPlayerPauseFilled } from '@tabler/icons-svelte'
+	import { IconTrash, IconPlayerPause, IconX, IconTrashFilled, IconPlayerPauseFilled, IconArrowNarrowRight } from '@tabler/icons-svelte'
 	import ControlStrip from './control-strip.svelte'
 
 	let isSubmitting = $state(false)
@@ -127,34 +127,22 @@
 					{#each subscriptions as sub (sub.id)}
 						<ContextMenu.Root>
 							<ContextMenu.Trigger class="col-span-4 grid grid-cols-subgrid">
+								{@const isYearly = sub.frequency === 'month' && sub.frequencyInterval === 12}
 								<div
 									class="col-span-4 grid grid-cols-subgrid border-b border-neutral-300 py-4 dark:border-neutral-700"
+									class:group={isYearly}
 									transition:fade
 								>
-									<!-- Name column: two rows -->
-									<div class="row-span-2 flex min-w-0 flex-col justify-center">
-										<div class="flex items-center gap-1.5">
-											<h3 class="truncate font-medium text-neutral-900 dark:text-white">{sub.name}</h3>
-											{#if sub.pauseDate}
-												<IconPlayerPauseFilled class="shrink-0 text-orange-500" size={16} />
-											{:else if sub.endDate}
-												<IconTrashFilled class="shrink-0 text-rose-500" size={16} />
-											{/if}
-										</div>
-										{#if sub.company}
-											<p class="truncate text-sm text-neutral-500">{sub.company}</p>
+									<!-- Row 1: Title, empty, date/status, price -->
+									<div class="flex min-w-0 items-baseline gap-1.5">
+										<h3 class="truncate font-medium text-neutral-900 dark:text-white">{sub.name}</h3>
+										{#if sub.pauseDate}
+											<IconPlayerPauseFilled class="shrink-0 text-orange-500" size={16} />
+										{:else if sub.endDate}
+											<IconTrashFilled class="shrink-0 text-rose-500" size={16} />
 										{/if}
 									</div>
-									<!-- Row 1: account/tag, date, amount - baseline aligned -->
-									<div class="self-baseline text-sm text-neutral-500">
-										{#if sub.account && sub.tag}
-											{sub.account} · {sub.tag}
-										{:else if sub.account}
-											{sub.account}
-										{:else if sub.tag}
-											{sub.tag}
-										{/if}
-									</div>
+									<div></div>
 									<div class="self-baseline text-right text-sm">
 										{#if sub.pauseDate}
 											<span class="text-orange-500">Paused</span>
@@ -164,16 +152,13 @@
 											<span class="text-neutral-500">{new Date(sub.dueDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>
 										{/if}
 									</div>
-									<div
-										class="self-baseline text-right"
-										class:group={sub.frequency === 'month' && sub.frequencyInterval === 12}
-									>
-										{#if sub.frequency === 'month' && sub.frequencyInterval === 12}
+									<div class="self-baseline text-right">
+										{#if isYearly}
 											<p class="relative h-6 overflow-hidden tabular-nums font-medium text-neutral-900 dark:text-white">
 												<span class="absolute inset-0 transition-all duration-300 ease-out group-hover:translate-y-full group-hover:opacity-0 group-hover:blur-[2px]">
 													${Number(sub.amount).toFixed(2)}
 												</span>
-												<span class="absolute inset-0 -translate-y-full opacity-0 blur-[2px] transition-all duration-300 ease-out group-hover:translate-y-0 group-hover:opacity-100 group-hover:blur-none ">
+												<span class="absolute inset-0 -translate-y-full opacity-0 blur-[2px] transition-all duration-300 ease-out group-hover:translate-y-0 group-hover:opacity-100 group-hover:blur-none">
 													${(Number(sub.amount) / 12).toFixed(2)}
 												</span>
 											</p>
@@ -182,9 +167,20 @@
 												${Number(sub.amount).toFixed(2)}
 											</p>
 										{/if}
-										<!-- Row 2: frequency label under amount -->
+									</div>
+									<!-- Row 2: Subtitle, empty, empty, frequency label -->
+									<div class="min-w-0">
+										{#if sub.company || sub.tag || sub.account}
+											<p class="flex items-center gap-1 truncate text-sm text-neutral-500">
+												{#if sub.company}{sub.company}{/if}{#if sub.company && (sub.tag || sub.account)} &bull; {/if}{#if sub.tag}{sub.tag}{/if}{#if sub.tag && sub.account} &bull; {/if}{#if sub.account}<IconArrowNarrowRight size={16} class="-mr-0.5 text-neutral-500" />{sub.account}{/if}
+											</p>
+										{/if}
+									</div>
+									<div></div>
+									<div></div>
+									<div class="text-right">
 										<p class="relative text-xs text-neutral-400">
-											{#if sub.frequency === 'month' && sub.frequencyInterval === 12}
+											{#if isYearly}
 												<span class="inline-block transition-opacity duration-300 group-hover:opacity-0">Yearly</span>
 												<span class="absolute inset-0 opacity-0 transition-opacity duration-300 group-hover:opacity-100">Monthly</span>
 											{:else if sub.frequency === 'day' && sub.frequencyInterval === 7}
