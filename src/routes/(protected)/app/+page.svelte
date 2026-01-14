@@ -142,19 +142,34 @@
 									<div class="self-baseline text-sm text-neutral-500">
 										{new Date(sub.dueDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
 									</div>
-									<div class="self-baseline text-right">
-										<p class="tabular-nums font-medium text-neutral-900 dark:text-white">
-											${Number(sub.amount).toFixed(2)}
-										</p>
-									</div>
-									<!-- Row 2: frequency label under amount -->
-									<div class="col-start-4 text-right">
-										<p class="text-xs text-neutral-400">
-											{sub.frequency === 'day' && sub.frequencyInterval === 7
-												? 'Weekly'
-												: sub.frequency === 'month' && sub.frequencyInterval === 12
-													? 'Yearly'
-													: 'Monthly'}
+									<div
+										class="self-baseline text-right"
+										class:group={sub.frequency === 'month' && sub.frequencyInterval === 12}
+									>
+										{#if sub.frequency === 'month' && sub.frequencyInterval === 12}
+											<p class="relative h-6 overflow-hidden tabular-nums font-medium text-neutral-900 dark:text-white">
+												<span class="absolute inset-0 transition-all duration-300 ease-out group-hover:translate-y-full group-hover:opacity-0 group-hover:blur-[2px]">
+													${Number(sub.amount).toFixed(2)}
+												</span>
+												<span class="absolute inset-0 -translate-y-full opacity-0 blur-[2px] transition-all duration-300 ease-out group-hover:translate-y-0 group-hover:opacity-100 group-hover:blur-none text-neutral-700 dark:text-neutral-400">
+													${(Number(sub.amount) / 12).toFixed(2)}
+												</span>
+											</p>
+										{:else}
+											<p class="tabular-nums font-medium text-neutral-900 dark:text-white">
+												${Number(sub.amount).toFixed(2)}
+											</p>
+										{/if}
+										<!-- Row 2: frequency label under amount -->
+										<p class="relative text-xs text-neutral-400">
+											{#if sub.frequency === 'month' && sub.frequencyInterval === 12}
+												<span class="inline-block transition-opacity duration-300 group-hover:opacity-0">Yearly</span>
+												<span class="absolute inset-0 opacity-0 transition-opacity duration-300 group-hover:opacity-100">Monthly</span>
+											{:else if sub.frequency === 'day' && sub.frequencyInterval === 7}
+												Weekly
+											{:else}
+												Monthly
+											{/if}
 										</p>
 									</div>
 								</div>
