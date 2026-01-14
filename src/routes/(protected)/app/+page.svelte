@@ -118,32 +118,37 @@
 					<p class="text-sm text-neutral-400">Add your first subscription using the toolbar above.</p>
 				</div>
 			{:else}
-				<div class="divide-y divide-neutral-300 dark:divide-neutral-700">
+				<div class="grid grid-cols-[1fr_auto_auto_auto] gap-x-6">
 					{#each subscriptions as sub (sub.id)}
 						<ContextMenu.Root>
-							<ContextMenu.Trigger>
+							<ContextMenu.Trigger class="col-span-4 grid grid-cols-subgrid">
 								<div
-									class="grid grid-cols-[1fr_auto_auto_auto] items-center gap-6 py-4"
+									class="col-span-4 grid grid-cols-subgrid border-b border-neutral-300 py-4 dark:border-neutral-700"
 									transition:fade
 								>
-									<div class="min-w-0">
+									<!-- Name column: two rows -->
+									<div class="row-span-2 flex min-w-0 flex-col justify-center">
 										<h3 class="truncate font-medium text-neutral-900 dark:text-white">{sub.name}</h3>
 										{#if sub.company}
 											<p class="truncate text-sm text-neutral-500">{sub.company}</p>
 										{/if}
 									</div>
-									<div class="text-sm text-neutral-500">
+									<!-- Row 1: account, date, amount - baseline aligned -->
+									<div class="self-baseline text-sm text-neutral-500">
 										{#if sub.account}
 											{sub.account}
 										{/if}
 									</div>
-									<div class="text-sm text-neutral-500">
+									<div class="self-baseline text-sm text-neutral-500">
 										{new Date(sub.dueDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
 									</div>
-									<div class="text-right">
+									<div class="self-baseline text-right">
 										<p class="tabular-nums font-medium text-neutral-900 dark:text-white">
 											${Number(sub.amount).toFixed(2)}
 										</p>
+									</div>
+									<!-- Row 2: frequency label under amount -->
+									<div class="col-start-4 text-right">
 										<p class="text-xs text-neutral-400">
 											{sub.frequency === 'day' && sub.frequencyInterval === 7
 												? 'Weekly'
