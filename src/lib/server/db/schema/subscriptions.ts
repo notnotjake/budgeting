@@ -12,6 +12,7 @@ export const subscriptions = pgTable('subscriptions', {
 	name: text('name').notNull(),
 	company: text('company'),
 	account: text('account'),
+	tag: text('tag'),
 	amount: decimal('amount', { precision: 10, scale: 2 }).notNull(),
 	frequency: text('frequency', { enum: ['day', 'month'] }).notNull(),
 	frequencyInterval: integer('frequency_interval').notNull(),

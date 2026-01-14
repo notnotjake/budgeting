@@ -2,6 +2,7 @@
 	import {
 		getSubscriptions,
 		getAccounts,
+		getTags,
 		createSubscription,
 		deleteSubscription,
 		pauseSubscription,
@@ -16,11 +17,13 @@
 	let isSubmitting = $state(false)
 	let subscriptionsPromise = $state(getSubscriptions())
 	let accountsPromise = $state(getAccounts())
+	let tagsPromise = $state(getTags())
 
 	async function handleSubmit(data: {
 		name: string
 		company: string | undefined
 		account: string | undefined
+		tag: string | undefined
 		amount: number
 		dueDate: string
 		frequency: 'day' | 'month'
@@ -29,9 +32,10 @@
 		isSubmitting = true
 		try {
 			await createSubscription(data)
-			// Refresh subscriptions and accounts lists
+			// Refresh subscriptions and accounts/tags lists
 			subscriptionsPromise = getSubscriptions()
 			accountsPromise = getAccounts()
+			tagsPromise = getTags()
 		} catch (e) {
 			console.error('Failed to create subscription', e)
 			alert('Failed to create subscription')
@@ -45,6 +49,7 @@
 			await deleteSubscription({ id })
 			subscriptionsPromise = getSubscriptions()
 			accountsPromise = getAccounts()
+			tagsPromise = getTags()
 		} catch (e) {
 			console.error('Failed to delete subscription', e)
 		}
@@ -102,8 +107,8 @@
 	<div
 		class="sticky top-0 z-200 flex w-full items-center justify-center bg-linear-to-b from-[#F1F1F3] to-transparent pt-2 pb-8 dark:from-neutral-950"
 	>
-		{#await accountsPromise then accounts}
-			<ControlStrip onSubmit={handleSubmit} {isSubmitting} {accounts} />
+		{#await Promise.all([accountsPromise, tagsPromise]) then [accounts, tags]}
+			<ControlStrip onSubmit={handleSubmit} {isSubmitting} {accounts} {tags} />
 		{/await}
 	</div>
 
@@ -140,10 +145,14 @@
 											<p class="truncate text-sm text-neutral-500">{sub.company}</p>
 										{/if}
 									</div>
-									<!-- Row 1: account, date, amount - baseline aligned -->
+									<!-- Row 1: account/tag, date, amount - baseline aligned -->
 									<div class="self-baseline text-sm text-neutral-500">
-										{#if sub.account}
+										{#if sub.account && sub.tag}
+											{sub.account} · {sub.tag}
+										{:else if sub.account}
 											{sub.account}
+										{:else if sub.tag}
+											{sub.tag}
 										{/if}
 									</div>
 									<div class="self-baseline text-right text-sm">

@@ -8,7 +8,8 @@
 		IconArrowBackUp,
 		IconRepeat,
 		IconCreditCard,
-		IconReceiptDollarFilled
+		IconReceiptDollarFilled,
+		IconHash
 	} from '@tabler/icons-svelte'
 	import { Tooltip, Popover } from 'bits-ui'
 	import InputAdapting from '$ui/input/input-adapting.svelte'
@@ -21,6 +22,7 @@
 			name: string
 			company: string | undefined
 			account: string | undefined
+			tag: string | undefined
 			amount: number
 			dueDate: string
 			frequency: 'day' | 'month'
@@ -28,16 +30,19 @@
 		}) => Promise<void>
 		isSubmitting?: boolean
 		accounts?: string[]
+		tags?: string[]
 	}
-	let { onSubmit, isSubmitting = false, accounts = [] }: Props = $props()
+	let { onSubmit, isSubmitting = false, accounts = [], tags = [] }: Props = $props()
 
 	let datePickerOpen = $state(false)
 	let accountPopoverOpen = $state(false)
+	let tagPopoverOpen = $state(false)
 
 	let date = $state(today(getLocalTimeZone()))
 	let name = $state('')
 	let company = $state('')
 	let account = $state('')
+	let tag = $state('')
 	let amount = $state('')
 	let frequencyOption = $state<'weekly' | 'monthly' | 'yearly'>('monthly')
 	let frequencyDropdownOpen = $state(false)
@@ -46,6 +51,12 @@
 		const trimmedInput = account.trim().toLowerCase()
 		if (!trimmedInput) return accounts
 		return accounts.filter((a) => a.toLowerCase().includes(trimmedInput))
+	})
+
+	let filteredTags = $derived.by(() => {
+		const trimmedInput = tag.trim().toLowerCase()
+		if (!trimmedInput) return tags
+		return tags.filter((t) => t.toLowerCase().includes(trimmedInput))
 	})
 
 	let isSubmitAvailable = $derived(
@@ -75,6 +86,7 @@
 		name = ''
 		company = ''
 		account = ''
+		tag = ''
 		amount = ''
 		date = today(getLocalTimeZone())
 		frequencyOption = 'monthly'
@@ -89,6 +101,7 @@
 			name: name.trim(),
 			company: company.trim() || undefined,
 			account: account.trim() || undefined,
+			tag: tag.trim() || undefined,
 			amount: parseFloat(amount),
 			dueDate: date.toString(),
 			frequency,
@@ -164,7 +177,7 @@
 					</label>
 				{/snippet}
 			</Tooltip.Trigger>
-			{@render tooltipContent('Company (Optional)')}
+			{@render tooltipContent('Company')}
 		</Tooltip.Root>
 
 		<!-- Account -->
@@ -180,15 +193,17 @@
 						)}
 					>
 						<IconCreditCard size={22} class="shrink-0 text-neutral-500" />
-						<input
-							type="text"
-							bind:value={account}
+						<InputAdapting
 							class={createClass(
-								'w-20 bg-transparent outline-none selection:bg-sky-200 selection:text-blue-600 placeholder:font-medium placeholder:tracking-tight-md',
+								'w-fit outline-none selection:bg-sky-200 selection:text-blue-600 placeholder:font-medium placeholder:tracking-tight-md',
 								'dark:text-white dark:selection:bg-sky-500 dark:selection:text-white',
 								'placeholder:text-neutral-800 focus:placeholder:text-neutral-500',
 								'dark:placeholder:text-neutral-100 dark:focus:placeholder:text-neutral-400'
 							)}
+							type="text"
+							placeholderIsMinWidth={true}
+							maxWidth="var(--container-3xs)"
+							bind:value={account}
 							placeholder="Account"
 							onfocus={() => (accountPopoverOpen = true)}
 							onblur={() => setTimeout(() => (accountPopoverOpen = false), 150)}
@@ -218,7 +233,63 @@
 					</label>
 				{/snippet}
 			</Tooltip.Trigger>
-			{@render tooltipContent('Account/Card (Optional)')}
+			{@render tooltipContent('Account/Card')}
+		</Tooltip.Root>
+
+		<!-- Tag -->
+		<Tooltip.Root disabled={tagPopoverOpen}>
+			<Tooltip.Trigger>
+				{#snippet child({ props })}
+					<label
+						{...props}
+						tabindex="-1"
+						class={createClass(
+							'relative flex h-full min-h-8 cursor-pointer items-center gap-1 rounded-lg px-2 focus-within:bg-neutral-200/80 hover:bg-neutral-200/80',
+							'dark:focus-within:bg-neutral-700/80 dark:hover:bg-neutral-700/80'
+						)}
+					>
+						<IconHash size={22} class="shrink-0 text-neutral-500" />
+						<InputAdapting
+							class={createClass(
+								'w-fit outline-none selection:bg-sky-200 selection:text-blue-600 placeholder:font-medium placeholder:tracking-tight-md',
+								'dark:text-white dark:selection:bg-sky-500 dark:selection:text-white',
+								'placeholder:text-neutral-800 focus:placeholder:text-neutral-500',
+								'dark:placeholder:text-neutral-100 dark:focus:placeholder:text-neutral-400'
+							)}
+							type="text"
+							placeholderIsMinWidth={true}
+							maxWidth="var(--container-3xs)"
+							bind:value={tag}
+							placeholder="Tag"
+							onfocus={() => (tagPopoverOpen = true)}
+							onblur={() => setTimeout(() => (tagPopoverOpen = false), 150)}
+						/>
+						{#if tagPopoverOpen && (filteredTags.length > 0 || tags.length > 0)}
+							<div
+								class="absolute top-full left-0 z-300 mt-1 max-h-60 w-48 overflow-y-auto rounded-xl bg-white p-1 shadow-lg dark:bg-neutral-800"
+							>
+								{#if filteredTags.length > 0}
+									{#each filteredTags as t (t)}
+										<button
+											type="button"
+											class="w-full cursor-pointer rounded-lg px-3 py-2 text-left text-sm text-neutral-700 outline-none hover:bg-neutral-100 dark:text-neutral-200 dark:hover:bg-neutral-700"
+											onmousedown={() => {
+												tag = t
+												tagPopoverOpen = false
+											}}
+										>
+											{t}
+										</button>
+									{/each}
+								{:else}
+									<div class="px-3 py-2 text-sm text-neutral-500">No matches</div>
+								{/if}
+							</div>
+						{/if}
+					</label>
+				{/snippet}
+			</Tooltip.Trigger>
+			{@render tooltipContent('Tag')}
 		</Tooltip.Root>
 
 		<div class="h-full min-h-8 w-0.5 rounded-full bg-neutral-200 dark:bg-neutral-700"></div>

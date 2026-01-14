@@ -41,17 +41,37 @@ export const getAccounts = query(async () => {
 		.filter((account): account is string => account !== null)
 })
 
+export const getTags = query(async () => {
+	const event = getRequestEvent()
+	const { user } = event.locals
+
+	if (!user) {
+		throw error(401, 'Unauthorized')
+	}
+
+	const result = await db
+		.selectDistinct({ tag: subscriptions.tag })
+		.from(subscriptions)
+		.where(eq(subscriptions.userId, user.id))
+		.orderBy(asc(subscriptions.tag))
+
+	return result
+		.map((r) => r.tag)
+		.filter((tag): tag is string => tag !== null)
+})
+
 export const createSubscription = command(
 	z.object({
 		name: z.string().min(1),
 		company: z.string().optional(),
 		account: z.string().optional(),
+		tag: z.string().optional(),
 		amount: z.number().positive(),
 		frequency: z.enum(['day', 'month']),
 		frequencyInterval: z.number().int().positive(),
 		dueDate: z.string()
 	}),
-	async ({ name, company, account, amount, frequency, frequencyInterval, dueDate }) => {
+	async ({ name, company, account, tag, amount, frequency, frequencyInterval, dueDate }) => {
 		const event = getRequestEvent()
 		const { user } = event.locals
 
@@ -69,6 +89,7 @@ export const createSubscription = command(
 			name,
 			company,
 			account,
+			tag,
 			amount: amount.toString(),
 			frequency,
 			frequencyInterval,
@@ -78,6 +99,7 @@ export const createSubscription = command(
 
 		await getSubscriptions().refresh()
 		await getAccounts().refresh()
+		await getTags().refresh()
 
 		return { success: true }
 	}
@@ -101,6 +123,7 @@ export const deleteSubscription = command(
 
 		await getSubscriptions().refresh()
 		await getAccounts().refresh()
+		await getTags().refresh()
 
 		return { success: true }
 	}
