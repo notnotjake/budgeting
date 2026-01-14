@@ -129,7 +129,7 @@
 							<ContextMenu.Trigger class="col-span-4 grid grid-cols-subgrid">
 								{@const isYearly = sub.frequency === 'month' && sub.frequencyInterval === 12}
 								<div
-									class="col-span-4 grid grid-cols-subgrid border-b border-neutral-300 py-4 dark:border-neutral-700"
+									class="col-span-4 grid grid-cols-subgrid border-b border-neutral-300 py-4 dark:border-neutral-800"
 									class:group={isYearly}
 									transition:fade
 								>
@@ -193,7 +193,7 @@
 								</div>
 							</ContextMenu.Trigger>
 							<ContextMenu.Content
-								class="relative z-40 w-44 rounded-[1.15rem] bg-black p-1 shadow-lg outline-none"
+								class="relative z-40 w-44 rounded-[1.15rem] bg-black p-1 shadow-lg outline-none dark:bg-[#212121] dark:shadow-[inset_0_1px_1.5px_rgba(255,255,255,0.09),inset_0_-1px_4px_rgba(255,255,255,0.03)]"
 							>
 								<ContextMenu.Item class="outline-none" onSelect={() => handlePause(sub.id)}>
 									<div
