@@ -9,11 +9,11 @@
 		cancelSubscription
 	} from '$remotes/subscriptions.remote'
 	import { getUserPrefs, updateUserPrefs } from '$remotes/user-prefs.remote'
-	import { fade } from 'svelte/transition'
 	import { createClass } from '@opensky/style'
-	import { ContextMenu, Popover, RadioGroup } from 'bits-ui'
-	import { IconTrash, IconPlayerPause, IconX, IconTrashFilled, IconPlayerPauseFilled, IconArrowNarrowRight, IconFilter2, IconArrowNarrowUp } from '@tabler/icons-svelte'
+	import { Popover, RadioGroup } from 'bits-ui'
+	import { IconFilter2, IconArrowNarrowUp } from '@tabler/icons-svelte'
 	import ControlStrip from './control-strip.svelte'
+	import SubscriptionRow from '$lib/components/subscriptions/subscription-row.svelte'
 
 	let isSubmitting = $state(false)
 	let subscriptionsPromise = $state(getSubscriptions())
@@ -241,103 +241,12 @@
 				{@const sortedSubscriptions = sortSubscriptions(subscriptions)}
 				<div class="grid grid-cols-[1fr_auto_auto_auto] gap-x-6">
 					{#each sortedSubscriptions as sub (sub.id)}
-						<ContextMenu.Root>
-							<ContextMenu.Trigger class="col-span-4 grid grid-cols-subgrid">
-								{@const isYearly = sub.frequency === 'month' && sub.frequencyInterval === 12}
-								<div
-									class="col-span-4 grid grid-cols-subgrid border-b border-neutral-300 py-4 dark:border-neutral-800"
-									transition:fade
-								>
-									<!-- Row 1: Title, empty, date/status, price -->
-									<div class="flex min-w-0 items-baseline gap-1.5">
-										<h3 class="truncate font-medium text-neutral-900 dark:text-white">{sub.name}</h3>
-										{#if sub.pauseDate}
-											<IconPlayerPauseFilled class="shrink-0 text-orange-500" size={16} />
-										{:else if sub.endDate}
-											<IconTrashFilled class="shrink-0 text-rose-500" size={16} />
-										{/if}
-									</div>
-									<div></div>
-									<div class="self-baseline text-right text-sm">
-										{#if sub.pauseDate}
-											<span class="text-orange-500">Paused</span>
-										{:else if sub.endDate}
-											<span class="text-rose-500">Cancels {new Date(sub.dueDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>
-										{:else}
-											<span class="text-neutral-500">{new Date(sub.dueDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>
-										{/if}
-									</div>
-									<!-- Price column: spans both rows -->
-									<div
-										class="row-span-2 flex flex-col justify-center text-right"
-										class:group={isYearly}
-									>
-										{#if isYearly}
-											<p class="relative h-6 overflow-hidden tabular-nums font-medium text-neutral-900 dark:text-white">
-												<span class="absolute inset-0 transition-all duration-300 ease-out group-hover:translate-y-full group-hover:opacity-0 group-hover:blur-[2px]">
-													${Number(sub.amount).toFixed(2)}
-												</span>
-												<span class="absolute inset-0 -translate-y-full opacity-0 blur-[2px] transition-all duration-300 ease-out group-hover:translate-y-0 group-hover:opacity-100 group-hover:blur-none">
-													${(Number(sub.amount) / 12).toFixed(2)}
-												</span>
-											</p>
-										{:else}
-											<p class="tabular-nums font-medium text-neutral-900 dark:text-white">
-												${Number(sub.amount).toFixed(2)}
-											</p>
-										{/if}
-										<p class="relative text-xs text-neutral-400">
-											{#if isYearly}
-												<span class="inline-block transition-opacity duration-300 group-hover:opacity-0">Yearly</span>
-												<span class="absolute inset-0 opacity-0 transition-opacity duration-300 group-hover:opacity-100">Monthly</span>
-											{:else if sub.frequency === 'day' && sub.frequencyInterval === 7}
-												Weekly
-											{:else}
-												Monthly
-											{/if}
-										</p>
-									</div>
-									<!-- Row 2: Subtitle, empty, empty -->
-									<div class="min-w-0">
-										{#if sub.company || sub.tag || sub.account}
-											<p class="flex items-center gap-1 truncate text-sm text-neutral-500">
-												{#if sub.company}{sub.company}{/if}{#if sub.company && (sub.tag || sub.account)} &bull; {/if}{#if sub.tag}{sub.tag}{/if}{#if sub.tag && sub.account} &bull; {/if}{#if sub.account}<IconArrowNarrowRight size={16} class="-mr-0.5 text-neutral-500" />{sub.account}{/if}
-											</p>
-										{/if}
-									</div>
-									<div></div>
-									<div></div>
-								</div>
-							</ContextMenu.Trigger>
-							<ContextMenu.Content
-								class="relative z-40 w-44 rounded-[1.15rem] bg-black p-1 shadow-lg outline-none dark:bg-[#212121] dark:shadow-[inset_0_1px_1.5px_rgba(255,255,255,0.09),inset_0_-1px_4px_rgba(255,255,255,0.03)]"
-							>
-								<ContextMenu.Item class="outline-none" onSelect={() => handlePause(sub.id)}>
-									<div
-										class="flex cursor-pointer gap-2 rounded-[0.9rem] px-2 py-1.5 pr-3 text-white hover:bg-neutral-600/80"
-									>
-										<IconPlayerPause class="text-neutral-200" />
-										<p class="px-1.5 font-medium text-neutral-200">Pause</p>
-									</div>
-								</ContextMenu.Item>
-								<ContextMenu.Item class="outline-none" onSelect={() => handleCancel(sub.id)}>
-									<div
-										class="flex cursor-pointer gap-2 rounded-[0.9rem] px-2 py-1.5 pr-3 text-white hover:bg-neutral-600/80"
-									>
-										<IconX class="text-neutral-200" />
-										<p class="px-1.5 font-medium text-neutral-200">Cancel</p>
-									</div>
-								</ContextMenu.Item>
-								<ContextMenu.Item class="outline-none" onSelect={() => handleDelete(sub.id)}>
-									<div
-										class="flex cursor-pointer gap-2 rounded-[0.9rem] px-2 py-1.5 pr-3 text-rose-500 hover:bg-rose-600/50"
-									>
-										<IconTrash class="text-rose-500" />
-										<p class="px-1.5 font-medium text-rose-500">Delete</p>
-									</div>
-								</ContextMenu.Item>
-							</ContextMenu.Content>
-						</ContextMenu.Root>
+						<SubscriptionRow
+							subscription={sub}
+							onPause={handlePause}
+							onCancel={handleCancel}
+							onDelete={handleDelete}
+						/>
 					{/each}
 				</div>
 			{/if}
