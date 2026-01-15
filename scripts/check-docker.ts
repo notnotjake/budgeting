@@ -14,6 +14,11 @@ if (!projectName) {
 async function getRunningContainers(): Promise<string[]> {
 	const proc = Bun.spawn(["docker", "ps", "--format", "{{.Names}}"]);
 	const text = await new Response(proc.stdout).text();
+	const exitCode = await proc.exited;
+	if (exitCode !== 0) {
+		console.error("\x1b[31m✗ Docker is not available (is it installed and running?)\x1b[0m");
+		process.exit(1);
+	}
 	return text.trim().split("\n").filter(Boolean);
 }
 
@@ -37,4 +42,7 @@ async function main() {
 	console.log(`\x1b[32m✓ Docker verified (${projectContainers.length} containers)\x1b[0m`);
 }
 
-main();
+main().catch((err) => {
+	console.error("\x1b[31m✗ Unexpected error:\x1b[0m", err.message);
+	process.exit(1);
+});
