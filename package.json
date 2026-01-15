@@ -4,7 +4,7 @@
 	"version": "0.0.1",
 	"type": "module",
 	"scripts": {
-		"dev": "bunx --bun vite dev",
+		"dev": "bun scripts/check-docker.ts budgeting && bunx --bun vite dev",
 		"dev:preview": "bun run build && bunx --bun vite preview",
 		"dev:emails": "email dev --dir src/lib/server/email",
 		"env:pull": "railway environment dev && railway variables -e dev -s vars -k > .env",
