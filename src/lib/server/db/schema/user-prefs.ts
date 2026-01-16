@@ -16,6 +16,11 @@ export const userPrefs = pgTable('user_prefs', {
 		.notNull()
 		.default('date'),
 	subscriptionSortReversed: boolean('subscription_sort_reversed').notNull().default(false),
+	subscriptionDisplayPeriod: text('subscription_display_period', {
+		enum: ['weekly', 'monthly', 'yearly']
+	})
+		.notNull()
+		.default('monthly'),
 	createdAt: timestamp('created_at', { mode: 'date', withTimezone: true }).defaultNow().notNull(),
 	updatedAt: timestamp('updated_at', { mode: 'date', withTimezone: true }).defaultNow().notNull()
 })

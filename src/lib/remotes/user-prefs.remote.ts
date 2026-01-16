@@ -22,20 +22,23 @@ export const getUserPrefs = query(async () => {
 	if (result.length === 0) {
 		return {
 			subscriptionSortBy: 'date' as const,
-			subscriptionSortReversed: false
+			subscriptionSortReversed: false,
+			subscriptionDisplayPeriod: 'monthly' as const
 		}
 	}
 
 	return {
 		subscriptionSortBy: result[0].subscriptionSortBy,
-		subscriptionSortReversed: result[0].subscriptionSortReversed
+		subscriptionSortReversed: result[0].subscriptionSortReversed,
+		subscriptionDisplayPeriod: result[0].subscriptionDisplayPeriod
 	}
 })
 
 export const updateUserPrefs = command(
 	z.object({
 		subscriptionSortBy: z.enum(['date', 'status', 'price', 'period']).optional(),
-		subscriptionSortReversed: z.boolean().optional()
+		subscriptionSortReversed: z.boolean().optional(),
+		subscriptionDisplayPeriod: z.enum(['weekly', 'monthly', 'yearly']).optional()
 	}),
 	async (data) => {
 		const event = getRequestEvent()
@@ -55,7 +58,8 @@ export const updateUserPrefs = command(
 			await db.insert(userPrefs).values({
 				userId: user.id,
 				subscriptionSortBy: data.subscriptionSortBy ?? 'date',
-				subscriptionSortReversed: data.subscriptionSortReversed ?? false
+				subscriptionSortReversed: data.subscriptionSortReversed ?? false,
+				subscriptionDisplayPeriod: data.subscriptionDisplayPeriod ?? 'monthly'
 			})
 		} else {
 			await db
@@ -66,6 +70,9 @@ export const updateUserPrefs = command(
 					}),
 					...(data.subscriptionSortReversed !== undefined && {
 						subscriptionSortReversed: data.subscriptionSortReversed
+					}),
+					...(data.subscriptionDisplayPeriod !== undefined && {
+						subscriptionDisplayPeriod: data.subscriptionDisplayPeriod
 					}),
 					updatedAt: new Date()
 				})

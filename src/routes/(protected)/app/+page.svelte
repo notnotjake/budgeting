@@ -11,7 +11,9 @@
 	import { getUserPrefs, updateUserPrefs } from '$remotes/user-prefs.remote'
 	import { createClass } from '@opensky/style'
 	import { Popover, RadioGroup } from 'bits-ui'
-	import { IconFilter2, IconArrowNarrowUp } from '@tabler/icons-svelte'
+	import { IconFilter2, IconArrowNarrowUp, IconChevronDown } from '@tabler/icons-svelte'
+	import { Adapt } from '$ui/adapt'
+	import { scale } from 'svelte/transition'
 	import ControlStrip from './control-strip.svelte'
 	import SubscriptionRow from '$lib/components/subscriptions/subscription-row.svelte'
 
@@ -23,14 +25,64 @@
 	let sortBy = $state<'date' | 'status' | 'price' | 'period'>('date')
 	let sortReversed = $state(false)
 	let sortPopoverOpen = $state(false)
+	let displayPeriod = $state<'weekly' | 'monthly' | 'yearly'>('monthly')
 	let prefsLoaded = $state(false)
 
 	// Load user preferences
 	getUserPrefs().then((prefs) => {
 		sortBy = prefs.subscriptionSortBy
 		sortReversed = prefs.subscriptionSortReversed
+		displayPeriod = prefs.subscriptionDisplayPeriod
 		prefsLoaded = true
 	})
+
+	function handleDisplayPeriodChange(value: 'weekly' | 'monthly' | 'yearly') {
+		displayPeriod = value
+		updateUserPrefs({ subscriptionDisplayPeriod: value })
+	}
+
+	function calculateTotal(
+		subscriptions: { amount: string; frequency: 'day' | 'month'; frequencyInterval: number }[],
+		period: 'weekly' | 'monthly' | 'yearly'
+	) {
+		return subscriptions.reduce((sum, sub) => {
+			const amount = Number(sub.amount)
+			const isWeekly = sub.frequency === 'day' && sub.frequencyInterval === 7
+			const isYearly = sub.frequency === 'month' && sub.frequencyInterval === 12
+			// isMonthly is the default case
+
+			// First convert to yearly as common base
+			let yearlyAmount: number
+			if (isWeekly) {
+				yearlyAmount = amount * 52
+			} else if (isYearly) {
+				yearlyAmount = amount
+			} else {
+				// Monthly
+				yearlyAmount = amount * 12
+			}
+
+			// Then convert to target period
+			if (period === 'weekly') {
+				return sum + yearlyAmount / 52
+			} else if (period === 'monthly') {
+				return sum + yearlyAmount / 12
+			} else {
+				// yearly
+				return sum + yearlyAmount
+			}
+		}, 0)
+	}
+
+	const periodLabels = {
+		weekly: 'weekly',
+		monthly: 'monthly',
+		yearly: 'yearly'
+	}
+
+	let periodSelectorOpen = $state<(() => void) | null>(null)
+	let periodSelectorClose = $state<(() => void) | null>(null)
+	let periodSelectorActive = $state(false)
 
 	function handleSortByChange(value: 'date' | 'status' | 'price' | 'period') {
 		sortBy = value
@@ -141,19 +193,51 @@
 		Subscriptions
 	</h1>
 	{#await subscriptionsPromise then subscriptions}
-		{@const total = subscriptions.reduce((sum, sub) => {
-			const amount = Number(sub.amount)
-			// Convert to monthly equivalent
-			if (sub.frequency === 'day' && sub.frequencyInterval === 7) {
-				return sum + amount * 4.33 // Weekly to monthly
-			} else if (sub.frequency === 'month' && sub.frequencyInterval === 12) {
-				return sum + amount / 12 // Yearly to monthly
-			}
-			return sum + amount // Already monthly
-		}, 0)}
-		<p class="pb-8 text-sm tabular-nums text-neutral-400 dark:text-neutral-500">
-			${total.toFixed(2)}/mo
-		</p>
+		{@const total = calculateTotal(subscriptions, displayPeriod)}
+		<div class="flex items-center gap-2 pb-8">
+			<p class="text-lg tabular-nums text-neutral-500 dark:text-neutral-400">
+				{total.toLocaleString('en-US', { style: 'currency', currency: 'USD' })}
+			</p>
+			<Adapt.Swap
+				adaptSize={true}
+				bind:open={periodSelectorOpen}
+				bind:close={periodSelectorClose}
+				bind:isActive={periodSelectorActive}
+			>
+				<button
+					transition:scale={{ duration: 150 }}
+					onclick={() => periodSelectorOpen?.()}
+					class="flex cursor-pointer items-center gap-0.5 whitespace-nowrap text-sm text-neutral-400 transition-colors hover:text-neutral-600 dark:text-neutral-500 dark:hover:text-neutral-300"
+				>
+					<span>per {periodLabels[displayPeriod].slice(0, -2)}</span>
+					<IconChevronDown size={14} class="mt-px" />
+				</button>
+
+				{#snippet swapContent()}
+					<div
+						transition:scale={{ duration: 150 }}
+						class="flex rounded-full bg-neutral-200 p-0.5 dark:bg-neutral-800"
+					>
+						{#each (['weekly', 'monthly', 'yearly'] as const) as period (period)}
+							<button
+								onclick={() => {
+									handleDisplayPeriodChange(period)
+									periodSelectorClose?.()
+								}}
+								class={createClass(
+									'cursor-pointer rounded-full px-2.5 py-1 text-xs font-medium transition-all',
+									displayPeriod === period
+										? 'bg-white text-neutral-700 shadow-sm dark:bg-neutral-600 dark:text-neutral-100'
+										: 'text-neutral-500 hover:text-neutral-700 dark:text-neutral-400 dark:hover:text-neutral-200'
+								)}
+							>
+								{periodLabels[period]}
+							</button>
+						{/each}
+					</div>
+				{/snippet}
+			</Adapt.Swap>
+		</div>
 	{/await}
 
 	<!-- Toolbar Group -->
