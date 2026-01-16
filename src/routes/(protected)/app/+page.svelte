@@ -11,7 +11,9 @@
 	import { getUserPrefs, updateUserPrefs } from '$remotes/user-prefs.remote'
 	import { createClass } from '@opensky/style'
 	import { Popover, RadioGroup } from 'bits-ui'
-	import { IconFilter2, IconArrowNarrowUp } from '@tabler/icons-svelte'
+	import { IconFilter2, IconArrowNarrowUp, IconChevronDown } from '@tabler/icons-svelte'
+	import { Adapt } from '$ui/adapt'
+	import { scale } from 'svelte/transition'
 	import ControlStrip from './control-strip.svelte'
 	import SubscriptionRow from '$lib/components/subscriptions/subscription-row.svelte'
 
@@ -23,14 +25,64 @@
 	let sortBy = $state<'date' | 'status' | 'price' | 'period'>('date')
 	let sortReversed = $state(false)
 	let sortPopoverOpen = $state(false)
+	let displayPeriod = $state<'weekly' | 'monthly' | 'yearly'>('monthly')
 	let prefsLoaded = $state(false)
 
 	// Load user preferences
 	getUserPrefs().then((prefs) => {
 		sortBy = prefs.subscriptionSortBy
 		sortReversed = prefs.subscriptionSortReversed
+		displayPeriod = prefs.subscriptionDisplayPeriod
 		prefsLoaded = true
 	})
+
+	function handleDisplayPeriodChange(value: 'weekly' | 'monthly' | 'yearly') {
+		displayPeriod = value
+		updateUserPrefs({ subscriptionDisplayPeriod: value })
+	}
+
+	function calculateTotal(
+		subscriptions: { amount: string; frequency: 'day' | 'month'; frequencyInterval: number }[],
+		period: 'weekly' | 'monthly' | 'yearly'
+	) {
+		return subscriptions.reduce((sum, sub) => {
+			const amount = Number(sub.amount)
+			const isWeekly = sub.frequency === 'day' && sub.frequencyInterval === 7
+			const isYearly = sub.frequency === 'month' && sub.frequencyInterval === 12
+			// isMonthly is the default case
+
+			// First convert to yearly as common base
+			let yearlyAmount: number
+			if (isWeekly) {
+				yearlyAmount = amount * 52
+			} else if (isYearly) {
+				yearlyAmount = amount
+			} else {
+				// Monthly
+				yearlyAmount = amount * 12
+			}
+
+			// Then convert to target period
+			if (period === 'weekly') {
+				return sum + yearlyAmount / 52
+			} else if (period === 'monthly') {
+				return sum + yearlyAmount / 12
+			} else {
+				// yearly
+				return sum + yearlyAmount
+			}
+		}, 0)
+	}
+
+	const periodLabels = {
+		weekly: 'weekly',
+		monthly: 'monthly',
+		yearly: 'yearly'
+	}
+
+	let periodSelectorOpen = $state<(() => void) | null>(null)
+	let periodSelectorClose = $state<(() => void) | null>(null)
+	let periodSelectorActive = $state(false)
 
 	function handleSortByChange(value: 'date' | 'status' | 'price' | 'period') {
 		sortBy = value
@@ -42,19 +94,8 @@
 		updateUserPrefs({ subscriptionSortReversed: sortReversed })
 	}
 
-	// Derive total monthly cost from subscriptions
-	let total = $derived(
-		subscriptions.reduce((sum, sub) => {
-			const amount = Number(sub.amount)
-			// Convert to monthly equivalent
-			if (sub.frequency === 'day' && sub.frequencyInterval === 7) {
-				return sum + amount * 4.33 // Weekly to monthly
-			} else if (sub.frequency === 'month' && sub.frequencyInterval === 12) {
-				return sum + amount / 12 // Yearly to monthly
-			}
-			return sum + amount // Already monthly
-		}, 0)
-	)
+	// Derive total cost for selected period
+	let total = $derived.by(() => calculateTotal(subscriptions, displayPeriod))
 
 	// Derive sorted subscriptions
 	let sortedSubscriptions = $derived.by(() => {
@@ -146,9 +187,50 @@
 	>
 		Subscriptions
 	</h1>
-	<p class="pb-8 text-sm tabular-nums text-neutral-400 dark:text-neutral-500">
-		${total.toFixed(2)}/mo
-	</p>
+	<div class="flex items-center gap-2 pb-8">
+		<p class="text-lg text-neutral-500 tabular-nums dark:text-neutral-400">
+			{total.toLocaleString('en-US', { style: 'currency', currency: 'USD' })}
+		</p>
+		<Adapt.Swap
+			adaptSize={true}
+			bind:open={periodSelectorOpen}
+			bind:close={periodSelectorClose}
+			bind:isActive={periodSelectorActive}
+		>
+			<button
+				transition:scale={{ duration: 150 }}
+				onclick={() => periodSelectorOpen?.()}
+				class="flex cursor-pointer items-center gap-0.5 text-sm whitespace-nowrap text-neutral-400 transition-colors hover:text-neutral-600 dark:text-neutral-500 dark:hover:text-neutral-300"
+			>
+				<span>per {periodLabels[displayPeriod].slice(0, -2)}</span>
+				<IconChevronDown size={14} class="mt-px" />
+			</button>
+
+			{#snippet swapContent()}
+				<div
+					transition:scale={{ duration: 150 }}
+					class="flex rounded-full bg-neutral-200 p-0.5 dark:bg-neutral-800"
+				>
+					{#each ['weekly', 'monthly', 'yearly'] as const as period (period)}
+						<button
+							onclick={() => {
+								handleDisplayPeriodChange(period)
+								periodSelectorClose?.()
+							}}
+							class={createClass(
+								'cursor-pointer rounded-full px-2.5 py-1 text-xs font-medium transition-all',
+								displayPeriod === period
+									? 'bg-white text-neutral-700 shadow-sm dark:bg-neutral-600 dark:text-neutral-100'
+									: 'text-neutral-500 hover:text-neutral-700 dark:text-neutral-400 dark:hover:text-neutral-200'
+							)}
+						>
+							{periodLabels[period]}
+						</button>
+					{/each}
+				</div>
+			{/snippet}
+		</Adapt.Swap>
+	</div>
 
 	<!-- Toolbar Group -->
 	<div
@@ -173,7 +255,7 @@
 							<button
 								{...props}
 								class={createClass(
-									'flex size-[30px] cursor-pointer select-none items-center justify-center gap-1 rounded-full',
+									'flex size-[30px] cursor-pointer items-center justify-center gap-1 rounded-full select-none',
 									'bg-white text-neutral-500 shadow-[0px_1px_1px_rgba(0,0,0,0.08),0px_0px_0px_1px_rgba(0,0,0,0.05)]',
 									'transition-all hover:shadow-[0px_1px_1px_rgba(0,0,0,0.12),0px_0px_0px_1px_rgba(0,0,0,0.1)]',
 									'active:scale-[0.99] active:bg-neutral-100',
@@ -193,7 +275,7 @@
 						sideOffset={8}
 						class="z-100 w-48 rounded-[1.15rem] bg-black p-2 shadow-lg dark:bg-[#212121] dark:shadow-[inset_0_1px_1.5px_rgba(255,255,255,0.09),inset_0_-1px_4px_rgba(255,255,255,0.03)]"
 					>
-						<div class="flex items-center justify-between border-b border-neutral-700 pb-2 mb-2">
+						<div class="mb-2 flex items-center justify-between border-b border-neutral-700 pb-2">
 							<span class="pl-2 text-xs font-medium text-neutral-400">Sort by</span>
 							<button
 								onclick={handleSortReversedToggle}
@@ -205,13 +287,12 @@
 								<IconArrowNarrowUp size={16} />
 							</button>
 						</div>
-						<RadioGroup.Root value={sortBy} onValueChange={(v) => handleSortByChange(v as 'date' | 'status' | 'price' | 'period')} class="flex flex-col gap-1">
-							{#each [
-								{ value: 'date', label: 'Renew Date' },
-								{ value: 'status', label: 'Status' },
-								{ value: 'price', label: 'Price' },
-								{ value: 'period', label: 'Period' }
-							] as option (option.value)}
+						<RadioGroup.Root
+							value={sortBy}
+							onValueChange={(v) => handleSortByChange(v as 'date' | 'status' | 'price' | 'period')}
+							class="flex flex-col gap-1"
+						>
+							{#each [{ value: 'date', label: 'Renew Date' }, { value: 'status', label: 'Status' }, { value: 'price', label: 'Price' }, { value: 'period', label: 'Period' }] as option (option.value)}
 								<RadioGroup.Item
 									value={option.value}
 									class={createClass(
