@@ -88,13 +88,13 @@
 						</button>
 					{/snippet}
 				</Tooltip.Trigger>
-				{@render tooltipContent('Add Info')}
+				{@render tooltipContent('More Info')}
 			</Tooltip.Root>
 		{/snippet}
 
 	{#snippet swapContent()}
 		<!-- Expanded state: Company, Tag, Account inputs + close button -->
-		<div class="flex items-center gap-0">
+		<div class="flex items-center gap-1">
 			<!-- Company -->
 			<Tooltip.Root>
 				<Tooltip.Trigger>
@@ -256,7 +256,7 @@
 						</button>
 					{/snippet}
 				</Tooltip.Trigger>
-				{@render tooltipContent('Hide Info')}
+				{@render tooltipContent('Hide More Info')}
 			</Tooltip.Root>
 		</div>
 	{/snippet}
