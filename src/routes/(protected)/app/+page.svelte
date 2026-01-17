@@ -9,9 +9,17 @@
 		cancelSubscription
 	} from '$remotes/subscriptions.remote'
 	import { getUserPrefs, updateUserPrefs } from '$remotes/user-prefs.remote'
+	import { subscriptionsToCSV, copyCSVToClipboard, downloadCSV } from '$lib/utils/csv-export'
 	import { createClass } from '@opensky/style'
 	import { Popover, RadioGroup } from 'bits-ui'
-	import { IconFilter2, IconArrowNarrowUp, IconChevronDown } from '@tabler/icons-svelte'
+	import {
+		IconFilter2,
+		IconArrowNarrowUp,
+		IconChevronDown,
+		IconDownload,
+		IconCopy,
+		IconCheck
+	} from '@tabler/icons-svelte'
 	import { Adapt } from '$ui/adapt'
 	import { scale } from 'svelte/transition'
 	import ControlStrip from './control-strip.svelte'
@@ -182,6 +190,24 @@
 			console.error('Failed to cancel subscription', e)
 		}
 	}
+
+	let copySuccess = $state(false)
+
+	async function handleCopyCSV() {
+		const csv = subscriptionsToCSV(subscriptions)
+		const success = await copyCSVToClipboard(csv)
+		if (success) {
+			copySuccess = true
+			setTimeout(() => {
+				copySuccess = false
+			}, 2000)
+		}
+	}
+
+	function handleDownloadCSV() {
+		const csv = subscriptionsToCSV(subscriptions)
+		downloadCSV(csv)
+	}
 </script>
 
 <div
@@ -327,6 +353,36 @@
 						onDelete={handleDelete}
 					/>
 				{/each}
+			</div>
+			<!-- Export CSV Buttons -->
+			<div class="mt-16 flex justify-center gap-3">
+				<button
+					onclick={handleCopyCSV}
+					class={createClass(
+						'flex cursor-pointer items-center gap-2 rounded-full px-4 py-2 text-sm font-medium transition-all',
+						'bg-neutral-100 text-neutral-600 hover:bg-neutral-200',
+						'dark:bg-neutral-800 dark:text-neutral-300 dark:hover:bg-neutral-700'
+					)}
+				>
+					{#if copySuccess}
+						<IconCheck size={16} class="text-green-500" />
+						<span>Copied</span>
+					{:else}
+						<IconCopy size={16} />
+						<span>Copy CSV</span>
+					{/if}
+				</button>
+				<button
+					onclick={handleDownloadCSV}
+					class={createClass(
+						'flex cursor-pointer items-center gap-2 rounded-full px-4 py-2 text-sm font-medium transition-all',
+						'bg-neutral-100 text-neutral-600 hover:bg-neutral-200',
+						'dark:bg-neutral-800 dark:text-neutral-300 dark:hover:bg-neutral-700'
+					)}
+				>
+					<IconDownload size={16} />
+					<span>Download CSV</span>
+				</button>
 			</div>
 		{/if}
 	</div>
