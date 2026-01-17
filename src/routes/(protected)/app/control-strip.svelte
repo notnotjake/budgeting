@@ -1,14 +1,14 @@
 <script lang="ts">
 	import { createClass } from '@opensky/style'
 	import {
-		IconArrowUp,
+		IconPlus,
 		IconCalendarWeekFilled,
 		IconTagFilled,
 		IconArrowBackUp,
 		IconRepeat,
 		IconCreditCard,
 		IconReceiptDollarFilled,
-		IconCirclePlusFilled,
+		IconFileDescriptionFilled,
 		IconWorld
 	} from '@tabler/icons-svelte'
 	import { Tooltip, Popover } from 'bits-ui'
@@ -116,6 +116,25 @@
 	class="pointer-events-auto flex h-fit w-fit items-center gap-1 rounded-4xl bg-[#FAF8FB] px-2 py-1 shadow-[inset_0_1px_1.5px_rgba(255,255,255,1),0_1px_1.5px_0px_rgba(0,0,0,0.08),0_2px_30px_11px_rgba(0,0,0,0.04)] dark:bg-[#212121] dark:shadow-[inset_0_1px_1.5px_rgba(255,255,255,0.09),inset_0_-1px_4px_rgba(255,255,255,0.03)]"
 >
 	<Tooltip.Provider delayDuration={600}>
+		<!-- Clear Form -->
+		<Tooltip.Root>
+			<Tooltip.Trigger>
+				{#snippet child({ props })}
+					<button
+						{...props}
+						tabindex="-1"
+						onclick={clearForm}
+						class="mr-1 ml-2 text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300"
+					>
+						<IconArrowBackUp />
+					</button>
+				{/snippet}
+			</Tooltip.Trigger>
+			{@render tooltipContent('Clear Form')}
+		</Tooltip.Root>
+
+		<div class="h-full min-h-8 w-0.5 rounded-full bg-neutral-200 dark:bg-neutral-700"></div>
+
 		<!-- Subscription Name -->
 		<Tooltip.Root>
 			<Tooltip.Trigger>
@@ -128,7 +147,7 @@
 							'dark:focus-within:bg-neutral-700/80 dark:hover:bg-neutral-700/80'
 						)}
 					>
-						<IconCirclePlusFilled size={22} class="shrink-0 grow text-blue-500" />
+						<IconFileDescriptionFilled size={22} class="shrink-0 grow text-blue-500" />
 						<InputAdapting
 							class={createClass(
 								'w-fit outline-none selection:bg-sky-200 selection:text-blue-600 placeholder:font-medium placeholder:tracking-tight-md',
@@ -424,24 +443,6 @@
 			{@render tooltipContent('Frequency')}
 		</Tooltip.Root>
 
-		<div class="h-full min-h-8 w-0.5 rounded-full bg-neutral-200 dark:bg-neutral-700"></div>
-
-		<Tooltip.Root>
-			<Tooltip.Trigger>
-				{#snippet child({ props })}
-					<button
-						{...props}
-						tabindex="-1"
-						onclick={clearForm}
-						class="mr-2 ml-1 text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300"
-					>
-						<IconArrowBackUp />
-					</button>
-				{/snippet}
-			</Tooltip.Trigger>
-			{@render tooltipContent('Clear Form')}
-		</Tooltip.Root>
-
 		<Tooltip.Root>
 			<Tooltip.Trigger>
 				{#snippet child({ props })}
@@ -458,7 +459,7 @@
 								: 'bg-neutral-300/70 text-neutral-400 shadow-none dark:bg-neutral-700 dark:text-neutral-500'
 						)}
 					>
-						<IconArrowUp stroke={3} size={26} />
+						<IconPlus stroke={3} size={26} />
 					</button>
 				{/snippet}
 			</Tooltip.Trigger>
