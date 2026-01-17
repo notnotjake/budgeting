@@ -111,8 +111,18 @@
 					}
 					return getStatusOrder(a) - getStatusOrder(b)
 				}
-				case 'price':
-					return Number(a.amount) - Number(b.amount)
+				case 'price': {
+					// Normalize to yearly amount for fair comparison
+					const getYearlyAmount = (sub: typeof a) => {
+						const amount = Number(sub.amount)
+						const isWeekly = sub.frequency === 'day' && sub.frequencyInterval === 7
+						const isYearly = sub.frequency === 'month' && sub.frequencyInterval === 12
+						if (isWeekly) return amount * 52
+						if (isYearly) return amount
+						return amount * 12 // monthly
+					}
+					return getYearlyAmount(a) - getYearlyAmount(b)
+				}
 				case 'period': {
 					const getPeriodOrder = (sub: typeof a) => {
 						if (sub.frequency === 'day' && sub.frequencyInterval === 7) return 1
