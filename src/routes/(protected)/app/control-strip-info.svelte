@@ -1,7 +1,13 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte'
 	import { createClass } from '@opensky/style'
-	import { IconDots, IconTagFilled, IconCreditCard, IconWorld, IconX } from '@tabler/icons-svelte'
+	import {
+		IconDots,
+		IconTagFilled,
+		IconCreditCard,
+		IconWorld,
+		IconChevronLeft
+	} from '@tabler/icons-svelte'
 	import { Tooltip } from 'bits-ui'
 	import InputAdapting from '$ui/input/input-adapting.svelte'
 	import AdaptSwap from '$lib/components/adapt/swap.svelte'
@@ -55,7 +61,7 @@
 
 <AdaptSwap bind:isActive={expanded} adaptSize={true}>
 	{#snippet children()}
-		<!-- Collapsed state: IconDots + value indicators -->
+		<!-- Collapsed state: IconDots when empty, or value indicators when set -->
 		<Tooltip.Root>
 			<Tooltip.Trigger>
 				{#snippet child({ props })}
@@ -68,15 +74,18 @@
 							'dark:hover:bg-neutral-700/80'
 						)}
 					>
-						<IconDots size={22} class="text-neutral-500" />
-						{#if hasCompany}
-							<IconWorld size={18} class="text-neutral-500" />
-						{/if}
-						{#if hasTag}
-							<IconTagFilled size={18} class="text-neutral-500" />
-						{/if}
-						{#if hasAccount}
-							<IconCreditCard size={18} class="text-neutral-500" />
+						{#if hasCompany || hasTag || hasAccount}
+							{#if hasCompany}
+								<IconWorld size={18} class="text-neutral-500" />
+							{/if}
+							{#if hasTag}
+								<IconTagFilled size={18} class="text-neutral-500" />
+							{/if}
+							{#if hasAccount}
+								<IconCreditCard size={18} class="text-neutral-500" />
+							{/if}
+						{:else}
+							<IconDots size={22} class="text-neutral-500" />
 						{/if}
 					</button>
 				{/snippet}
@@ -245,11 +254,11 @@
 								'dark:hover:bg-neutral-700/80'
 							)}
 						>
-							<IconX size={18} class="text-neutral-500" />
+							<IconChevronLeft size={18} class="text-neutral-500" />
 						</button>
 					{/snippet}
 				</Tooltip.Trigger>
-				{@render tooltipContent('Collapse')}
+				{@render tooltipContent('Hide Info')}
 			</Tooltip.Root>
 		</div>
 	{/snippet}
