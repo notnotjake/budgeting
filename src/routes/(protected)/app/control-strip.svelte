@@ -152,14 +152,7 @@
 		</Tooltip.Root>
 
 		<!-- Company/Tag/Account Info -->
-		<ControlStripInfo
-			bind:company
-			bind:tag
-			bind:account
-			{accounts}
-			{tags}
-			{tooltipContent}
-		/>
+		<ControlStripInfo bind:company bind:tag bind:account {accounts} {tags} />
 
 		<div class="h-full min-h-8 w-0.5 rounded-full bg-neutral-200 dark:bg-neutral-700"></div>
 

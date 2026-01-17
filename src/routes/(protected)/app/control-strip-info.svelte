@@ -1,5 +1,4 @@
 <script lang="ts">
-	import type { Snippet } from 'svelte'
 	import { createClass } from '@opensky/style'
 	import {
 		IconDots,
@@ -18,7 +17,6 @@
 		account: string
 		accounts: string[]
 		tags: string[]
-		tooltipContent: Snippet<[string]>
 	}
 
 	let {
@@ -26,8 +24,7 @@
 		tag = $bindable(),
 		account = $bindable(),
 		accounts,
-		tags,
-		tooltipContent
+		tags
 	}: Props = $props()
 
 	let expanded = $state(false)
@@ -59,40 +56,41 @@
 	let hasAccount = $derived(account.trim() !== '')
 </script>
 
-<AdaptSwap bind:isActive={expanded} adaptSize={true}>
-	{#snippet children()}
-		<!-- Collapsed state: IconDots when empty, or value indicators when set -->
-		<Tooltip.Root>
-			<Tooltip.Trigger>
-				{#snippet child({ props })}
-					<button
-						{...props}
-						type="button"
-						onclick={() => (expanded = true)}
-						class={createClass(
-							'flex min-h-8 cursor-pointer items-center gap-0.5 rounded-full px-2 hover:bg-neutral-200/80',
-							'dark:hover:bg-neutral-700/80'
-						)}
-					>
-						{#if hasCompany || hasTag || hasAccount}
-							{#if hasCompany}
-								<IconWorld size={18} class="text-neutral-500" />
+<Tooltip.Provider delayDuration={600}>
+	<AdaptSwap bind:isActive={expanded} adaptSize={true}>
+		{#snippet children()}
+			<!-- Collapsed state: IconDots when empty, or value indicators when set -->
+			<Tooltip.Root>
+				<Tooltip.Trigger>
+					{#snippet child({ props })}
+						<button
+							{...props}
+							type="button"
+							onclick={() => (expanded = true)}
+							class={createClass(
+								'flex min-h-8 cursor-pointer items-center gap-0.5 rounded-full px-2 hover:bg-neutral-200/80',
+								'dark:hover:bg-neutral-700/80'
+							)}
+						>
+							{#if hasCompany || hasTag || hasAccount}
+								{#if hasCompany}
+									<IconWorld size={18} class="text-neutral-500" />
+								{/if}
+								{#if hasTag}
+									<IconTagFilled size={18} class="text-neutral-500" />
+								{/if}
+								{#if hasAccount}
+									<IconCreditCard size={18} class="text-neutral-500" />
+								{/if}
+							{:else}
+								<IconDots size={22} class="text-neutral-500" />
 							{/if}
-							{#if hasTag}
-								<IconTagFilled size={18} class="text-neutral-500" />
-							{/if}
-							{#if hasAccount}
-								<IconCreditCard size={18} class="text-neutral-500" />
-							{/if}
-						{:else}
-							<IconDots size={22} class="text-neutral-500" />
-						{/if}
-					</button>
-				{/snippet}
-			</Tooltip.Trigger>
-			{@render tooltipContent('Add Info')}
-		</Tooltip.Root>
-	{/snippet}
+						</button>
+					{/snippet}
+				</Tooltip.Trigger>
+				{@render tooltipContent('Add Info')}
+			</Tooltip.Root>
+		{/snippet}
 
 	{#snippet swapContent()}
 		<!-- Expanded state: Company, Tag, Account inputs + close button -->
@@ -262,4 +260,17 @@
 			</Tooltip.Root>
 		</div>
 	{/snippet}
-</AdaptSwap>
+	</AdaptSwap>
+</Tooltip.Provider>
+
+{#snippet tooltipContent(text: string)}
+	<Tooltip.Portal>
+		<Tooltip.Content side="bottom" sideOffset={5} align="center" class="z-200">
+			<div
+				class="rounded-2xl bg-neutral-900 px-3 py-2 text-[0.9rem] font-semibold text-neutral-50"
+			>
+				{text}
+			</div>
+		</Tooltip.Content>
+	</Tooltip.Portal>
+{/snippet}
