@@ -44,7 +44,7 @@ export function subscriptionsToCSV(subscriptions: Subscription[]): string {
 		escapeCSVField(sub.company ?? ''),
 		escapeCSVField(sub.account ?? ''),
 		escapeCSVField(sub.tag ?? ''),
-		sub.amount,
+		escapeCSVField(sub.amount),
 		formatPeriod(sub.frequency, sub.frequencyInterval),
 		formatDate(sub.dueDate),
 		getStatus(sub)
