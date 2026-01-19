@@ -26,6 +26,7 @@
 	import SubscriptionRow from '$lib/components/subscriptions/subscription-row.svelte'
 
 	let isSubmitting = $state(false)
+	let editingId = $state<string | null>(null)
 	let subscriptions = $derived(await getSubscriptions())
 	let accounts = $derived(await getAccounts())
 	let tags = $derived(await getTags())
@@ -191,6 +192,31 @@
 		}
 	}
 
+	function handleEdit(id: string) {
+		editingId = id
+	}
+
+	function handleSave(data: {
+		id: string
+		name: string
+		company: string | undefined
+		account: string | undefined
+		tag: string | undefined
+		amount: number
+		dueDate: string
+		frequency: 'day' | 'month'
+		frequencyInterval: number
+		status: 'active' | 'paused' | 'cancelled'
+	}) {
+		// TODO: Implement update subscription remote call
+		console.log('Save subscription:', data)
+		editingId = null
+	}
+
+	function handleCancelEdit(id: string) {
+		editingId = null
+	}
+
 	let copySuccess = $state(false)
 
 	async function handleCopyCSV() {
@@ -348,6 +374,12 @@
 				{#each sortedSubscriptions as sub (sub.id)}
 					<SubscriptionRow
 						subscription={sub}
+						editing={editingId === sub.id}
+						{accounts}
+						{tags}
+						onEdit={handleEdit}
+						onSave={handleSave}
+						onCancelEdit={handleCancelEdit}
 						onPause={handlePause}
 						onCancel={handleCancel}
 						onDelete={handleDelete}
