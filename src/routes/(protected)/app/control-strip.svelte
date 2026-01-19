@@ -13,7 +13,14 @@
 	import ControlStripInfo from './control-strip-info.svelte'
 	import { today, getLocalTimeZone, isSameDay } from '@internationalized/date'
 	import { wipeHorizontal } from '$ui/transition'
+	import { tick } from 'svelte'
 	import DatePicker from '$lib/components/date-picker.svelte'
+	import { z } from 'zod'
+
+	// Currency validation: allows numbers with optional commas and up to 2 decimal places
+	const currencySchema = z
+		.string()
+		.regex(/^-?\d{1,3}(,\d{3})*(\.\d{0,2})?$|^-?\d+(\.\d{0,2})?$/, 'Invalid currency format')
 
 	type Props = {
 		onSubmit: (data: {
@@ -43,8 +50,16 @@
 	let frequencyOption = $state<'weekly' | 'monthly' | 'yearly'>('monthly')
 	let frequencyDropdownOpen = $state(false)
 
+	// Amount is valid if empty (not yet entered) or passes currency validation
+	let isAmountValid = $derived(
+		amount.trim() === '' || currencySchema.safeParse(amount).success
+	)
+
 	let isSubmitAvailable = $derived(
-		name.trim() !== '' && amount.trim() !== '' && parseFloat(amount) > 0
+		name.trim() !== '' &&
+			amount.trim() !== '' &&
+			isAmountValid &&
+			parseFloat(amount.replace(/,/g, '')) > 0
 	)
 
 	let isToday = $derived(isSameDay(date, today(getLocalTimeZone())))
@@ -56,6 +71,29 @@
 
 	function capitalize(str: string): string {
 		return str.charAt(0).toUpperCase() + str.slice(1)
+	}
+
+	function formatCurrency(value: string): string {
+		// Strip existing commas and parse
+		const num = parseFloat(value.replace(/,/g, ''))
+		if (isNaN(num)) return value
+		// Format with commas and exactly 2 decimal places
+		return num.toLocaleString('en-US', {
+			minimumFractionDigits: 2,
+			maximumFractionDigits: 2
+		})
+	}
+
+	async function handleAmountFocus(e: FocusEvent): Promise<void> {
+		const input = e.currentTarget as HTMLInputElement
+		await tick()
+		input.select()
+	}
+
+	function handleAmountBlur(): void {
+		if (amount.trim() && isAmountValid) {
+			amount = formatCurrency(amount)
+		}
 	}
 
 	let frequencyLabel = $derived(capitalize(frequencyOption))
@@ -86,7 +124,7 @@
 			company: company.trim() || undefined,
 			account: account.trim() || undefined,
 			tag: tag.trim() || undefined,
-			amount: parseFloat(amount),
+			amount: parseFloat(amount.replace(/,/g, '')),
 			dueDate: date.toString(),
 			frequency,
 			frequencyInterval
@@ -172,15 +210,20 @@
 						<InputAdapting
 							class={createClass(
 								'w-fit outline-none selection:bg-sky-200 selection:text-blue-600 placeholder:font-medium placeholder:tracking-tight-md',
-								'dark:text-white dark:selection:bg-sky-500 dark:selection:text-white',
+								'dark:selection:bg-sky-500 dark:selection:text-white',
 								'placeholder:text-neutral-800 focus:placeholder:text-neutral-500',
-								'dark:placeholder:text-neutral-100 dark:focus:placeholder:text-neutral-400'
+								'dark:placeholder:text-neutral-100 dark:focus:placeholder:text-neutral-400',
+								isAmountValid
+									? 'dark:text-white'
+									: 'text-red-500 dark:text-red-400'
 							)}
 							type="text"
 							placeholderIsMinWidth={true}
 							maxWidth="var(--container-4xs)"
 							bind:value={amount}
 							placeholder="0.00"
+							onfocus={handleAmountFocus}
+							onblur={handleAmountBlur}
 						/>
 					</label>
 				{/snippet}
