@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { fade } from 'svelte/transition'
+	import { fade, slide } from 'svelte/transition'
 	import { ContextMenu } from 'bits-ui'
 	import {
 		IconTrash,
@@ -7,9 +7,11 @@
 		IconX,
 		IconTrashFilled,
 		IconPlayerPauseFilled,
-		IconArrowNarrowRight
+		IconArrowNarrowRight,
+		IconPencil
 	} from '@tabler/icons-svelte'
 	import PriceHover from './price-hover.svelte'
+	import EditRow from './edit-row.svelte'
 
 	interface Subscription {
 		id: string
@@ -27,12 +29,40 @@
 
 	interface Props {
 		subscription: Subscription
+		editing?: boolean
+		accounts?: string[]
+		tags?: string[]
+		onEdit: (id: string) => void
+		onSave: (data: {
+			id: string
+			name: string
+			company: string | undefined
+			account: string | undefined
+			tag: string | undefined
+			amount: number
+			dueDate: string
+			frequency: 'day' | 'month'
+			frequencyInterval: number
+			status: 'active' | 'paused' | 'cancelled'
+		}) => void
+		onCancelEdit: (id: string) => void
 		onPause: (id: string) => void
 		onCancel: (id: string) => void
 		onDelete: (id: string) => void
 	}
 
-	let { subscription: sub, onPause, onCancel, onDelete }: Props = $props()
+	let {
+		subscription: sub,
+		editing = false,
+		accounts = [],
+		tags = [],
+		onEdit,
+		onSave,
+		onCancelEdit,
+		onPause,
+		onCancel,
+		onDelete
+	}: Props = $props()
 </script>
 
 <ContextMenu.Root>
@@ -93,11 +123,32 @@
 			</div>
 			<div></div>
 			<div></div>
+
+			<!-- Edit Row -->
+			{#if editing}
+				<div class="col-span-4 pt-3" transition:slide={{ duration: 200 }}>
+					<EditRow
+						subscription={sub}
+						{accounts}
+						{tags}
+						{onSave}
+						onCancel={() => onCancelEdit(sub.id)}
+					/>
+				</div>
+			{/if}
 		</div>
 	</ContextMenu.Trigger>
 	<ContextMenu.Content
 		class="relative z-40 w-44 rounded-[1.15rem] bg-black p-1 shadow-lg outline-none dark:bg-[#212121] dark:shadow-[inset_0_1px_1.5px_rgba(255,255,255,0.09),inset_0_-1px_4px_rgba(255,255,255,0.03)]"
 	>
+		<ContextMenu.Item class="outline-none" onSelect={() => onEdit(sub.id)}>
+			<div
+				class="flex cursor-pointer gap-2 rounded-[0.9rem] px-2 py-1.5 pr-3 text-white hover:bg-neutral-600/80"
+			>
+				<IconPencil class="text-neutral-200" />
+				<p class="px-1.5 font-medium text-neutral-200">Edit</p>
+			</div>
+		</ContextMenu.Item>
 		<ContextMenu.Item class="outline-none" onSelect={() => onPause(sub.id)}>
 			<div
 				class="flex cursor-pointer gap-2 rounded-[0.9rem] px-2 py-1.5 pr-3 text-white hover:bg-neutral-600/80"
