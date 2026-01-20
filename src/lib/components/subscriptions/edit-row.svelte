@@ -102,7 +102,7 @@
 	const originalDate = parseDateValue(subscription.dueDate).toString()
 	const originalStatus = getStatus(subscription)
 
-	let isValid = $derived(name.trim() !== '' && amount.trim() !== '' && parseFloat(amount) > 0)
+	let isValid = $derived(name.trim() !== '' && amount.trim() !== '' && parseFloat(amount.replace(/,/g, '')) > 0)
 
 	let hasChanges = $derived(
 		name !== originalName ||
@@ -126,7 +126,7 @@
 			company: company.trim() || undefined,
 			account: account.trim() || undefined,
 			tag: tag.trim() || undefined,
-			amount: parseFloat(amount),
+			amount: parseFloat(amount.replace(/,/g, '')),
 			dueDate: date.toString(),
 			frequency,
 			frequencyInterval,

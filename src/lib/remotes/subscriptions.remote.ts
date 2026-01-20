@@ -212,14 +212,34 @@ export const updateSubscription = command(
 			throw error(400, 'Invalid date')
 		}
 
-		// Determine pauseDate and endDate based on status
-		let pauseDate: Date | null = null
-		let endDate: Date | null = null
+		// Fetch current subscription to check if status changed
+		const [current] = await db
+			.select({ pauseDate: subscriptions.pauseDate, endDate: subscriptions.endDate })
+			.from(subscriptions)
+			.where(and(eq(subscriptions.id, id), eq(subscriptions.userId, user.id)))
 
-		if (status === 'paused') {
-			pauseDate = new Date()
-		} else if (status === 'cancelled') {
-			endDate = new Date()
+		if (!current) {
+			throw error(404, 'Subscription not found')
+		}
+
+		// Determine current status
+		const currentStatus = current.pauseDate ? 'paused' : current.endDate ? 'cancelled' : 'active'
+
+		// Only update pauseDate/endDate if status changed
+		let pauseDate: Date | null = current.pauseDate
+		let endDate: Date | null = current.endDate
+
+		if (status !== currentStatus) {
+			if (status === 'active') {
+				pauseDate = null
+				endDate = null
+			} else if (status === 'paused') {
+				pauseDate = new Date()
+				endDate = null
+			} else if (status === 'cancelled') {
+				pauseDate = null
+				endDate = new Date()
+			}
 		}
 
 		await db

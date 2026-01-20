@@ -214,6 +214,7 @@
 			editingId = null
 		} catch (e) {
 			console.error('Failed to update subscription', e)
+			alert('Failed to update subscription')
 		}
 	}
 
