@@ -4,6 +4,7 @@
 		getAccounts,
 		getTags,
 		createSubscription,
+		updateSubscription,
 		deleteSubscription,
 		pauseSubscription,
 		cancelSubscription
@@ -196,7 +197,7 @@
 		editingId = id
 	}
 
-	function handleSave(data: {
+	async function handleSave(data: {
 		id: string
 		name: string
 		company: string | undefined
@@ -208,9 +209,12 @@
 		frequencyInterval: number
 		status: 'active' | 'paused' | 'cancelled'
 	}) {
-		// TODO: Implement update subscription remote call
-		console.log('Save subscription:', data)
-		editingId = null
+		try {
+			await updateSubscription(data)
+			editingId = null
+		} catch (e) {
+			console.error('Failed to update subscription', e)
+		}
 	}
 
 	function handleCancelEdit(id: string) {

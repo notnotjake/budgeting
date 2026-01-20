@@ -174,3 +174,74 @@ export const cancelSubscription = command(
 		return { success: true }
 	}
 )
+
+export const updateSubscription = command(
+	z.object({
+		id: z.string(),
+		name: z.string().min(1),
+		company: z.string().optional(),
+		account: z.string().optional(),
+		tag: z.string().optional(),
+		amount: z.number().positive(),
+		frequency: z.enum(['day', 'month']),
+		frequencyInterval: z.number().int().positive(),
+		dueDate: z.string(),
+		status: z.enum(['active', 'paused', 'cancelled'])
+	}),
+	async ({
+		id,
+		name,
+		company,
+		account,
+		tag,
+		amount,
+		frequency,
+		frequencyInterval,
+		dueDate,
+		status
+	}) => {
+		const event = getRequestEvent()
+		const { user } = event.locals
+
+		if (!user) {
+			throw error(401, 'Unauthorized')
+		}
+
+		const parsedDate = new Date(dueDate)
+		if (isNaN(parsedDate.getTime())) {
+			throw error(400, 'Invalid date')
+		}
+
+		// Determine pauseDate and endDate based on status
+		let pauseDate: Date | null = null
+		let endDate: Date | null = null
+
+		if (status === 'paused') {
+			pauseDate = new Date()
+		} else if (status === 'cancelled') {
+			endDate = new Date()
+		}
+
+		await db
+			.update(subscriptions)
+			.set({
+				name,
+				company: company || null,
+				account: account || null,
+				tag: tag || null,
+				amount: amount.toString(),
+				frequency,
+				frequencyInterval,
+				dueDate: parsedDate,
+				pauseDate,
+				endDate
+			})
+			.where(and(eq(subscriptions.id, id), eq(subscriptions.userId, user.id)))
+
+		await getSubscriptions().refresh()
+		await getAccounts().refresh()
+		await getTags().refresh()
+
+		return { success: true }
+	}
+)
