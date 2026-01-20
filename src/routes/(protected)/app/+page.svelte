@@ -104,8 +104,11 @@
 		updateUserPrefs({ subscriptionSortReversed: sortReversed })
 	}
 
-	// Derive total cost for selected period
-	let total = $derived.by(() => calculateTotal(subscriptions, displayPeriod))
+	// Derive total cost for selected period (excluding paused and cancelled)
+	let total = $derived.by(() => {
+		const activeSubscriptions = subscriptions.filter((sub) => !sub.pauseDate && !sub.endDate)
+		return calculateTotal(activeSubscriptions, displayPeriod)
+	})
 
 	// Derive sorted subscriptions
 	let sortedSubscriptions = $derived.by(() => {
