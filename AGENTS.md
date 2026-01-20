@@ -2,6 +2,6 @@
 
 > Note: `CLAUDE.md` is a symlink to this file. All updates should be made to `AGENTS.md`.
 
-## Commit Messages
+## Attribution
 
-- Do not include "Co-Authored-By: Claude" or similar attribution lines in commit messages
+- Never include any mention of AI coding agents in commits, PRs, or anywhere else
