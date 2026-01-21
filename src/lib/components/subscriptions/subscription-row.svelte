@@ -110,11 +110,12 @@
 			<div class="min-w-0">
 				{#if sub.company || sub.tag || sub.account}
 					<p class="flex items-center gap-1 truncate text-sm text-neutral-500">
-						{#if sub.company}{sub.company}{/if}{#if sub.company && (sub.tag || sub.account)}
-							&bull;
-						{/if}{#if sub.tag}{sub.tag}{/if}{#if sub.tag && sub.account}
-							&bull;
-						{/if}{#if sub.account}<IconArrowNarrowRight
+						{#if sub.company}{sub.company}{/if}
+						{#if sub.tag}<span
+								class="inline-flex items-center rounded-full border border-neutral-300 px-2 dark:border-neutral-700"
+								>{sub.tag}</span
+							>{/if}
+						{#if sub.account}<IconArrowNarrowRight
 								size={16}
 								class="-mr-0.5 text-neutral-500"
 							/>{sub.account}{/if}
