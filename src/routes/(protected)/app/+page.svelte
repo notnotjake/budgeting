@@ -41,58 +41,15 @@
 	let prefsLoaded = $state(false)
 
 	// Filter state (not persisted)
+	// We track DEselected items instead of selected items, so empty sets = show everything
+	// This works correctly during SSR (effects don't run on server, but empty = show all)
 	let filterPopoverOpen = $state(false)
 	let showPaused = $state(true)
 	let showCancelled = $state(true)
-	let selectedTags = $state<Set<string | null>>(new Set())
-	let selectedAccounts = $state<Set<string | null>>(new Set())
+	let deselectedTags = $state<Set<string | null>>(new Set())
+	let deselectedAccounts = $state<Set<string | null>>(new Set())
 	let filterTagsExpanded = $state(false)
 	let filterAccountsExpanded = $state(false)
-
-	// Track known tags/accounts to distinguish new items from deselected ones
-	let knownTags = $state<Set<string | null>>(new Set())
-	let knownAccounts = $state<Set<string | null>>(new Set())
-
-	// Initialize filter selections and auto-include newly created tags/accounts
-	$effect(() => {
-		// Include null to represent items with no tag/account
-		const allTags = new Set<string | null>([null, ...tags])
-		const allAccounts = new Set<string | null>([null, ...accounts])
-
-		// Find truly new tags (ones we haven't seen before)
-		const newTags: (string | null)[] = []
-		for (const tag of allTags) {
-			if (!knownTags.has(tag)) {
-				newTags.push(tag)
-			}
-		}
-
-		// Find truly new accounts (ones we haven't seen before)
-		const newAccounts: (string | null)[] = []
-		for (const account of allAccounts) {
-			if (!knownAccounts.has(account)) {
-				newAccounts.push(account)
-			}
-		}
-
-		// Update known sets
-		if (newTags.length > 0) {
-			knownTags = new Set([...knownTags, ...newTags])
-		}
-		if (newAccounts.length > 0) {
-			knownAccounts = new Set([...knownAccounts, ...newAccounts])
-		}
-
-		// Auto-select new tags (preserving user's deselections of existing tags)
-		if (newTags.length > 0) {
-			selectedTags = new Set([...selectedTags, ...newTags])
-		}
-
-		// Auto-select new accounts (preserving user's deselections of existing accounts)
-		if (newAccounts.length > 0) {
-			selectedAccounts = new Set([...selectedAccounts, ...newAccounts])
-		}
-	})
 
 	// Load user preferences
 	getUserPrefs().then((prefs) => {
@@ -161,51 +118,45 @@
 	}
 
 	function toggleTag(tag: string | null) {
-		const newSet = new Set(selectedTags)
+		const newSet = new Set(deselectedTags)
 		if (newSet.has(tag)) {
-			newSet.delete(tag)
+			newSet.delete(tag) // Was deselected, now select it
 		} else {
-			newSet.add(tag)
+			newSet.add(tag) // Was selected, now deselect it
 		}
-		selectedTags = newSet
+		deselectedTags = newSet
 	}
 
 	function toggleAccount(account: string | null) {
-		const newSet = new Set(selectedAccounts)
+		const newSet = new Set(deselectedAccounts)
 		if (newSet.has(account)) {
-			newSet.delete(account)
+			newSet.delete(account) // Was deselected, now select it
 		} else {
-			newSet.add(account)
+			newSet.add(account) // Was selected, now deselect it
 		}
-		selectedAccounts = newSet
+		deselectedAccounts = newSet
 	}
 
 	function selectAllTags() {
-		selectedTags = new Set<string | null>([null, ...tags])
+		deselectedTags = new Set<string | null>() // Empty = all selected
 	}
 
 	function deselectAllTags() {
-		selectedTags = new Set<string | null>()
+		deselectedTags = new Set<string | null>([null, ...tags]) // All in deselected = none selected
 	}
 
 	function selectAllAccounts() {
-		selectedAccounts = new Set<string | null>([null, ...accounts])
+		deselectedAccounts = new Set<string | null>() // Empty = all selected
 	}
 
 	function deselectAllAccounts() {
-		selectedAccounts = new Set<string | null>()
+		deselectedAccounts = new Set<string | null>([null, ...accounts]) // All in deselected = none selected
 	}
 
-	// Check if all tags/accounts are selected
-	let allTagsSelected = $derived.by(() => {
-		const allTags = [null, ...tags]
-		return allTags.every((tag) => selectedTags.has(tag))
-	})
+	// Check if all tags/accounts are selected (nothing deselected)
+	let allTagsSelected = $derived(deselectedTags.size === 0)
 
-	let allAccountsSelected = $derived.by(() => {
-		const allAccounts = [null, ...accounts]
-		return allAccounts.every((account) => selectedAccounts.has(account))
-	})
+	let allAccountsSelected = $derived(deselectedAccounts.size === 0)
 
 	// Derive total cost for selected period (excluding paused and cancelled)
 	let total = $derived.by(() => {
@@ -220,11 +171,11 @@
 			if (sub.pauseDate && !showPaused) return false
 			if (sub.endDate && !showCancelled) return false
 
-			// Filter by tag
-			if (!selectedTags.has(sub.tag)) return false
+			// Filter by tag (if tag is in deselected set, filter it out)
+			if (deselectedTags.has(sub.tag)) return false
 
-			// Filter by account
-			if (!selectedAccounts.has(sub.account)) return false
+			// Filter by account (if account is in deselected set, filter it out)
+			if (deselectedAccounts.has(sub.account)) return false
 
 			return true
 		})
@@ -533,14 +484,14 @@
 											class={createClass(
 												'flex cursor-pointer items-center justify-between rounded-lg px-2 py-1 text-sm text-neutral-300 outline-none',
 												'hover:bg-neutral-600/80',
-												selectedTags.has(null) && 'bg-neutral-700/50'
+												!deselectedTags.has(null) && 'bg-neutral-700/50'
 											)}
 										>
 											<span class="italic text-neutral-400">No tag</span>
 											<span
 												class={createClass(
 													'size-3 rounded-full transition-colors',
-													selectedTags.has(null) ? 'bg-blue-500' : 'bg-neutral-600'
+													!deselectedTags.has(null) ? 'bg-blue-500' : 'bg-neutral-600'
 												)}
 											/>
 										</button>
@@ -550,14 +501,14 @@
 												class={createClass(
 													'flex cursor-pointer items-center justify-between rounded-lg px-2 py-1 text-sm text-neutral-300 outline-none',
 													'hover:bg-neutral-600/80',
-													selectedTags.has(tag) && 'bg-neutral-700/50'
+													!deselectedTags.has(tag) && 'bg-neutral-700/50'
 												)}
 											>
 												<span>{tag}</span>
 												<span
 													class={createClass(
 														'size-3 rounded-full transition-colors',
-														selectedTags.has(tag) ? 'bg-blue-500' : 'bg-neutral-600'
+														!deselectedTags.has(tag) ? 'bg-blue-500' : 'bg-neutral-600'
 													)}
 												/>
 											</button>
@@ -596,14 +547,14 @@
 											class={createClass(
 												'flex cursor-pointer items-center justify-between rounded-lg px-2 py-1 text-sm text-neutral-300 outline-none',
 												'hover:bg-neutral-600/80',
-												selectedAccounts.has(null) && 'bg-neutral-700/50'
+												!deselectedAccounts.has(null) && 'bg-neutral-700/50'
 											)}
 										>
 											<span class="italic text-neutral-400">No account</span>
 											<span
 												class={createClass(
 													'size-3 rounded-full transition-colors',
-													selectedAccounts.has(null) ? 'bg-blue-500' : 'bg-neutral-600'
+													!deselectedAccounts.has(null) ? 'bg-blue-500' : 'bg-neutral-600'
 												)}
 											/>
 										</button>
@@ -613,14 +564,14 @@
 												class={createClass(
 													'flex cursor-pointer items-center justify-between rounded-lg px-2 py-1 text-sm text-neutral-300 outline-none',
 													'hover:bg-neutral-600/80',
-													selectedAccounts.has(account) && 'bg-neutral-700/50'
+													!deselectedAccounts.has(account) && 'bg-neutral-700/50'
 												)}
 											>
 												<span>{account}</span>
 												<span
 													class={createClass(
 														'size-3 rounded-full transition-colors',
-														selectedAccounts.has(account) ? 'bg-blue-500' : 'bg-neutral-600'
+														!deselectedAccounts.has(account) ? 'bg-blue-500' : 'bg-neutral-600'
 													)}
 												/>
 											</button>
