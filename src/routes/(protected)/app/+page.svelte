@@ -14,12 +14,14 @@
 	import { createClass } from '@opensky/style'
 	import { Popover, RadioGroup } from 'bits-ui'
 	import {
-		IconFilter2,
+		IconArrowsDownUp,
 		IconArrowNarrowUp,
 		IconChevronDown,
 		IconDownload,
 		IconCopy,
-		IconCheck
+		IconCheck,
+		IconFilter2,
+		IconChevronRight
 	} from '@tabler/icons-svelte'
 	import { Adapt } from '$ui/adapt'
 	import { scale } from 'svelte/transition'
@@ -37,6 +39,60 @@
 	let sortPopoverOpen = $state(false)
 	let displayPeriod = $state<'weekly' | 'monthly' | 'yearly'>('monthly')
 	let prefsLoaded = $state(false)
+
+	// Filter state (not persisted)
+	let filterPopoverOpen = $state(false)
+	let showPaused = $state(true)
+	let showCancelled = $state(true)
+	let selectedTags = $state<Set<string | null>>(new Set())
+	let selectedAccounts = $state<Set<string | null>>(new Set())
+	let filterTagsExpanded = $state(false)
+	let filterAccountsExpanded = $state(false)
+
+	// Track known tags/accounts to distinguish new items from deselected ones
+	let knownTags = $state<Set<string | null>>(new Set())
+	let knownAccounts = $state<Set<string | null>>(new Set())
+
+	// Initialize filter selections and auto-include newly created tags/accounts
+	$effect(() => {
+		// Include null to represent items with no tag/account
+		const allTags = new Set<string | null>([null, ...tags])
+		const allAccounts = new Set<string | null>([null, ...accounts])
+
+		// Find truly new tags (ones we haven't seen before)
+		const newTags: (string | null)[] = []
+		for (const tag of allTags) {
+			if (!knownTags.has(tag)) {
+				newTags.push(tag)
+			}
+		}
+
+		// Find truly new accounts (ones we haven't seen before)
+		const newAccounts: (string | null)[] = []
+		for (const account of allAccounts) {
+			if (!knownAccounts.has(account)) {
+				newAccounts.push(account)
+			}
+		}
+
+		// Update known sets
+		if (newTags.length > 0) {
+			knownTags = new Set([...knownTags, ...newTags])
+		}
+		if (newAccounts.length > 0) {
+			knownAccounts = new Set([...knownAccounts, ...newAccounts])
+		}
+
+		// Auto-select new tags (preserving user's deselections of existing tags)
+		if (newTags.length > 0) {
+			selectedTags = new Set([...selectedTags, ...newTags])
+		}
+
+		// Auto-select new accounts (preserving user's deselections of existing accounts)
+		if (newAccounts.length > 0) {
+			selectedAccounts = new Set([...selectedAccounts, ...newAccounts])
+		}
+	})
 
 	// Load user preferences
 	getUserPrefs().then((prefs) => {
@@ -104,15 +160,78 @@
 		updateUserPrefs({ subscriptionSortReversed: sortReversed })
 	}
 
+	function toggleTag(tag: string | null) {
+		const newSet = new Set(selectedTags)
+		if (newSet.has(tag)) {
+			newSet.delete(tag)
+		} else {
+			newSet.add(tag)
+		}
+		selectedTags = newSet
+	}
+
+	function toggleAccount(account: string | null) {
+		const newSet = new Set(selectedAccounts)
+		if (newSet.has(account)) {
+			newSet.delete(account)
+		} else {
+			newSet.add(account)
+		}
+		selectedAccounts = newSet
+	}
+
+	function selectAllTags() {
+		selectedTags = new Set<string | null>([null, ...tags])
+	}
+
+	function deselectAllTags() {
+		selectedTags = new Set<string | null>()
+	}
+
+	function selectAllAccounts() {
+		selectedAccounts = new Set<string | null>([null, ...accounts])
+	}
+
+	function deselectAllAccounts() {
+		selectedAccounts = new Set<string | null>()
+	}
+
+	// Check if all tags/accounts are selected
+	let allTagsSelected = $derived.by(() => {
+		const allTags = [null, ...tags]
+		return allTags.every((tag) => selectedTags.has(tag))
+	})
+
+	let allAccountsSelected = $derived.by(() => {
+		const allAccounts = [null, ...accounts]
+		return allAccounts.every((account) => selectedAccounts.has(account))
+	})
+
 	// Derive total cost for selected period (excluding paused and cancelled)
 	let total = $derived.by(() => {
 		const activeSubscriptions = subscriptions.filter((sub) => !sub.pauseDate && !sub.endDate)
 		return calculateTotal(activeSubscriptions, displayPeriod)
 	})
 
-	// Derive sorted subscriptions
+	// Derive filtered and sorted subscriptions
+	let filteredSubscriptions = $derived.by(() => {
+		return subscriptions.filter((sub) => {
+			// Filter by status
+			if (sub.pauseDate && !showPaused) return false
+			if (sub.endDate && !showCancelled) return false
+
+			// Filter by tag
+			if (!selectedTags.has(sub.tag)) return false
+
+			// Filter by account
+			if (!selectedAccounts.has(sub.account)) return false
+
+			return true
+		})
+	})
+
 	let sortedSubscriptions = $derived.by(() => {
-		const sorted = [...subscriptions].sort((a, b) => {
+		const sorted = [...filteredSubscriptions].sort((a, b) => {
 			switch (sortBy) {
 				case 'date':
 					return new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime()
@@ -317,8 +436,203 @@
 				<p class="text-sm text-neutral-400">Add your first subscription using the toolbar above.</p>
 			</div>
 		{:else}
-			<!-- Sort Controls -->
-			<div class="mb-4 flex justify-end">
+			<!-- Filter & Sort Controls -->
+			<div class="mb-4 flex justify-end gap-2">
+				<!-- Filter Button -->
+				<Popover.Root bind:open={filterPopoverOpen}>
+					<Popover.Trigger>
+						{#snippet child({ props })}
+							<button
+								{...props}
+								class={createClass(
+									'flex size-[30px] cursor-pointer items-center justify-center gap-1 rounded-full select-none',
+									'bg-white text-neutral-500 shadow-[0px_1px_1px_rgba(0,0,0,0.08),0px_0px_0px_1px_rgba(0,0,0,0.05)]',
+									'transition-all hover:shadow-[0px_1px_1px_rgba(0,0,0,0.12),0px_0px_0px_1px_rgba(0,0,0,0.1)]',
+									'active:scale-[0.99] active:bg-neutral-100',
+									'dark:bg-neutral-800 dark:shadow-[0px_1px_1px_rgba(0,0,0,0.08),inset_0px_0px_0px_1px_rgba(255,255,255,0.1)]',
+									'dark:hover:shadow-[0px_1px_1px_rgba(0,0,0,0.1),inset_0px_0px_0px_1px_rgba(255,255,255,0.2)]',
+									'dark:active:bg-neutral-700',
+									filterPopoverOpen && 'bg-neutral-100 dark:bg-neutral-700'
+								)}
+							>
+								<IconFilter2 size={16} stroke={2.5} />
+							</button>
+						{/snippet}
+					</Popover.Trigger>
+					<Popover.Content
+						side="bottom"
+						align="end"
+						sideOffset={8}
+						class="z-100 w-52 rounded-[1.15rem] bg-black p-2 shadow-lg dark:bg-[#212121] dark:shadow-[inset_0_1px_1.5px_rgba(255,255,255,0.09),inset_0_-1px_4px_rgba(255,255,255,0.03)]"
+					>
+						<div class="mb-2 border-b border-neutral-700 pb-2">
+							<span class="pl-2 text-sm font-medium text-neutral-300">Filter by status</span>
+						</div>
+						<!-- Status Toggles -->
+						<div class="mb-2 flex flex-col gap-1">
+							<button
+								onclick={() => (showPaused = !showPaused)}
+								class={createClass(
+									'flex cursor-pointer items-center justify-between rounded-xl px-2 py-1.5 text-sm text-neutral-200 outline-none',
+									'hover:bg-neutral-600/80',
+									showPaused && 'bg-neutral-600/80'
+								)}
+							>
+								<span>Paused</span>
+								<span
+									class={createClass(
+										'size-3.5 rounded-full transition-colors',
+										showPaused ? 'bg-blue-500' : 'bg-neutral-600'
+									)}
+								/>
+							</button>
+							<button
+								onclick={() => (showCancelled = !showCancelled)}
+								class={createClass(
+									'flex cursor-pointer items-center justify-between rounded-xl px-2 py-1.5 text-sm text-neutral-200 outline-none',
+									'hover:bg-neutral-600/80',
+									showCancelled && 'bg-neutral-600/80'
+								)}
+							>
+								<span>Cancelled</span>
+								<span
+									class={createClass(
+										'size-3.5 rounded-full transition-colors',
+										showCancelled ? 'bg-blue-500' : 'bg-neutral-600'
+									)}
+								/>
+							</button>
+						</div>
+
+						<!-- Tags Submenu -->
+						{#if tags.length > 0}
+							<div class="border-t border-neutral-700 pt-2">
+								<button
+									onclick={() => (filterTagsExpanded = !filterTagsExpanded)}
+									class="flex w-full cursor-pointer items-center justify-between rounded-xl px-2 py-1.5 text-sm text-neutral-200 outline-none hover:bg-neutral-600/80"
+								>
+									<span>Tags</span>
+									<IconChevronRight
+										size={14}
+										class={createClass(
+											'transition-transform',
+											filterTagsExpanded && 'rotate-90'
+										)}
+									/>
+								</button>
+								{#if filterTagsExpanded}
+									<div class="mt-1 flex flex-col gap-0.5 pl-2">
+										<button
+											onclick={allTagsSelected ? deselectAllTags : selectAllTags}
+											class="flex cursor-pointer items-center rounded-lg px-2 py-1 text-sm text-neutral-400 hover:bg-neutral-600/80 hover:text-neutral-200"
+										>
+											{allTagsSelected ? 'Deselect all' : 'Select all'}
+										</button>
+										<button
+											onclick={() => toggleTag(null)}
+											class={createClass(
+												'flex cursor-pointer items-center justify-between rounded-lg px-2 py-1 text-sm text-neutral-300 outline-none',
+												'hover:bg-neutral-600/80',
+												selectedTags.has(null) && 'bg-neutral-700/50'
+											)}
+										>
+											<span class="italic text-neutral-400">No tag</span>
+											<span
+												class={createClass(
+													'size-3 rounded-full transition-colors',
+													selectedTags.has(null) ? 'bg-blue-500' : 'bg-neutral-600'
+												)}
+											/>
+										</button>
+										{#each tags as tag (tag)}
+											<button
+												onclick={() => toggleTag(tag)}
+												class={createClass(
+													'flex cursor-pointer items-center justify-between rounded-lg px-2 py-1 text-sm text-neutral-300 outline-none',
+													'hover:bg-neutral-600/80',
+													selectedTags.has(tag) && 'bg-neutral-700/50'
+												)}
+											>
+												<span>{tag}</span>
+												<span
+													class={createClass(
+														'size-3 rounded-full transition-colors',
+														selectedTags.has(tag) ? 'bg-blue-500' : 'bg-neutral-600'
+													)}
+												/>
+											</button>
+										{/each}
+									</div>
+								{/if}
+							</div>
+						{/if}
+
+						<!-- Accounts Submenu -->
+						{#if accounts.length > 0}
+							<div class="border-t border-neutral-700 pt-2">
+								<button
+									onclick={() => (filterAccountsExpanded = !filterAccountsExpanded)}
+									class="flex w-full cursor-pointer items-center justify-between rounded-xl px-2 py-1.5 text-sm text-neutral-200 outline-none hover:bg-neutral-600/80"
+								>
+									<span>Accounts</span>
+									<IconChevronRight
+										size={14}
+										class={createClass(
+											'transition-transform',
+											filterAccountsExpanded && 'rotate-90'
+										)}
+									/>
+								</button>
+								{#if filterAccountsExpanded}
+									<div class="mt-1 flex flex-col gap-0.5 pl-2">
+										<button
+											onclick={allAccountsSelected ? deselectAllAccounts : selectAllAccounts}
+											class="flex cursor-pointer items-center rounded-lg px-2 py-1 text-sm text-neutral-400 hover:bg-neutral-600/80 hover:text-neutral-200"
+										>
+											{allAccountsSelected ? 'Deselect all' : 'Select all'}
+										</button>
+										<button
+											onclick={() => toggleAccount(null)}
+											class={createClass(
+												'flex cursor-pointer items-center justify-between rounded-lg px-2 py-1 text-sm text-neutral-300 outline-none',
+												'hover:bg-neutral-600/80',
+												selectedAccounts.has(null) && 'bg-neutral-700/50'
+											)}
+										>
+											<span class="italic text-neutral-400">No account</span>
+											<span
+												class={createClass(
+													'size-3 rounded-full transition-colors',
+													selectedAccounts.has(null) ? 'bg-blue-500' : 'bg-neutral-600'
+												)}
+											/>
+										</button>
+										{#each accounts as account (account)}
+											<button
+												onclick={() => toggleAccount(account)}
+												class={createClass(
+													'flex cursor-pointer items-center justify-between rounded-lg px-2 py-1 text-sm text-neutral-300 outline-none',
+													'hover:bg-neutral-600/80',
+													selectedAccounts.has(account) && 'bg-neutral-700/50'
+												)}
+											>
+												<span>{account}</span>
+												<span
+													class={createClass(
+														'size-3 rounded-full transition-colors',
+														selectedAccounts.has(account) ? 'bg-blue-500' : 'bg-neutral-600'
+													)}
+												/>
+											</button>
+										{/each}
+									</div>
+								{/if}
+							</div>
+						{/if}
+					</Popover.Content>
+				</Popover.Root>
+
+				<!-- Sort Button -->
 				<Popover.Root bind:open={sortPopoverOpen}>
 					<Popover.Trigger>
 						{#snippet child({ props })}
@@ -335,7 +649,7 @@
 									sortPopoverOpen && 'bg-neutral-100 dark:bg-neutral-700'
 								)}
 							>
-								<IconFilter2 size={16} />
+								<IconArrowsDownUp size={16} stroke={2.5} />
 							</button>
 						{/snippet}
 					</Popover.Trigger>
@@ -346,7 +660,7 @@
 						class="z-100 w-48 rounded-[1.15rem] bg-black p-2 shadow-lg dark:bg-[#212121] dark:shadow-[inset_0_1px_1.5px_rgba(255,255,255,0.09),inset_0_-1px_4px_rgba(255,255,255,0.03)]"
 					>
 						<div class="mb-2 flex items-center justify-between border-b border-neutral-700 pb-2">
-							<span class="pl-2 text-xs font-medium text-neutral-400">Sort by</span>
+							<span class="pl-2 text-sm font-medium text-neutral-300">Sort by</span>
 							<button
 								onclick={handleSortReversedToggle}
 								class={createClass(
