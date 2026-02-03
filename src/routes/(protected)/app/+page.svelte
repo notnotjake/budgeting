@@ -154,9 +154,16 @@
 	}
 
 	// Check if all tags/accounts are selected (nothing deselected)
-	let allTagsSelected = $derived(deselectedTags.size === 0)
+	// Note: We reference tags/accounts to maintain reactive subscription for proper re-renders
+	let allTagsSelected = $derived.by(() => {
+		void tags
+		return deselectedTags.size === 0
+	})
 
-	let allAccountsSelected = $derived(deselectedAccounts.size === 0)
+	let allAccountsSelected = $derived.by(() => {
+		void accounts
+		return deselectedAccounts.size === 0
+	})
 
 	// Derive total cost for selected period (excluding paused and cancelled)
 	let total = $derived.by(() => {
