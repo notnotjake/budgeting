@@ -1,6 +1,6 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte'
-	import { onMount, onDestroy } from 'svelte'
+	import { onDestroy } from 'svelte'
 	import { createClass } from '@opensky/style'
 	import { Spring } from 'svelte/motion'
 	import { createToastBounce } from './bounce-behavior.js'
@@ -71,20 +71,8 @@
 	let activeContentWidth = $state(0)
 	let activeContentHeight = $state(0)
 
-	// Springs for smooth size transitions
-	let containerWidth: Spring<number> | undefined = $state()
-	let containerHeight: Spring<number> | undefined = $state()
-
 	// Track initialization for adapt mode
 	let initialized = $state(false)
-
-	// Initialize springs on mount when adapt mode is enabled
-	onMount(() => {
-		if (adaptSize) {
-			containerWidth = new Spring(defaultContentWidth, { stiffness, damping })
-			containerHeight = new Spring(defaultContentHeight, { stiffness, damping })
-		}
-	})
 
 	// Set initialized flag once we have content measurements
 	$effect(() => {
@@ -93,18 +81,30 @@
 		}
 	})
 
-	// Update spring targets when content changes or active state toggles
-	$effect(() => {
-		if (!adaptSize || !initialized || !containerWidth || !containerHeight) return
+	const targetSize = $derived.by(() => {
+		if (!adaptSize) return { width: 0, height: 0 }
 
-		if (isActive && activeContentWidth > 0 && activeContentHeight > 0) {
-			containerWidth.target = activeContentWidth
-			containerHeight.target = activeContentHeight
-		} else if (!isActive && defaultContentWidth > 0 && defaultContentHeight > 0) {
-			containerWidth.target = defaultContentWidth
-			containerHeight.target = defaultContentHeight
+		const hasDefaultSize = defaultContentWidth > 0 && defaultContentHeight > 0
+		const hasActiveSize = activeContentWidth > 0 && activeContentHeight > 0
+
+		if (isActive && hasActiveSize) {
+			return { width: activeContentWidth, height: activeContentHeight }
 		}
+		if (!isActive && hasDefaultSize) {
+			return { width: defaultContentWidth, height: defaultContentHeight }
+		}
+		if (hasDefaultSize) {
+			return { width: defaultContentWidth, height: defaultContentHeight }
+		}
+		if (hasActiveSize) {
+			return { width: activeContentWidth, height: activeContentHeight }
+		}
+
+		return { width: 0, height: 0 }
 	})
+
+	const containerWidth = Spring.of(() => targetSize.width, { stiffness, damping })
+	const containerHeight = Spring.of(() => targetSize.height, { stiffness, damping })
 
 	// Create bounce behavior
 	const { scaleX, scaleY, triggerBounce, reset } = createToastBounce()
@@ -171,10 +171,10 @@
 	<div
 		class={createClass(classProp, 'relative', initialized ? 'overflow-hidden' : '')}
 		style:width={initialized
-			? `${containerWidth?.current ?? defaultContentWidth}px`
+			? `${containerWidth.current}px`
 			: 'fit-content'}
 		style:height={initialized
-			? `${containerHeight?.current ?? defaultContentHeight}px`
+			? `${containerHeight.current}px`
 			: 'fit-content'}
 		style:transform="scaleX({$scaleX}) scaleY({$scaleY})"
 	>
